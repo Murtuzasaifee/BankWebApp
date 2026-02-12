@@ -1,0 +1,19 @@
+[Unit]
+Description=Good Bank Chat Application
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/chat_app_aws
+Environment="PATH=/home/ec2-user/chat_app_aws/venv/bin"
+ExecStart=/home/ec2-user/chat_app_aws/venv/bin/python app.py
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=append:/home/ec2-user/chat_app_aws/app.log
+StandardError=append:/home/ec2-user/chat_app_aws/app-error.log
+
+[Install]
+WantedBy=multi-user.target
