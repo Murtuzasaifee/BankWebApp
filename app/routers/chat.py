@@ -12,8 +12,10 @@ from fastapi.responses import JSONResponse
 from app.models.schemas import ChatRequest
 from app.core.config import get_settings
 from app.core.dependencies import conversation_store, get_agent_client, get_session_manager
+from app.core.logger import get_logger
 
 router = APIRouter()
+logger = get_logger()
 
 
 def get_or_create_conversation(session_id: str, asset_version_id: Optional[str] = None) -> Optional[str]:
@@ -40,17 +42,17 @@ def get_or_create_conversation(session_id: str, asset_version_id: Optional[str] 
 
     # Create new conversation
     if not asset_version_id:
-        print("Warning: ASSET_VERSION_ID not set. Cannot create conversation.")
+        logger.warning("ASSET_VERSION_ID not set. Cannot create conversation.")
         return None
 
     conversation_id = agent_client.create_conversation(
         asset_version_id=asset_version_id,
-        conversation_name=settings.CONVERSATION_NAME,
+        conversation_name=settings.get_conversation_name(),
     )
 
     if conversation_id:
         conversation_store[conversation_key] = conversation_id
-        print(f"Created new conversation {conversation_id} for session {session_id} with asset {asset_version_id}")
+        logger.info(f"Created new conversation {conversation_id} for session {session_id} with asset {asset_version_id}")
 
     return conversation_id
 
@@ -98,7 +100,7 @@ def chat(body: ChatRequest, request: Request, response: Response):
                 },
             )
 
-        print(f"[Chat] Session: {sid}, Conversation: {conversation_id}, Query: {query[:100]}...")
+        logger.info(f"[Chat] Session: {sid}, Conversation: {conversation_id}, Query: {query[:100]}...")
 
         # Send query to agent
         response_text, success = agent_client.send_query(
@@ -119,13 +121,13 @@ def chat(body: ChatRequest, request: Request, response: Response):
         sm.save_session(response, session_id)
         return {
             "response": response_text,
-            "agent_name": settings.AGENT_NAME,
+            "agent_name": settings.get_agent_name(),
             "conversation_id": conversation_id,
         }
 
     except Exception as e:
-        print(f"Error in chat endpoint: {e}")
-        traceback.print_exc()
+        logger.error(f"Error in chat endpoint: {e}")
+        logger.exception("Chat endpoint exception")
         return JSONResponse(
             status_code=500,
             content={

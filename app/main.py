@@ -1,5 +1,5 @@
 """
-FastAPI web server for Good Bank Chat Application.
+FastAPI web server for Banking Chat Application.
 
 This server:
 1. Serves the HTML chat interface
@@ -16,9 +16,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings, validate_config
 from app.core.dependencies import get_agent_client
+from app.core.logger import setup_logging, get_logger
 from app.routers import pages, auth, chat, loan, health
 
+# Initialize settings and logging
 settings = get_settings()
+setup_logging()
+logger = get_logger()
 
 
 @asynccontextmanager
@@ -27,39 +31,38 @@ async def lifespan(app: FastAPI):
     # Startup: validate config and initialize agent client
     is_valid, error_msg = validate_config(settings)
     if not is_valid:
-        print("=" * 80)
-        print("CONFIGURATION ERROR")
-        print("=" * 80)
-        print(f"Error: {error_msg}")
-        print()
-        print("Please update .env with the required values.")
-        print("See .env.example for the template.")
-        print("=" * 80)
+        logger.critical("=" * 80)
+        logger.critical("CONFIGURATION ERROR")
+        logger.critical("=" * 80)
+        logger.critical(f"Error: {error_msg}")
+        logger.critical("Please update .env with the required values.")
+        logger.critical("See .env.example for the template.")
+        logger.critical("=" * 80)
         sys.exit(1)
 
     # Initialize agent client eagerly (triggers token refresh)
     get_agent_client()
 
-    print("=" * 80)
-    print("Good Bank Chat Server Starting...")
-    print("=" * 80)
-    print(f"Asset Version ID: {settings.ASSET_VERSION_ID}")
-    print(f"Agent Name: {settings.AGENT_NAME}")
-    print(f"Conversation Name: {settings.CONVERSATION_NAME}")
-    print(f"Query Timeout: {settings.QUERY_TIMEOUT}s")
-    print(f"Server: {settings.SERVER_HOST}:{settings.SERVER_PORT}")
-    print(f"Debug Mode: {settings.DEBUG_MODE}")
-    print("=" * 80)
-    print()
+    logger.info("=" * 80)
+    logger.info(f"{settings.APP_NAME} Chat Server Starting...")
+    logger.info("=" * 80)
+    logger.info(f"Asset Version ID: {settings.ASSET_VERSION_ID}")
+    logger.info(f"Agent Name: {settings.get_agent_name()}")
+    logger.info(f"Conversation Name: {settings.get_conversation_name()}")
+    logger.info(f"Query Timeout: {settings.QUERY_TIMEOUT}s")
+    logger.info(f"Server: {settings.SERVER_HOST}:{settings.SERVER_PORT}")
+    logger.info(f"Environment: {settings.ENVIRONMENT}")
+    logger.info(f"Debug Mode: {settings.DEBUG_MODE}")
+    logger.info("=" * 80)
 
     yield
 
     # Shutdown
-    print("Good Bank Chat Server Shutting Down...")
+    logger.info(f"{settings.APP_NAME} Chat Server Shutting Down...")
 
 
 app = FastAPI(
-    title="Good Bank Chat Application",
+    title=f"{settings.APP_NAME} Chat Application",
     lifespan=lifespan,
 )
 

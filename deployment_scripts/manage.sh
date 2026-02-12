@@ -12,6 +12,12 @@ LOG_FILE="$APP_DIR/app.log"
 VENV_DIR="$APP_DIR/venv"
 ENV_FILE="$APP_DIR/.env"
 
+# Get app name from .env if available
+APP_NAME="Banking App"
+if [ -f "$ENV_FILE" ]; then
+    APP_NAME=$(grep "^APP_NAME=" "$ENV_FILE" | cut -d '=' -f2 || echo "Banking App")
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,7 +52,7 @@ get_access_url() {
 }
 
 start() {
-    echo "Starting Good Bank FastAPI Application..."
+    echo "Starting $APP_NAME FastAPI Application..."
 
     # Check if already running
     if [ -f "$PID_FILE" ]; then
@@ -104,7 +110,7 @@ start() {
 }
 
 stop() {
-    echo "Stopping Good Bank FastAPI Application..."
+    echo "Stopping $APP_NAME FastAPI Application..."
 
     # Try PID file first
     if [ -f "$PID_FILE" ]; then
@@ -149,7 +155,7 @@ stop() {
 }
 
 restart() {
-    echo "Restarting Good Bank FastAPI Application..."
+    echo "Restarting $APP_NAME FastAPI Application..."
     stop
     sleep 2
     start
@@ -157,7 +163,7 @@ restart() {
 
 status() {
     get_config
-    echo "Good Bank FastAPI Application Status"
+    echo "$APP_NAME FastAPI Application Status"
     echo "======================================"
 
     if [ -f "$PID_FILE" ]; then
@@ -223,7 +229,7 @@ case "$1" in
         logs "$2"
         ;;
     *)
-        echo "Good Bank FastAPI - Management Script"
+        echo "$APP_NAME - Management Script"
         echo ""
         echo "Usage: $0 {start|stop|restart|status|logs}"
         echo ""

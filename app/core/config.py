@@ -22,12 +22,15 @@ class Settings(BaseSettings):
     PLATFORM_USERNAME: str = ""
     PLATFORM_PASSWORD: str = ""
 
+    # Application Branding
+    APP_NAME: str = "Good Bank"
+
     # Agent Configuration
     ASSET_VERSION_ID: str = ""
     ASSET_VERSION_ID_LOGGED_IN: str = ""
     LOAN_AGENT_ASSET_ID: str = ""
-    AGENT_NAME: str = "Good Bank Support Agent"
-    CONVERSATION_NAME: str = "Good Bank Customer Support Chat"
+    AGENT_NAME: str = ""  # Will default to "{APP_NAME} Support Agent"
+    CONVERSATION_NAME: str = ""  # Will default to "{APP_NAME} Customer Support Chat"
     QUERY_TIMEOUT: int = 60
 
     # Application Configuration
@@ -36,12 +39,23 @@ class Settings(BaseSettings):
     SERVER_HOST: str = "127.0.0.1"
     SERVER_PORT: int = 8000
     DEBUG_MODE: bool = True
+    LOG_LEVEL: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    LOG_ROTATION: str = "10 MB"  # Rotate logs when they reach this size
+    LOG_RETENTION: str = "7 days"  # Keep logs for this duration
 
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
     }
+
+    def get_agent_name(self) -> str:
+        """Get agent name with fallback to default based on APP_NAME."""
+        return self.AGENT_NAME or f"{self.APP_NAME} Support Agent"
+
+    def get_conversation_name(self) -> str:
+        """Get conversation name with fallback to default based on APP_NAME."""
+        return self.CONVERSATION_NAME or f"{self.APP_NAME} Customer Support Chat"
 
 
 @lru_cache()

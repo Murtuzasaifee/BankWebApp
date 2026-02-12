@@ -14,8 +14,14 @@ ENVIRONMENT="${1:-auto}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Get app name from .env if available
+APP_NAME="Banking App"
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    APP_NAME=$(grep "^APP_NAME=" "$PROJECT_ROOT/.env" | cut -d '=' -f2 || echo "Banking App")
+fi
+
 echo "============================================"
-echo "  Good Bank FastAPI - Deploy & Run Script"
+echo "  $APP_NAME - Deploy & Run Script"
 echo "============================================"
 echo ""
 
