@@ -4,8 +4,8 @@ Health and config routes.
 
 from fastapi import APIRouter
 
-from app.config import get_settings
-from app.dependencies import conversation_store, get_agent_client
+from app.core.config import get_settings
+from app.core.dependencies import conversation_store, get_agent_client
 
 router = APIRouter()
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Demo user data for Good Bank Chat Application.
 """

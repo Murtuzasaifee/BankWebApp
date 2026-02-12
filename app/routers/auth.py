@@ -5,9 +5,9 @@ Authentication routes - login, logout, auth status.
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 
-from app.models import LoginRequest
-from app.demo_data import USERS
-from app.dependencies import conversation_store, get_session_manager
+from app.models.schemas import LoginRequest
+from app.data.demo_data import USERS
+from app.core.dependencies import conversation_store, get_session_manager
 
 router = APIRouter()
 

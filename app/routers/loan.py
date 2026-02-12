@@ -9,10 +9,10 @@ import requests
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 
-from app.models import LoanRequest
-from app.config import get_settings
-from app.demo_data import USERS
-from app.dependencies import get_agent_client, get_session_manager
+from app.models.schemas import LoanRequest
+from app.core.config import get_settings
+from app.data.demo_data import USERS
+from app.core.dependencies import get_agent_client, get_session_manager
 
 router = APIRouter()
 

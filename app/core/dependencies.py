@@ -1,12 +1,11 @@
-#!/usr/bin/env python3
 """
 Shared dependencies for FastAPI route handlers.
 """
 
 from typing import Dict
-from app.config import get_settings, Settings
-from app.query_agent import AgentPlatformClient
-from app.session import SessionManager
+from app.core.config import get_settings, Settings
+from app.services.query_agent import AgentPlatformClient
+from app.core.session import SessionManager
 
 # In-memory conversation store (keyed by "{session_id}_{asset_version_id}")
 conversation_store: Dict[str, str] = {}

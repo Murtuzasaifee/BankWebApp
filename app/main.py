@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 FastAPI web server for Good Bank Chat Application.
 
@@ -15,8 +14,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.config import get_settings, validate_config
-from app.dependencies import get_agent_client
+from app.core.config import get_settings, validate_config
+from app.core.dependencies import get_agent_client
 from app.routers import pages, auth, chat, loan, health
 
 settings = get_settings()
