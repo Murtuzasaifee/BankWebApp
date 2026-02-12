@@ -1,2 +1,7 @@
-requests
 fastapi
+uvicorn[standard]
+python-dotenv
+pydantic-settings
+jinja2
+python-multipart
+requests
