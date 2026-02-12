@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     QUERY_TIMEOUT: int = 60
 
     # Application Configuration
+    ENVIRONMENT: str = "local"  # "local" or "production"
     SECRET_KEY: str = ""
     SERVER_HOST: str = "127.0.0.1"
     SERVER_PORT: int = 8000

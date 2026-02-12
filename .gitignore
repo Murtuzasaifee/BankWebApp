@@ -12,3 +12,8 @@ venv/
 .env
 .DS_Store
 PLAN.md
+
+# Runtime files
+app.log
+app.pid
+*.bak
