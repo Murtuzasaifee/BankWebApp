@@ -24,16 +24,16 @@ class Settings(BaseSettings):
 
     # Application Branding
     APP_NAME: str = "Good Bank"
+    AGENT_NAME: str = "{APP_NAME} Support Agent"
+    CONVERSATION_NAME: str = "{APP_NAME} Customer Support Chat"
     CURRENCY: str = "SAR"
     SUPPORT_EMAIL: str = "customercare@goodbank.com"
     LOCATION: str = "Riyadh, KSA"
 
     # Agent Configuration
-    ASSET_VERSION_ID: str = ""
-    ASSET_VERSION_ID_LOGGED_IN: str = ""
+    CHATNOW_ASSET_ID: str = ""
+    INTELLICHAT_ASSET_ID: str = ""
     LOAN_AGENT_ASSET_ID: str = ""
-    AGENT_NAME: str = ""  # Will default to "{APP_NAME} Support Agent"
-    CONVERSATION_NAME: str = ""  # Will default to "{APP_NAME} Customer Support Chat"
     QUERY_TIMEOUT: int = 60
 
     # Application Configuration
@@ -83,8 +83,8 @@ def validate_config(settings: Settings) -> Tuple[bool, Optional[str]]:
     Returns:
         Tuple of (is_valid, error_message)
     """
-    if not settings.ASSET_VERSION_ID:
-        return False, "ASSET_VERSION_ID is required but not set"
+    if not settings.CHATNOW_ASSET_ID:
+        return False, "CHATNOW_ASSET_ID is required but not set"
 
     if not settings.API_KEY:
         return False, "API_KEY is required but not set"

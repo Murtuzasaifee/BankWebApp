@@ -137,8 +137,8 @@ API_KEY=your_api_key
 WORKSPACE_ID=your_workspace_id
 PLATFORM_USERNAME=your_username
 PLATFORM_PASSWORD=your_password
-ASSET_VERSION_ID=your_asset_id
-ASSET_VERSION_ID_LOGGED_IN=your_logged_in_asset_id
+CHATNOW_ASSET_ID=your_asset_id
+INTELLICHAT_ASSET_ID=your_logged_in_asset_id
 LOAN_AGENT_ASSET_ID=your_loan_agent_asset_id
 ```
 

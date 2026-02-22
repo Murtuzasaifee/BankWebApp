@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 80)
     logger.info(f"{settings.APP_NAME} Chat Server Starting...")
     logger.info("=" * 80)
-    logger.info(f"Asset Version ID: {settings.ASSET_VERSION_ID}")
+    logger.info(f"Asset Version ID: {settings.CHATNOW_ASSET_ID}")
     logger.info(f"Agent Name: {settings.get_agent_name()}")
     logger.info(f"Conversation Name: {settings.get_conversation_name()}")
     logger.info(f"Query Timeout: {settings.QUERY_TIMEOUT}s")
