@@ -10,6 +10,7 @@
 #   bash deployment_scripts/sync_to_ec2.sh -i ~/.ssh/my_key.pem ec2-user@34.22.x.x /home/ec2-user/BankApp
 #   bash deployment_scripts/sync_to_ec2.sh --deploy ec2-user@34.22.x.x /home/ec2-user/BankApp
 #   bash deployment_scripts/sync_to_ec2.sh --redeploy ec2-user@34.22.x.x /home/ec2-user/BankApp
+#   bash deployment_scripts/sync_to_ec2.sh --fresh ec2-user@34.22.x.x /home/ec2-user/BankApp
 # ============================================================================
 
 set -e
@@ -21,19 +22,21 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SSH_KEY=""
 DEPLOY=false
 REDEPLOY=false
+FRESH=false
 
 while [[ "$#" -gt 2 ]]; do
     case $1 in
         -i|--identity) SSH_KEY="$2"; shift ;;
         --deploy) DEPLOY=true ;;
         --redeploy) REDEPLOY=true ;;
+        --fresh) FRESH=true ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
 done
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 [-i key.pem] [--deploy] [--redeploy] <user@ec2-host> <target-directory>"
+    echo "Usage: $0 [-i key.pem] [--deploy] [--redeploy] [--fresh] <user@ec2-host> <target-directory>"
     exit 1
 fi
 
@@ -97,6 +100,13 @@ elif [ "$REDEPLOY" = true ]; then
     echo "============================================"
     $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && if [ ! -d 'venv' ]; then echo 'Virtual environment missing, recreating...'; bash deployment_scripts/deploy.sh production; else bash deployment_scripts/manage.sh restart; fi"
     echo "Redeployment command executed."
+elif [ "$FRESH" = true ]; then
+    echo "============================================"
+    echo "  Triggering Fresh Deployment on EC2        "
+    echo "============================================"
+    echo "Removing existing virtual environment and redeploying from scratch..."
+    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && bash deployment_scripts/manage.sh stop; rm -rf venv; bash deployment_scripts/deploy.sh production"
+    echo "Fresh deployment command executed."
 fi
 
 echo ""
