@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Good Bank FastAPI Application - Management Script
+# Banking Web Application with FastAPI - Management Script
 # ============================================================================
 # Usage: bash deployment_scripts/manage.sh {start|stop|restart|status|logs}
 # ============================================================================

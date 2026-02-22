@@ -1,4 +1,4 @@
-# Good Bank FastAPI - EC2 Deployment Guide
+# Banking Web Application with FastAPI - EC2 Deployment Guide
 
 ## Prerequisites
 

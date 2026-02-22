@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # Application Branding
     APP_NAME: str = "Good Bank"
+    CURRENCY: str = "SAR"
 
     # Agent Configuration
     ASSET_VERSION_ID: str = ""

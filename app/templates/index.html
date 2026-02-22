@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Good Bank | Premium Banking Services in the Middle East</title>
+    <title>{{ app_name }} | Premium Banking Services in the Middle East</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -12,7 +12,7 @@
 <body>
 
 <nav class="navbar">
-    <div class="logo">Good Bank</div>
+    <div class="logo">{{ app_name }}</div>
     <div class="nav-links" id="nav-links">
         <a href="#services" class="pre-login-nav">Services</a>
         <a href="#features" class="pre-login-nav">Features</a>
@@ -102,7 +102,7 @@
     </section>
 
     <section class="features-section" id="features">
-        <h2 class="section-title">Why Choose Good Bank</h2>
+        <h2 class="section-title">Why Choose {{ app_name }}</h2>
         <p class="section-subtitle">Excellence in every transaction</p>
         
         <div class="features-grid">
@@ -135,9 +135,9 @@
     <footer class="footer" id="contact">
         <div class="footer-grid">
         <div class="footer-column">
-            <h4>About Good Bank</h4>
+            <h4>About {{ app_name }}</h4>
             <p style="color: rgba(255,255,255); line-height: 1.7;">
-                Good Bank is a leading banking institution in the Middle East, committed to providing exceptional financial services with a personal touch.
+                {{ app_name }} is a leading banking institution in the Middle East, committed to providing exceptional financial services with a personal touch.
             </p>
         </div>
 
@@ -172,7 +172,7 @@
         </div>
 
     <div class="footer-bottom">
-        <p>&copy; 2026 Good Bank. All rights reserved. | Licensed by Central Bank</p>
+        <p>&copy; 2026 {{ app_name }}. All rights reserved. | Licensed by Central Bank</p>
     </div>
     </footer>
 </div>
@@ -198,21 +198,21 @@
                 <div class="account-card">
                     <i class="fas fa-wallet account-card-icon"></i>
                     <div class="account-type">Savings Account</div>
-                    <div class="account-balance">SAR 8,450.00</div>
+                    <div class="account-balance">{{ currency }} 8,450.00</div>
                     <div class="account-number">Account: GB-SAV-••••9900</div>
                 </div>
 
                 <div class="account-card" style="background: var(--gradient-card-alt);">
                     <i class="fas fa-credit-card account-card-icon"></i>
                     <div class="account-type">Debit Card</div>
-                    <div class="account-balance">SAR 2,340.50</div>
+                    <div class="account-balance">{{ currency }} 2,340.50</div>
                     <div class="account-number">Card: DC-334455</div>
                 </div>
 
                 <div class="account-card" style="background: var(--gradient-card-accent);">
                     <i class="fas fa-gem account-card-icon"></i>
                     <div class="account-type">Credit Card</div>
-                    <div class="account-balance">SAR 600.00</div>
+                    <div class="account-balance">{{ currency }} 600.00</div>
                     <div class="account-number">Available Credit | Card: CC-667788</div>
                 </div>
             </div>
@@ -284,7 +284,7 @@
                             </div>
                         </td>
                         <td>Jul 14, 2025<br><small style="color: #6C757D;">18:20</small></td>
-                        <td class="amount-debit">- SAR 250.00</td>
+                        <td class="amount-debit">- {{ currency }} 250.00</td>
                         <td><span class="status-badge" style="background: #FFEBEE; color: #C62828;">Failed</span></td>
                     </tr>
                     <tr>
@@ -300,7 +300,7 @@
                             </div>
                         </td>
                         <td>Jul 14, 2025<br><small style="color: #6C757D;">13:40</small></td>
-                        <td class="amount-debit">- SAR 200.00</td>
+                        <td class="amount-debit">- {{ currency }} 200.00</td>
                         <td><span class="status-badge completed">Completed</span></td>
                     </tr>
                     <tr>
@@ -316,7 +316,7 @@
                             </div>
                         </td>
                         <td>Jul 14, 2025<br><small style="color: #6C757D;">09:15</small></td>
-                        <td class="amount-debit">- SAR 200.00</td>
+                        <td class="amount-debit">- {{ currency }} 200.00</td>
                         <td><span class="status-badge completed">Completed</span></td>
                     </tr>
                     <tr>
@@ -332,7 +332,7 @@
                             </div>
                         </td>
                         <td>Jul 13, 2025<br><small style="color: #6C757D;">21:10</small></td>
-                        <td class="amount-debit">- SAR 900.00</td>
+                        <td class="amount-debit">- {{ currency }} 900.00</td>
                         <td><span class="status-badge completed">Completed</span></td>
                     </tr>
                     <tr>
@@ -348,7 +348,7 @@
                             </div>
                         </td>
                         <td>Jul 13, 2025<br><small style="color: #6C757D;">22:05</small></td>
-                        <td class="amount-debit">- SAR 800.00</td>
+                        <td class="amount-debit">- {{ currency }} 800.00</td>
                         <td><span class="status-badge" style="background: #FFEBEE; color: #C62828;">Failed</span></td>
                     </tr>
                 </tbody>
@@ -394,8 +394,8 @@
                 <div class="form-group">
                     <label>From Account</label>
                     <select required>
-                        <option>Savings Account GB-SAV-••••9900 (SAR 8,450.00)</option>
-                        <option>Debit Card DC-334455 (SAR 2,340.50)</option>
+                        <option>Savings Account GB-SAV-••••9900 ({{ currency }} 8,450.00)</option>
+                        <option>Debit Card DC-334455 ({{ currency }} 2,340.50)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -538,7 +538,7 @@
         <div class="modal-body">
             <div style="padding: 2rem; text-align: center;">
                 <div style="background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); border-radius: 20px; padding: 2rem; color: white; margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">Good Bank Premium Card</h3>
+                    <h3 style="margin-bottom: 1rem;">{{ app_name }} Premium Card</h3>
                     <p style="font-size: 1.5rem; margin-bottom: 1rem;">•••• •••• •••• 4455</p>
                     <div style="display: flex; justify-content: space-between;">
                         <div>
@@ -552,11 +552,11 @@
                     </div>
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.3);">
                         <small style="display: block; margin-bottom: 0.5rem;">Card Limits</small>
-                        <p style="font-size: 0.9rem;">Per Transaction: SAR 300 | Daily: SAR 500</p>
+                        <p style="font-size: 0.9rem;">Per Transaction: {{ currency }} 300 | Daily: {{ currency }} 500</p>
                     </div>
                 </div>
                 <div style="background: var(--gradient-card-alt); border-radius: 20px; padding: 2rem; color: white; margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">Good Bank Credit Card</h3>
+                    <h3 style="margin-bottom: 1rem;">{{ app_name }} Credit Card</h3>
                     <p style="font-size: 1.5rem; margin-bottom: 1rem;">•••• •••• •••• 7788</p>
                     <div style="display: flex; justify-content: space-between;">
                         <div>
@@ -565,12 +565,12 @@
                         </div>
                         <div>
                             <small>Available Credit</small>
-                            <p>SAR 600</p>
+                            <p>{{ currency }} 600</p>
                         </div>
                     </div>
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.3);">
                         <small style="display: block; margin-bottom: 0.5rem;">Card Limits</small>
-                        <p style="font-size: 0.9rem;">Per Transaction: SAR 2,000 | Daily: SAR 1,500</p>
+                        <p style="font-size: 0.9rem;">Per Transaction: {{ currency }} 2,000 | Daily: {{ currency }} 1,500</p>
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -756,7 +756,7 @@
                 <i class="fas fa-robot"></i>
             </div>
         <div class="chat-header-text">
-            <h3>Good Bank Assistant</h3>
+            <h3>{{ app_name }} Assistant</h3>
             <p>Online • Always here to help</p>
         </div>
         </div>
@@ -767,9 +767,9 @@
 
     <div class="chat-window" id="chat-window">
         <div class="message bot-message">
-            <div class="agent-label">Good Bank Support</div>
+            <div class="agent-label">{{ app_name }} Support</div>
             <div class="message-content">
-                Welcome to Good Bank! How can I assist you today?
+                Welcome to {{ app_name }}! How can I assist you today?
             </div>
         </div>
     </div>
@@ -789,6 +789,13 @@
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 
+<script>
+    // Global Configuration
+    window.APP_CONFIG = {
+        appName: "{{ app_name }}",
+        currency: "{{ currency }}"
+    };
+</script>
 <script src="{{ url_for('static', path='js/script.js') }}"></script>
 
 </body>

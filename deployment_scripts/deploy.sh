@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Good Bank FastAPI Application - Deploy & Run Script
+# Banking Web Application with FastAPI - Deploy & Run Script
 # ============================================================================
 # Usage:
 #   Local:      bash deployment_scripts/deploy.sh local

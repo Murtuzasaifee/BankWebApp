@@ -1,6 +1,11 @@
 """
-Demo user data for Good Bank Chat Application.
+Demo user data for Bank Web Application.
 """
+
+from app.core.config import get_settings
+
+settings = get_settings()
+APP_NAME = settings.APP_NAME
 
 DISPLAY_NAME = 'User'
 
@@ -9,10 +14,10 @@ USERS = {
         'password': 'password',
         'display_name': 'Mohammed Faisal',
         'user_id': 'usr001',
-        'customer_id': 'Good Bank-CUST-459812',
-        'account_number': 'Good Bank-SAV-77889900',
+        'customer_id': f'{APP_NAME}-CUST-459812',
+        'account_number': f'{APP_NAME}-SAV-77889900',
         'accounts': [
-            {'type': 'Savings Account', 'balance': 8450.00, 'number': 'Good Bank-SAV-••••9900'},
+            {'type': 'Savings Account', 'balance': 8450.00, 'number': f'{APP_NAME}-SAV-••••9900'},
             {'type': 'Debit Card', 'balance': 2340.50, 'number': 'DC-334455'},
             {'type': 'Credit Card', 'balance': 600.00, 'number': 'CC-667788'}
         ],
@@ -28,12 +33,12 @@ USERS = {
         'password': 'password',
         'display_name': 'Ahmed Al Mansouri',
         'user_id': 'usr002',
-        'customer_id': 'Good Bank-CUST-289034',
-        'account_number': 'Good Bank-SAL-123456789012',
+        'customer_id': f'{APP_NAME}-CUST-289034',
+        'account_number': f'{APP_NAME}-SAL-123456789012',
         'accounts': [
-            {'type': 'Salary Account', 'balance': 81749.00, 'number': 'Good Bank-SAL-••••9012'},
+            {'type': 'Salary Account', 'balance': 81749.00, 'number': f'{APP_NAME}-SAL-••••9012'},
             {'type': 'Debit Card', 'balance': 15200.00, 'number': 'DC-746406'},
-            {'type': 'Savings Account', 'balance': 45000.00, 'number': 'Good Bank-SAV-••••4567'}
+            {'type': 'Savings Account', 'balance': 45000.00, 'number': f'{APP_NAME}-SAV-••••4567'}
         ],
         'transactions': [
             {'merchant': 'ATM Cash Withdrawal', 'date': 'Dec 30, 2025', 'time': '16:45', 'type': 'Debit Card', 'amount': -1000.00, 'status': 'Completed', 'icon': 'money-bill-wave', 'id': 'TXN-8001'},

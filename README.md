@@ -1,6 +1,6 @@
-# Good Bank - FastAPI Chat Application
+# Banking Web Application with FastAPI
 
-A modern banking chat application built with FastAPI, integrating with AI Agent Platform (IntellectSee) for intelligent customer support. Features session-based authentication, loan applications, and real-time chat with AI agents.
+A modern banking web application built with FastAPI, integrating with AI Agent Platform (IntellectSee) for intelligent customer support. Features session-based authentication, loan applications, and real-time chat with AI agents.
 
 ## 🚀 Features
 
@@ -182,7 +182,7 @@ bash deployment_scripts/manage.sh logs -f
 2. **Add the following content** (adjust paths as needed):
    ```ini
    [Unit]
-   Description=Good Bank FastAPI Application
+   Description=Banking Web Application with FastAPI
    After=network.target
 
    [Service]
@@ -232,8 +232,8 @@ PLATFORM_PASSWORD=your_password
 ASSET_VERSION_ID=guest_agent_asset_version_id
 ASSET_VERSION_ID_LOGGED_IN=logged_in_agent_asset_version_id
 LOAN_AGENT_ASSET_ID=loan_processing_agent_asset_id
-AGENT_NAME=Good Bank Support Agent
-CONVERSATION_NAME=Good Bank Customer Support Chat
+AGENT_NAME=Bank Support Agent
+CONVERSATION_NAME=Bank Customer Support Chat
 QUERY_TIMEOUT=60
 
 # Application Configuration

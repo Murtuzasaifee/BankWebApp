@@ -1,5 +1,5 @@
 [Unit]
-Description=Good Bank Chat Application (FastAPI)
+Description=Banking Web Application with FastAPI
 After=network.target
 
 [Service]

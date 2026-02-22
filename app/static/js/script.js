@@ -41,15 +41,15 @@ function updateWelcomeMessage() {
         if (isLoggedIn) {
             // Personalized greeting for logged-in users
             // Try to get username from nav display or current user data
-            let username = document.getElementById('user-name-nav')?.textContent || 
-                            document.getElementById('username-display')?.textContent || 
-                            (currentUserData && currentUserData.display_name) || 
-                            'Guest';
+            let username = document.getElementById('user-name-nav')?.textContent ||
+                document.getElementById('username-display')?.textContent ||
+                (currentUserData && currentUserData.display_name) ||
+                'Guest';
             const firstName = username.split(' ')[0]; // Get first name
             firstMessage.innerHTML = `Hi ${firstName}! 👋<br>How may I assist you today?`;
         } else {
             // Default greeting for guests
-            firstMessage.innerHTML = 'Welcome to Good Bank! How can I assist you today?';
+            firstMessage.innerHTML = `Welcome to ${window.APP_CONFIG.appName}! How can I assist you today?`;
         }
     }
 }
@@ -96,14 +96,14 @@ async function sendMessage() {
         }
 
         const data = await response.json();
-        
+
         if (data.response) {
-            appendMessage(data.response, 'bot-message', 'Good Bank Support');
+            appendMessage(data.response, 'bot-message', `${window.APP_CONFIG.appName} Support`);
             conversationHistory.push({
                 role: 'assistant',
-                agent: 'Good Bank Support', 
+                agent: `${window.APP_CONFIG.appName} Support`,
                 content: data.response,
-                timestamp: new Date().toISOString() 
+                timestamp: new Date().toISOString()
             });
         } else {
             throw new Error('No response from agent');
@@ -128,20 +128,20 @@ async function sendMessage() {
 // Markdown to HTML converter with table support
 function markdownToHtml(text) {
     if (!text) return '';
-    
+
     var lines = text.split('\n');
     var processedLines = [];
     var inList = false;
     var listType = null;
     var inTable = false;
     var tableRows = [];
-    
+
     // Check if line is a table separator (|---|---|)
     function isTableSeparator(line) {
         var trimmed = line.trim();
         return /^\|?[\s\-:]+\|[\s\-:|]*\|?$/.test(trimmed) && trimmed.indexOf('-') !== -1;
     }
-    
+
     // Check if line looks like a table row
     function isTableRow(line) {
         var trimmed = line.trim();
@@ -150,26 +150,26 @@ function markdownToHtml(text) {
         var pipeCount = (trimmed.match(/\|/g) || []).length;
         return pipeCount >= 2;
     }
-    
+
     // Parse table row into cells
     function parseTableCells(line) {
         var trimmed = line.trim();
         if (trimmed.charAt(0) === '|') trimmed = trimmed.substring(1);
         if (trimmed.charAt(trimmed.length - 1) === '|') trimmed = trimmed.substring(0, trimmed.length - 1);
-        return trimmed.split('|').map(function(cell) { return cell.trim(); });
+        return trimmed.split('|').map(function (cell) { return cell.trim(); });
     }
-    
+
     // Render collected table rows as HTML
     function renderTable() {
         if (tableRows.length === 0) return '';
-        
+
         var html = '<div class="table-wrapper"><table>';
         var headerDone = false;
         var bodyStarted = false;
-        
+
         for (var i = 0; i < tableRows.length; i++) {
             var row = tableRows[i];
-            
+
             if (isTableSeparator(row)) {
                 if (!headerDone && i > 0) {
                     html += '</thead>';
@@ -177,10 +177,10 @@ function markdownToHtml(text) {
                 }
                 continue;
             }
-            
+
             var cells = parseTableCells(row);
             var isHeader = (i === 0 && tableRows.length > 1 && isTableSeparator(tableRows[1]));
-            
+
             if (isHeader && !headerDone) {
                 html += '<thead><tr>';
                 for (var j = 0; j < cells.length; j++) {
@@ -199,15 +199,15 @@ function markdownToHtml(text) {
                 html += '</tr>';
             }
         }
-        
+
         if (bodyStarted) html += '</tbody>';
         html += '</table></div>';
         return html;
     }
-    
+
     for (var i = 0; i < lines.length; i++) {
         var trimmedLine = lines[i].trim();
-        
+
         // Handle table rows
         if (isTableRow(trimmedLine) || (inTable && isTableSeparator(trimmedLine))) {
             if (inList) {
@@ -219,14 +219,14 @@ function markdownToHtml(text) {
             tableRows.push(trimmedLine);
             continue;
         }
-        
+
         // End of table - render it
         if (inTable) {
             processedLines.push(renderTable());
             inTable = false;
             tableRows = [];
         }
-        
+
         // Empty line
         if (!trimmedLine) {
             if (inList) {
@@ -237,7 +237,7 @@ function markdownToHtml(text) {
             processedLines.push('<br>');
             continue;
         }
-        
+
         // Headers
         var headerMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
         if (headerMatch) {
@@ -250,7 +250,7 @@ function markdownToHtml(text) {
             processedLines.push('<h' + level + '>' + processInlineMarkdown(headerMatch[2]) + '</h' + level + '>');
             continue;
         }
-        
+
         // Unordered list
         var ulMatch = trimmedLine.match(/^[\-\*]\s+(.+)$/);
         if (ulMatch) {
@@ -263,7 +263,7 @@ function markdownToHtml(text) {
             processedLines.push('<li>' + processInlineMarkdown(ulMatch[1]) + '</li>');
             continue;
         }
-        
+
         // Ordered list
         var olMatch = trimmedLine.match(/^\d+\.\s+(.+)$/);
         if (olMatch) {
@@ -276,18 +276,18 @@ function markdownToHtml(text) {
             processedLines.push('<li>' + processInlineMarkdown(olMatch[1]) + '</li>');
             continue;
         }
-        
+
         // Close list if needed
         if (inList) {
             processedLines.push('</' + listType + '>');
             inList = false;
             listType = null;
         }
-        
+
         // Regular paragraph
         processedLines.push('<p>' + processInlineMarkdown(trimmedLine) + '</p>');
     }
-    
+
     // Close any open elements
     if (inTable) {
         processedLines.push(renderTable());
@@ -295,44 +295,44 @@ function markdownToHtml(text) {
     if (inList) {
         processedLines.push('</' + listType + '>');
     }
-    
+
     var html = processedLines.join('');
     html = html.replace(/<p><\/p>/g, '');
     html = html.replace(/(<br>){3,}/g, '<br><br>');
-    
+
     return html;
 }
 
 function processInlineMarkdown(text) {
     if (!text) return '';
-    
+
     let html = text;
-    
+
     const inlineCodes = [];
     html = html.replace(/`[^`]+`/g, (match) => {
         const id = `__CODE_${inlineCodes.length}__`;
         inlineCodes.push(match);
         return id;
     });
-    
+
     html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    
+
     inlineCodes.forEach((code, index) => {
         const codeContent = code.replace(/`/g, '');
         html = html.replace(`__CODE_${index}__`, '<code>' + codeContent + '</code>');
     });
-    
+
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    
+
     return html;
 }
 
 function appendMessage(text, className, agentName = null) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${className}`;
-    
+
     if (agentName) {
         const label = document.createElement('div');
         label.className = 'agent-label';
@@ -342,13 +342,13 @@ function appendMessage(text, className, agentName = null) {
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
-    
+
     if (className === 'bot-message') {
         contentDiv.innerHTML = markdownToHtml(text);
     } else {
         contentDiv.textContent = text;
     }
-    
+
     msgDiv.appendChild(contentDiv);
     chatWindow.appendChild(msgDiv);
     chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -369,7 +369,7 @@ chatInput.addEventListener('keypress', function (e) {
     }
 });
 
-chatInput.addEventListener('input', function() {
+chatInput.addEventListener('input', function () {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 150) + 'px';
 });
@@ -401,7 +401,7 @@ function closeModal(modalId) {
 
 // Close modals when clicking outside
 document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', function(e) {
+    modal.addEventListener('click', function (e) {
         if (e.target === this) {
             this.classList.remove('active');
         }
@@ -409,7 +409,7 @@ document.querySelectorAll('.modal').forEach(modal => {
 });
 
 // Form submissions
-document.getElementById('transfer-form')?.addEventListener('submit', function(e) {
+document.getElementById('transfer-form')?.addEventListener('submit', function (e) {
     e.preventDefault();
     alert('Transfer submitted successfully! You will receive a confirmation shortly.');
     closeModal('transfer-modal');
@@ -423,10 +423,10 @@ function updateLoanInfo() {
     const loanType = document.getElementById('loan-type').value;
     const loanInfo = document.getElementById('loan-info');
     const requiredDocs = document.getElementById('required-docs');
-    
+
     if (loanType) {
         loanInfo.style.display = 'block';
-        
+
         // Update required documents based on loan type
         const docRequirements = {
             'Personal Loan': 'Emirates ID, Filled <a href="#" onclick="event.preventDefault(); alert(\'Download loan application form from your branch or contact support.\');" style="color: var(--primary); text-decoration: underline; font-weight: 600;">Loan Application Form</a>, Utility Bill, Bank Statement (last 6 months)',
@@ -435,7 +435,7 @@ function updateLoanInfo() {
             'Business Loan': 'Emirates ID, Trade License, Filled <a href="#" onclick="event.preventDefault(); alert(\'Download loan application form from your branch or contact support.\');" style="color: var(--primary); text-decoration: underline; font-weight: 600;">Loan Application Form</a>, Utility Bill, Business Bank Statement (last 12 months)',
             'Education Loan': 'Emirates ID, Admission Letter, Fee Structure, Filled <a href="#" onclick="event.preventDefault(); alert(\'Download loan application form from your branch or contact support.\');" style="color: var(--primary); text-decoration: underline; font-weight: 600;">Loan Application Form</a>, Utility Bill'
         };
-        
+
         requiredDocs.innerHTML = docRequirements[loanType] || 'Emirates ID, Filled Loan Application Form, Utility Bill, Bank Statement';
     } else {
         loanInfo.style.display = 'none';
@@ -445,20 +445,20 @@ function updateLoanInfo() {
 function handleFileUpload(event) {
     const files = event.target.files;
     const maxSize = 5 * 1024 * 1024; // 5MB
-    
+
     for (let file of files) {
         // Check file size
         if (file.size > maxSize) {
             alert(`File "${file.name}" is too large. Maximum size is 5MB.`);
             continue;
         }
-        
+
         // Check if file already uploaded
         if (uploadedFiles.find(f => f.name === file.name && f.size === file.size)) {
             alert(`File "${file.name}" is already uploaded.`);
             continue;
         }
-        
+
         // Add file to uploaded list
         uploadedFiles.push({
             name: file.name,
@@ -467,10 +467,10 @@ function handleFileUpload(event) {
             uploadedAt: new Date()
         });
     }
-    
+
     // Clear the input to allow re-uploading same file if removed
     event.target.value = '';
-    
+
     displayUploadedFiles();
     updateSubmitButton();
 }
@@ -479,19 +479,19 @@ function displayUploadedFiles() {
     const container = document.getElementById('uploaded-files-container');
     const filesList = document.getElementById('uploaded-files-list');
     const fileCount = document.getElementById('file-count');
-    
+
     if (uploadedFiles.length === 0) {
         container.style.display = 'none';
         return;
     }
-    
+
     container.style.display = 'block';
     fileCount.textContent = uploadedFiles.length;
-    
+
     filesList.innerHTML = uploadedFiles.map((file, index) => {
         const fileSize = (file.size / 1024).toFixed(2) + ' KB';
         const fileIcon = getFileIcon(file.name);
-        
+
         return `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem; background: #F8F9FA; border-radius: 8px; margin-bottom: 0.5rem; transition: all 0.2s;">
                 <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
@@ -532,7 +532,7 @@ function removeFile(index) {
 function updateSubmitButton() {
     const submitBtn = document.getElementById('loan-submit-btn');
     const requirements = document.getElementById('loan-requirements');
-    
+
     if (uploadedFiles.length > 0) {
         submitBtn.style.display = 'block';
         requirements.style.display = 'none';
@@ -544,24 +544,24 @@ function updateSubmitButton() {
 
 function submitLoanApplication(event) {
     event.preventDefault();
-    
+
     const loanType = document.getElementById('loan-type').value;
     const comments = document.getElementById('loan-comments').value;
-    
+
     if (uploadedFiles.length === 0) {
         alert('Please upload at least one document to proceed.');
         return;
     }
-    
+
     // Disable submit button during processing
     const submitBtn = document.getElementById('loan-submit-btn');
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    
+
     // Generate reference number
     const refNumber = 'LN-' + Date.now().toString().slice(-8);
-    
+
     // Call backend API to submit loan and trigger agent
     fetch('/submit-loan', {
         method: 'POST',
@@ -572,50 +572,50 @@ function submitLoanApplication(event) {
             comments: comments
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update success modal content with actual reference number from backend
-            document.getElementById('loan-ref-number').textContent = data.reference_number;
-            document.getElementById('loan-type-display').textContent = loanType;
-            document.getElementById('loan-docs-count').textContent = uploadedFiles.length + ' file' + (uploadedFiles.length > 1 ? 's' : '');
-            
-            // Close loan modal and show success modal
-            closeModal('loan-modal');
-            
-            // Small delay for smooth transition
-            setTimeout(() => {
-                document.getElementById('loan-success-modal').classList.add('active');
-            }, 300);
-            
-            // Log agent response if available
-            if (data.agent_triggered && data.agent_response) {
-                console.log('[Loan Agent] Agent successfully triggered:', data.agent_response);
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update success modal content with actual reference number from backend
+                document.getElementById('loan-ref-number').textContent = data.reference_number;
+                document.getElementById('loan-type-display').textContent = loanType;
+                document.getElementById('loan-docs-count').textContent = uploadedFiles.length + ' file' + (uploadedFiles.length > 1 ? 's' : '');
+
+                // Close loan modal and show success modal
+                closeModal('loan-modal');
+
+                // Small delay for smooth transition
+                setTimeout(() => {
+                    document.getElementById('loan-success-modal').classList.add('active');
+                }, 300);
+
+                // Log agent response if available
+                if (data.agent_triggered && data.agent_response) {
+                    console.log('[Loan Agent] Agent successfully triggered:', data.agent_response);
+                } else {
+                    console.log('[Loan Agent] Loan submitted but agent not triggered');
+                }
+
+                // Reset form for next use
+                setTimeout(() => {
+                    document.getElementById('loan-form').reset();
+                    uploadedFiles = [];
+                    displayUploadedFiles();
+                    updateSubmitButton();
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 500);
             } else {
-                console.log('[Loan Agent] Loan submitted but agent not triggered');
-            }
-            
-            // Reset form for next use
-            setTimeout(() => {
-                document.getElementById('loan-form').reset();
-                uploadedFiles = [];
-                displayUploadedFiles();
-                updateSubmitButton();
+                alert('Error: ' + (data.message || 'Failed to submit loan application'));
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
-            }, 500);
-        } else {
-            alert('Error: ' + (data.message || 'Failed to submit loan application'));
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting loan:', error);
+            alert('An error occurred while submitting your loan application. Please try again.');
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
-        }
-    })
-    .catch(error => {
-        console.error('Error submitting loan:', error);
-        alert('An error occurred while submitting your loan application. Please try again.');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-    });
+        });
 }
 
 function closeLoanSuccessModal() {
@@ -632,7 +632,7 @@ function openLoanModal() {
     document.getElementById('loan-modal').classList.add('active');
 }
 
-document.getElementById('paybill-form')?.addEventListener('submit', function(e) {
+document.getElementById('paybill-form')?.addEventListener('submit', function (e) {
     e.preventDefault();
     alert('Bill payment processed successfully!');
     closeModal('paybill-modal');
@@ -649,7 +649,7 @@ async function checkAuthStatus() {
         isLoggedIn = data.logged_in;
         currentUserData = data.user_data;
         updateUIForAuthStatus(data.logged_in, data.username, data.user_data);
-        
+
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('logout') === 'success') {
             window.history.replaceState({}, document.title, window.location.pathname);
@@ -660,7 +660,7 @@ async function checkAuthStatus() {
             window.history.replaceState({}, document.title, window.location.pathname);
             if (isChatOpen && data.username) {
                 const firstName = data.username.split(' ')[0];
-                appendMessage(`Welcome, ${firstName}! 👋 How can I assist you today?`, 'bot-message', 'Good Bank Support');
+                appendMessage(`Welcome, ${firstName}! 👋 How can I assist you today?`, 'bot-message', `${window.APP_CONFIG.appName} Support`);
             }
         }
     } catch (error) {
@@ -674,31 +674,31 @@ function updateUIForAuthStatus(loggedIn, username, userData) {
         document.getElementById('login-btn').style.display = 'none';
         document.getElementById('user-nav-info').style.display = 'flex';
         document.getElementById('user-name-nav').textContent = username || 'User';
-        
+
         // Update user avatar initials
         if (username) {
             const initials = username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
             document.getElementById('user-avatar').textContent = initials;
         }
-        
+
         // Hide pre-login nav, show post-login nav
         document.querySelectorAll('.pre-login-nav').forEach(el => el.style.display = 'none');
         document.querySelectorAll('.post-login-nav').forEach(el => el.style.display = 'inline-block');
-        
+
         // Update dashboard with user data
         if (userData) {
             updateDashboardData(username, userData);
         }
-        
+
         // Update chat welcome message for logged-in user
         updateWelcomeMessage();
-        
+
         updateDate();
     } else {
         document.body.classList.remove('logged-in');
         document.getElementById('login-btn').style.display = 'inline-block';
         document.getElementById('user-nav-info').style.display = 'none';
-        
+
         // Show pre-login nav, hide post-login nav
         document.querySelectorAll('.pre-login-nav').forEach(el => el.style.display = 'inline-block');
         document.querySelectorAll('.post-login-nav').forEach(el => el.style.display = 'none');
@@ -711,27 +711,27 @@ function updateDashboardData(username, userData) {
     if (welcomeTitle) {
         welcomeTitle.textContent = `Welcome back, ${username}!`;
     }
-    
+
     // Update account cards
     if (userData.accounts && userData.accounts.length > 0) {
         const accountsGrid = document.querySelector('.accounts-grid');
         if (accountsGrid) {
             accountsGrid.innerHTML = '';
-            
+
             const gradients = [
                 'linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)',
                 'linear-gradient(135deg, #4C1D95 0%, #7C3AED 100%)',
                 'linear-gradient(135deg, #6D28D9 0%, #A78BFA 100%)'
             ];
-            
+
             const icons = ['fa-wallet', 'fa-credit-card', 'fa-gem'];
-            
+
             userData.accounts.forEach((account, index) => {
                 const accountCard = `
                     <div class="account-card" style="background: ${gradients[index % 3]};">
                         <i class="fas ${icons[index % 3]} account-card-icon"></i>
                         <div class="account-type">${account.type}</div>
-                        <div class="account-balance">SAR ${account.balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                        <div class="account-balance">${window.APP_CONFIG.currency} ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                         <div class="account-number">${account.number.includes('Credit') ? 'Available Credit | ' : 'Account: '}${account.number}</div>
                     </div>
                 `;
@@ -739,13 +739,13 @@ function updateDashboardData(username, userData) {
             });
         }
     }
-    
+
     // Update transactions
     if (userData.transactions && userData.transactions.length > 0) {
         const transactionsTable = document.querySelector('.transactions-table tbody');
         if (transactionsTable) {
             transactionsTable.innerHTML = '';
-            
+
             userData.transactions.forEach(txn => {
                 const isCredit = txn.amount > 0;
                 const iconClass = isCredit ? 'credit' : 'debit';
@@ -753,7 +753,7 @@ function updateDashboardData(username, userData) {
                 const amountPrefix = isCredit ? '+ ' : '- ';
                 const statusClass = txn.status === 'Completed' ? 'completed' : '';
                 const statusStyle = txn.status !== 'Completed' ? 'background: #FFEBEE; color: #C62828;' : '';
-                
+
                 const row = `
                     <tr>
                         <td>
@@ -768,7 +768,7 @@ function updateDashboardData(username, userData) {
                             </div>
                         </td>
                         <td>${txn.date}<br><small style="color: #6C757D;">${txn.time}</small></td>
-                        <td class="${amountClass}">${amountPrefix}SAR ${Math.abs(txn.amount).toFixed(2)}</td>
+                        <td class="${amountClass}">${amountPrefix}${window.APP_CONFIG.currency} ${Math.abs(txn.amount).toFixed(2)}</td>
                         <td><span class="status-badge ${statusClass}" style="${statusStyle}">${txn.status}</span></td>
                     </tr>
                 `;
@@ -844,7 +844,7 @@ async function handleLogout() {
     }
 }
 
-document.getElementById('login-modal').addEventListener('click', function(e) {
+document.getElementById('login-modal').addEventListener('click', function (e) {
     if (e.target === this) {
         hideLoginModal();
     }
@@ -852,7 +852,7 @@ document.getElementById('login-modal').addEventListener('click', function(e) {
 
 // Smooth scroll for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
+    anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
