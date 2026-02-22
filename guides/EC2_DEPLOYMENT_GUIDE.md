@@ -51,32 +51,23 @@ chmod 400 your-key.pem
 ssh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP
 ```
 
----
 
-## 3. Install Python 3 on EC2
 
-> **Note**: If you included the User Data script in Step 1, these packages will install automatically on first boot. You can skip the `yum` commands and directly verify the installation.
+## 3. Upload Project Files
 
+From your **local machine**, you can upload the project using either of these two methods:
+
+### Option A: Using the Synchronization Script (Recommended)
+This method is faster and automatically ignores unnecessary files (like `.env`, `venv/`, `__pycache__`):
 ```bash
-# Update system packages
-sudo yum update -y
-
-# Install Python 3 and pip
-sudo yum install python3 python3-pip -y
-
-# Verify installation
-python3 --version
-pip3 --version
+# Upload using rsync
+bash deployment_scripts/sync_to_ec2.sh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP /home/ec2-user/bankapp
 ```
 
----
-
-## 4. Upload Project Files
-
-From your **local machine**, upload the project:
-
+### Option B: Manual Upload via SCP
+If you don't have rsync or prefer a direct secure copy:
 ```bash
-# Upload entire project folder
+# Upload entire project folder manually
 scp -i your-key.pem -r /path/to/BankApp ec2-user@YOUR_EC2_PUBLIC_IP:/home/ec2-user/bankapp
 ```
 
@@ -116,7 +107,7 @@ bankapp/
 
 ---
 
-## 5. Configure Environment
+## 4. Configure Environment
 
 On the EC2 instance:
 
@@ -153,33 +144,11 @@ LOAN_AGENT_ASSET_ID=your_loan_agent_asset_id
 
 ---
 
-## 6. Deploy Application
-
-### Option A: Quick Deploy Script
+## 5. Deploy Application
 
 ```bash
 cd /home/ec2-user/bankapp
 bash deployment_scripts/deploy.sh
-```
-
-### Option B: Manual Setup
-
-```bash
-cd /home/ec2-user/bankapp
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Update SERVER_HOST in .env
-sed -i 's/SERVER_HOST=127.0.0.1/SERVER_HOST=0.0.0.0/' .env
-
-# Start the application
-uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
 ---
