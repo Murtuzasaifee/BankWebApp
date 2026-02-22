@@ -1,36 +1,49 @@
 :root {
-    /* Primary Colors */
-    --primary: #7C3AED;           /* Primary Purple */
-    --primary-dark: #5B21B6;      /* Deep Purple (hover states) */
-    --primary-light: #A78BFA;     /* Light Purple */
+    /* Primary Colors — ANB Brand */
+    --primary: #0072DA;
+    /* ANB Primary Blue */
+    --primary-dark: #0058B8;
+    /* ANB Hover Blue — brighter than navy */
+    --primary-light: #5AACFF;
+    /* ANB Light Blue */
 
     /* Background Colors */
     --white: #FFFFFF;
-    --light-bg: #F5F3FF;          /* Soft Purple-tinted background */
-    --surface-light: #EDE9FE;     /* Light purple surface */
+    --light-bg: #F7F8F9;
+    /* ANB Light Gray background */
+    --surface-light: #F1F2F5;
+    /* ANB Divider/Surface gray */
 
     /* Text Colors */
-    --text-dark: #5B21B6;
-    --text-muted: #545E66;
+    --text-dark: #272833;
+    /* ANB Charcoal — primary text */
+    --text-muted: #6B6C7E;
+    /* ANB Secondary/muted text */
 
     /* Gradients (Centralized) */
-    --gradient-start: #4C1D95;    /* Dark Purple */
-    --gradient-end: #6D28D9;      /* Medium Purple */
+    --gradient-start: #005FC3;
+    /* Slightly darker ANB Blue */
+    --gradient-end: #0090FF;
+    /* Slightly lighter ANB Blue */
     --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    --gradient-dark: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    --gradient-dark: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
     --gradient-hero: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-    --gradient-card-alt: linear-gradient(135deg, #3B1B6D 0%, #1E0A3C 100%);
-    --gradient-card-accent: linear-gradient(135deg, #17A2B8 0%, #117A8B 100%);
+    --gradient-card-alt: linear-gradient(135deg, #004EA8 0%, #003380 100%);
+    --gradient-card-accent: linear-gradient(135deg, #0072DA 0%, #005FC3 100%);
 
     /* Hover/Shadow Colors */
-    --shadow-primary: rgba(124, 58, 237, 0.4);
-    --shadow-dark: rgba(91, 33, 182, 0.4);
+    --shadow-primary: rgba(0, 114, 218, 0.35);
+    --shadow-dark: rgba(0, 88, 184, 0.35);
 
-    /* Status Colors (unchanged) */
-    --success: #28A745;
-    --warning: #FFC107;
-    --danger: #D22D2D;
-    --info: #4C1D95;
+    /* Status Colors — ANB Brand */
+    --success: #287D3C;
+    /* ANB Forest Green */
+    --warning: #B95000;
+    /* ANB Amber/Orange */
+    --danger: #DA1414;
+    /* ANB Bright Red */
+    --info: #2E5AAC;
+    /* ANB Deep Royal Blue */
 }
 
 * {
@@ -76,7 +89,7 @@ body.logged-in .post-login-content {
     justify-content: space-between;
     align-items: center;
     z-index: 1000;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -186,7 +199,7 @@ body.logged-in .post-login-content {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
+    background-image:
         repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(212, 175, 55, 0.03) 35px, rgba(212, 175, 55, 0.03) 70px);
     opacity: 0.5;
 }
@@ -221,7 +234,8 @@ body.logged-in .post-login-content {
     flex-wrap: wrap;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
     padding: 1rem 2.5rem;
     font-size: 1.1rem;
     border-radius: 50px;
@@ -289,7 +303,7 @@ body.logged-in .post-login-content {
     background: var(--white);
     padding: 2.5rem;
     border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     transition: all 0.3s;
     border: 1px solid #E8ECF0;
     position: relative;
@@ -314,7 +328,7 @@ body.logged-in .post-login-content {
 
 .service-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
 }
 
 .service-icon {
@@ -439,7 +453,7 @@ body.logged-in .post-login-content {
 .footer-bottom {
     text-align: center;
     padding-top: 2rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     opacity: 0.7;
 }
 
@@ -520,7 +534,7 @@ body.logged-in .post-login-content {
 
 .account-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .account-card::before {
@@ -530,7 +544,7 @@ body.logged-in .post-login-content {
     right: -50%;
     width: 200px;
     height: 200px;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
 }
 
 .account-type {
@@ -585,7 +599,7 @@ body.logged-in .post-login-content {
 .action-card:hover {
     transform: translateY(-5px);
     border-color: var(--primary);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .action-icon {
@@ -613,7 +627,7 @@ body.logged-in .post-login-content {
     border-radius: 20px;
     padding: 2rem;
     margin-bottom: 2.5rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
 }
 
 .section-header {
@@ -755,8 +769,13 @@ body.logged-in .post-login-content {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .modal.active {
@@ -779,6 +798,7 @@ body.logged-in .post-login-content {
         transform: translateY(30px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -816,7 +836,7 @@ body.logged-in .post-login-content {
 }
 
 .modal-close:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     transform: rotate(90deg);
 }
 
@@ -854,7 +874,7 @@ body.logged-in .post-login-content {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+    box-shadow: 0 0 0 4px rgba(0, 114, 218, 0.12);
 }
 
 .upload-area {
@@ -872,7 +892,7 @@ body.logged-in .post-login-content {
 
 .upload-area:hover {
     border-color: var(--primary);
-    background: #FFF9E6;
+    background: #F0F5FF;
 }
 
 .form-row {
@@ -928,7 +948,7 @@ body.logged-in .post-login-content {
     max-width: 450px;
     position: relative;
     animation: slideUp 0.3s ease;
-    box-shadow: 0 30px 100px rgba(0,0,0,0.3);
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.3);
 }
 
 .login-form::before {
@@ -975,9 +995,19 @@ body.logged-in .post-login-content {
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10px); }
-    75% { transform: translateX(10px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-10px);
+    }
+
+    75% {
+        transform: translateX(10px);
+    }
 }
 
 .button-group {
@@ -1061,7 +1091,7 @@ body.logged-in .post-login-content {
     max-height: 750px;
     background: var(--white);
     border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     display: none;
     flex-direction: column;
     z-index: 998;
@@ -1144,7 +1174,7 @@ body.logged-in .post-login-content {
 
 .chat-close:hover {
     transform: rotate(90deg);
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .chat-window {
@@ -1184,6 +1214,7 @@ body.logged-in .post-login-content {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1204,7 +1235,7 @@ body.logged-in .post-login-content {
     color: var(--text-dark);
     align-self: flex-start;
     border-bottom-left-radius: 5px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
 }
 
 .user-message .message-content {
@@ -1314,32 +1345,59 @@ body.logged-in .post-login-content {
 }
 
 /* Markdown Styling */
-.bot-message h1, .bot-message h2, .bot-message h3 {
+.bot-message h1,
+.bot-message h2,
+.bot-message h3 {
     margin: 1.2rem 0 0.7rem 0;
     font-weight: 600;
     line-height: 1.4;
 }
 
-.bot-message h1 { font-size: 1.5em; }
-.bot-message h2 { font-size: 1.35em; }
-.bot-message h3 { font-size: 1.2em; }
+.bot-message h1 {
+    font-size: 1.5em;
+}
 
-.bot-message p { margin: 0.7rem 0; }
-.bot-message ul, .bot-message ol { margin: 0.8rem 0; padding-left: 2rem; }
-.bot-message li { margin: 0.5rem 0; line-height: 1.6; }
-.bot-message strong { font-weight: 600; }
-.bot-message code { 
-    background-color: rgba(0,0,0,0.08); 
-    padding: 3px 6px; 
-    border-radius: 5px; 
-    font-family: 'Courier New', monospace; 
+.bot-message h2 {
+    font-size: 1.35em;
+}
+
+.bot-message h3 {
+    font-size: 1.2em;
+}
+
+.bot-message p {
+    margin: 0.7rem 0;
+}
+
+.bot-message ul,
+.bot-message ol {
+    margin: 0.8rem 0;
+    padding-left: 2rem;
+}
+
+.bot-message li {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
+
+.bot-message strong {
+    font-weight: 600;
+}
+
+.bot-message code {
+    background-color: rgba(0, 0, 0, 0.08);
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
     font-size: 0.95em;
 }
+
 .bot-message a {
     color: var(--primary);
     text-decoration: underline;
     font-weight: 500;
 }
+
 .bot-message a:hover {
     color: var(--primary);
 }
@@ -1355,30 +1413,37 @@ body.logged-in .post-login-content {
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
 .bot-message thead {
     background: var(--gradient-dark);
     color: var(--white);
 }
+
 .bot-message th {
     padding: 10px 12px;
     text-align: left;
     font-weight: 600;
     font-size: 0.85em;
 }
+
 .bot-message td {
     padding: 8px 12px;
     border-bottom: 1px solid #e9ecef;
     vertical-align: top;
 }
+
 .bot-message tbody tr:last-child td {
     border-bottom: none;
 }
+
 .bot-message tbody tr:hover {
     background-color: #f8f9fa;
 }
+
 .bot-message tbody tr:nth-child(even) {
     background-color: #fafbfc;
 }
+
 .table-wrapper {
     overflow-x: auto;
     margin: 0.8rem 0;
@@ -1390,6 +1455,7 @@ body.logged-in .post-login-content {
         transform: scale(0);
         opacity: 0;
     }
+
     to {
         transform: scale(1);
         opacity: 1;
@@ -1454,7 +1520,8 @@ body.logged-in .post-login-content {
         font-size: 1.1rem;
     }
 
-    .services-grid, .features-grid {
+    .services-grid,
+    .features-grid {
         grid-template-columns: 1fr;
     }
 
