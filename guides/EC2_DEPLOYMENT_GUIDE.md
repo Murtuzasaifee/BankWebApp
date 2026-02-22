@@ -13,7 +13,7 @@
 ### AWS Console Steps
 
 1. Go to **EC2 Dashboard** > **Launch Instance**
-2. **Name**: `GoodBank-Chat-Server`
+2. **Name**: `BankApp-Chat-Server`
 3. **AMI**: Amazon Linux 2023 (Free Tier eligible)
 4. **Instance Type**: `t2.micro` (Free Tier - 750 hrs/month for 12 months)
 5. **Key Pair**: Select or create a key pair (download the `.pem` file)
@@ -77,13 +77,13 @@ From your **local machine**, upload the project:
 
 ```bash
 # Upload entire project folder
-scp -i your-key.pem -r /path/to/GoodBank ec2-user@YOUR_EC2_PUBLIC_IP:/home/ec2-user/goodbank
+scp -i your-key.pem -r /path/to/BankApp ec2-user@YOUR_EC2_PUBLIC_IP:/home/ec2-user/bankapp
 ```
 
 ### Files to Upload
 
 ```
-goodbank/
+bankapp/
 ├── .env                  # Your configured environment file
 ├── .env.example
 ├── requirements.txt
@@ -111,7 +111,7 @@ goodbank/
 └── deployment_scripts/
     ├── deploy.sh
     ├── manage.sh
-    └── goodbank.service
+    └── bankapp.service
 ```
 
 ---
@@ -121,7 +121,7 @@ goodbank/
 On the EC2 instance:
 
 ```bash
-cd /home/ec2-user/goodbank
+cd /home/ec2-user/bankapp
 
 # If you haven't uploaded .env, create from template
 cp .env.example .env
@@ -158,14 +158,14 @@ LOAN_AGENT_ASSET_ID=your_loan_agent_asset_id
 ### Option A: Quick Deploy Script
 
 ```bash
-cd /home/ec2-user/goodbank
+cd /home/ec2-user/bankapp
 bash deployment_scripts/deploy.sh
 ```
 
 ### Option B: Manual Setup
 
 ```bash
-cd /home/ec2-user/goodbank
+cd /home/ec2-user/bankapp
 
 # Create virtual environment
 python3 -m venv venv
@@ -189,7 +189,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 ### Manual Start (foreground)
 
 ```bash
-cd /home/ec2-user/goodbank
+cd /home/ec2-user/bankapp
 source venv/bin/activate
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
@@ -208,18 +208,18 @@ bash deployment_scripts/manage.sh restart
 
 ```bash
 # Copy service file
-sudo cp deployment_scripts/goodbank.service /etc/systemd/system/
+sudo cp deployment_scripts/bankapp.service /etc/systemd/system/
 
 # Enable and start
 sudo systemctl daemon-reload
-sudo systemctl enable goodbank
-sudo systemctl start goodbank
+sudo systemctl enable bankapp
+sudo systemctl start bankapp
 
 # Check status
-sudo systemctl status goodbank
+sudo systemctl status bankapp
 
 # View logs
-sudo journalctl -u goodbank -f
+sudo journalctl -u bankapp -f
 ```
 
 ---
@@ -247,19 +247,19 @@ Open in browser: `http://YOUR_EC2_PUBLIC_IP:8000`
 
 ```bash
 # From local machine
-scp -i your-key.pem app/routers/chat.py ec2-user@YOUR_EC2_IP:/home/ec2-user/goodbank/app/routers/
+scp -i your-key.pem app/routers/chat.py ec2-user@YOUR_EC2_IP:/home/ec2-user/bankapp/app/routers/
 
 # On EC2, restart the app
 bash deployment_scripts/manage.sh restart
 # Or with systemd:
-sudo systemctl restart goodbank
+sudo systemctl restart bankapp
 ```
 
 ### Replace Entire App
 
 ```bash
 # From local machine
-scp -i your-key.pem -r app/ ec2-user@YOUR_EC2_IP:/home/ec2-user/goodbank/
+scp -i your-key.pem -r app/ ec2-user@YOUR_EC2_IP:/home/ec2-user/bankapp/
 
 # On EC2
 bash deployment_scripts/manage.sh restart
@@ -269,10 +269,10 @@ bash deployment_scripts/manage.sh restart
 
 ```bash
 # Upload new requirements.txt
-scp -i your-key.pem requirements.txt ec2-user@YOUR_EC2_IP:/home/ec2-user/goodbank/
+scp -i your-key.pem requirements.txt ec2-user@YOUR_EC2_IP:/home/ec2-user/bankapp/
 
 # On EC2
-cd /home/ec2-user/goodbank
+cd /home/ec2-user/bankapp
 source venv/bin/activate
 pip install -r requirements.txt
 bash deployment_scripts/manage.sh restart
@@ -286,14 +286,14 @@ bash deployment_scripts/manage.sh restart
 
 ```bash
 # Check logs
-tail -50 /home/ec2-user/goodbank/app.log
-tail -50 /home/ec2-user/goodbank/app-error.log
+tail -50 /home/ec2-user/bankapp/app.log
+tail -50 /home/ec2-user/bankapp/app-error.log
 
 # Check if port is in use
 sudo lsof -i :8000
 
 # Verify .env exists and is correct
-cat /home/ec2-user/goodbank/.env
+cat /home/ec2-user/bankapp/.env
 ```
 
 ### Can't Access from Browser
@@ -310,7 +310,7 @@ cat /home/ec2-user/goodbank/.env
 grep -E "API_KEY|PLATFORM_USERNAME|PLATFORM_PASSWORD" .env
 
 # Check app logs for token refresh errors
-grep -i "token\|auth\|401" /home/ec2-user/goodbank/app.log
+grep -i "token\|auth\|401" /home/ec2-user/bankapp/app.log
 ```
 
 ### Python/Package Issues
@@ -336,6 +336,6 @@ pip install --force-reinstall -r requirements.txt
 | View status | `bash deployment_scripts/manage.sh status` |
 | View logs | `bash deployment_scripts/manage.sh logs` |
 | Health check | `curl http://localhost:8000/health` |
-| Start with systemd | `sudo systemctl start goodbank` |
-| Stop with systemd | `sudo systemctl stop goodbank` |
-| Enable auto-start | `sudo systemctl enable goodbank` |
+| Start with systemd | `sudo systemctl start bankapp` |
+| Stop with systemd | `sudo systemctl stop bankapp` |
+| Enable auto-start | `sudo systemctl enable bankapp` |

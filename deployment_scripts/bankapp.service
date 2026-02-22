@@ -1,0 +1,18 @@
+[Unit]
+Description=Banking Web Application with FastAPI
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/bankapp
+Environment="PATH=/home/ec2-user/bankapp/venv/bin:/usr/local/bin:/usr/bin"
+EnvironmentFile=/home/ec2-user/bankapp/.env
+ExecStart=/home/ec2-user/bankapp/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+StandardOutput=append:/home/ec2-user/bankapp/app.log
+StandardError=append:/home/ec2-user/bankapp/app-error.log
+
+[Install]
+WantedBy=multi-user.target

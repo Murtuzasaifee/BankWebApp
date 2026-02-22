@@ -24,7 +24,7 @@ A modern banking web application built with FastAPI, integrating with AI Agent P
 
 1. **Clone the repository**
    ```bash
-   cd GoodBank
+   cd BankApp
    ```
 
 2. **Configure environment**
@@ -132,18 +132,18 @@ bash deployment_scripts/manage.sh logs -f
 
    **Option A: Using SCP (from local machine)**
    ```bash
-   scp -i your-key.pem -r GoodBank ec2-user@your-ec2-ip:~/
+   scp -i your-key.pem -r BankApp ec2-user@your-ec2-ip:~/
    ```
 
    **Option B: Using Git**
    ```bash
    git clone your-repository-url
-   cd GoodBank
+   cd BankApp
    ```
 
 4. **Configure environment**
    ```bash
-   cd GoodBank
+   cd BankApp
    cp .env.example .env
    nano .env  # Edit with your credentials
    ```
@@ -176,7 +176,7 @@ bash deployment_scripts/manage.sh logs -f
 
 1. **Create systemd service file**
    ```bash
-   sudo nano /etc/systemd/system/goodbank.service
+   sudo nano /etc/systemd/system/bankapp.service
    ```
 
 2. **Add the following content** (adjust paths as needed):
@@ -188,9 +188,9 @@ bash deployment_scripts/manage.sh logs -f
    [Service]
    Type=simple
    User=ec2-user
-   WorkingDirectory=/home/ec2-user/GoodBank
-   EnvironmentFile=/home/ec2-user/GoodBank/.env
-   ExecStart=/home/ec2-user/GoodBank/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+   WorkingDirectory=/home/ec2-user/BankApp
+   EnvironmentFile=/home/ec2-user/BankApp/.env
+   ExecStart=/home/ec2-user/BankApp/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
    Restart=always
    RestartSec=10
 
@@ -201,17 +201,17 @@ bash deployment_scripts/manage.sh logs -f
 3. **Enable and start the service**
    ```bash
    sudo systemctl daemon-reload
-   sudo systemctl enable goodbank
-   sudo systemctl start goodbank
-   sudo systemctl status goodbank
+   sudo systemctl enable bankapp
+   sudo systemctl start bankapp
+   sudo systemctl status bankapp
    ```
 
 4. **Manage the service**
    ```bash
-   sudo systemctl stop goodbank      # Stop
-   sudo systemctl restart goodbank   # Restart
-   sudo systemctl status goodbank    # Check status
-   sudo journalctl -u goodbank -f    # View logs
+   sudo systemctl stop bankapp      # Stop
+   sudo systemctl restart bankapp   # Restart
+   sudo systemctl status bankapp    # Check status
+   sudo journalctl -u bankapp -f    # View logs
    ```
 
 ## 🔧 Configuration
@@ -261,7 +261,7 @@ The application includes two demo users:
 ## 📁 Project Structure
 
 ```
-GoodBank/
+BankApp/
 ├── app/
 │   ├── core/              # Core configuration and dependencies
 │   │   ├── config.py      # Settings and environment management
@@ -285,7 +285,7 @@ GoodBank/
 ├── deployment_scripts/
 │   ├── deploy.sh          # Automated deployment script
 │   ├── manage.sh          # Application management script
-│   └── goodbank.service   # Systemd service file (optional)
+│   └── bankapp.service   # Systemd service file (optional)
 ├── guides/
 │   └── EC2_DEPLOYMENT_GUIDE.md  # Detailed EC2 deployment guide
 ├── .env                   # Environment configuration (not in git)
