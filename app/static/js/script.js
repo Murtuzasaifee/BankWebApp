@@ -719,9 +719,9 @@ function updateDashboardData(username, userData) {
             accountsGrid.innerHTML = '';
 
             const gradients = [
+                'linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%)',
                 'linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)',
-                'linear-gradient(135deg, #4C1D95 0%, #7C3AED 100%)',
-                'linear-gradient(135deg, #6D28D9 0%, #A78BFA 100%)'
+                'linear-gradient(135deg, var(--primary) 0%, var(--gradient-end) 100%)'
             ];
 
             const icons = ['fa-wallet', 'fa-credit-card', 'fa-gem'];
