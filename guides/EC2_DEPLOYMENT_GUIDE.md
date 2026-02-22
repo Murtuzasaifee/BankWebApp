@@ -241,37 +241,48 @@ Open in browser: `http://YOUR_EC2_PUBLIC_IP:8000`
 
 ---
 
-## 9. Updating Code
+## 9. Updating Code (Fast Sync)
 
-### Update Specific Files
+The easiest and most robust way to push changes from your local machine to your EC2 instance is by using the `sync_to_ec2.sh` helper script. It uses `rsync` to only upload modified files, meaning deployments are extremely fast. Crucially, it automatically respects your `.gitignore` file, so development items (like `.env`, `venv/`, `__pycache__`, formatting configs, etc.) are never accidentally uploaded to your production server.
+
+### Basic Code Update
+From your local machine project directory:
+```bash
+# Basic sync (using default SSH configuration)
+bash deployment_scripts/sync_to_ec2.sh ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
+
+# Sync using a specific AWS PEM key
+bash deployment_scripts/sync_to_ec2.sh -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
+```
+*Note: After a basic sync, you will still need to manually restart the application on the EC2 instance.*
+
+### Update Code AND Automatically Redeploy (Recommended)
+You can append the `--redeploy` flag to the script. This flag synchronizes your files securely and immediately logs into your EC2 instance to restart your application automatically.
 
 ```bash
-# From local machine
-scp -i your-key.pem app/routers/chat.py ec2-user@YOUR_EC2_IP:/home/ec2-user/bankapp/app/routers/
+bash deployment_scripts/sync_to_ec2.sh --redeploy -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
+```
 
-# On EC2, restart the app
+### Manual Restart Command (If not using `--redeploy`)
+If you chose the basic update, remember to reboot the app manually on EC2:
+```bash
+# On EC2 instance:
 bash deployment_scripts/manage.sh restart
-# Or with systemd:
+
+# Or if you use systemd:
 sudo systemctl restart bankapp
 ```
 
-### Replace Entire App
-
+### Dependency Updates
+By default, the sync script will push a modified `requirements.txt` file. However, you must tell the remote server to install the new packages.
 ```bash
-# From local machine
-scp -i your-key.pem -r app/ ec2-user@YOUR_EC2_IP:/home/ec2-user/bankapp/
+# 1. First sync files securely
+bash deployment_scripts/sync_to_ec2.sh -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
 
-# On EC2
-bash deployment_scripts/manage.sh restart
-```
+# 2. Then SSH into the EC2 node
+ssh -i your-key.pem ec2-user@YOUR_EC2_IP
 
-### Update Dependencies
-
-```bash
-# Upload new requirements.txt
-scp -i your-key.pem requirements.txt ec2-user@YOUR_EC2_IP:/home/ec2-user/bankapp/
-
-# On EC2
+# 3. Update the Python env
 cd /home/ec2-user/bankapp
 source venv/bin/activate
 pip install -r requirements.txt

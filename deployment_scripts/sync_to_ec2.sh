@@ -1,0 +1,95 @@
+#!/bin/bash
+# ============================================================================
+# sync_to_ec2.sh - Smart Deployment Script using rsync
+# 
+# Usage: 
+#   bash deployment_scripts/sync_to_ec2.sh [options] <user@ec2-address> <target-directory>
+#
+# Examples:
+#   bash deployment_scripts/sync_to_ec2.sh ec2-user@34.22.x.x /home/ec2-user/BankApp
+#   bash deployment_scripts/sync_to_ec2.sh -i ~/.ssh/my_key.pem ec2-user@34.22.x.x /home/ec2-user/BankApp
+#   bash deployment_scripts/sync_to_ec2.sh --redeploy ec2-user@34.22.x.x /home/ec2-user/BankApp
+# ============================================================================
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Parse arguments
+SSH_KEY=""
+REDEPLOY=false
+
+while [[ "$#" -gt 2 ]]; do
+    case $1 in
+        -i|--identity) SSH_KEY="$2"; shift ;;
+        --redeploy) REDEPLOY=true ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+if [ "$#" -ne 2 ]; then
+    echo "Usage: $0 [-i key.pem] [--redeploy] <user@ec2-host> <target-directory>"
+    exit 1
+fi
+
+EC2_HOST="$1"
+TARGET_DIR="$2"
+
+echo "============================================"
+echo "  Deploying BankApp to EC2                  "
+echo "============================================"
+
+# Change to project root to ensure rsync paths are correct relative to the repo
+cd "$PROJECT_ROOT"
+
+# Build SSH command based on identity file presence
+if [ -n "$SSH_KEY" ]; then
+    SSH_CMD="ssh -i $SSH_KEY"
+    echo "Using SSH Key: $SSH_KEY"
+else
+    SSH_CMD="ssh"
+    echo "Using default SSH agent configuration."
+fi
+echo "Target: $EC2_HOST:$TARGET_DIR"
+echo ""
+
+# Ensure target directory exists on remote before rsyncing
+echo "Ensuring target directory exists..."
+$SSH_CMD "$EC2_HOST" "mkdir -p $TARGET_DIR"
+
+echo "Syncing files..."
+# Run rsync:
+# -a: archive mode (preserves permissions, times, etc.)
+# -v: verbose
+# -z: compress file data during the transfer
+# --delete: delete extraneous files from destination
+# --filter: use .gitignore patterns to ignore files
+rsync -avz --delete \
+    -e "$SSH_CMD" \
+    --filter=':- .gitignore' \
+    --exclude='.git/' \
+    --exclude='.gitignore' \
+    ./ "$EC2_HOST:$TARGET_DIR/"
+
+echo ""
+echo "Sync Complete!"
+
+# Handle optional redeployment
+if [ "$REDEPLOY" = true ]; then
+    echo "============================================"
+    echo "  Triggering Redeployment on EC2            "
+    echo "============================================"
+    
+    echo "Restarting application on remote server..."
+    # The command assumes that deploy.sh or manage.sh handles the restart.
+    # It passes 'production' environment flag to deploy.sh implicitly
+    # or explicitly via the path.
+    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && bash deployment_scripts/deploy.sh production"
+    
+    echo "Redeployment commands executed."
+fi
+
+echo ""
+echo "Deployment Process Finished Successfully."
