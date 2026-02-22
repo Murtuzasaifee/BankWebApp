@@ -152,7 +152,18 @@ stop() {
     if [ -n "$PIDS" ]; then
         echo "  - Found running process(es): $PIDS"
         echo "$PIDS" | xargs kill 2>/dev/null || true
-        sleep 2
+        
+        # Wait a moment for graceful shutdown
+        sleep 3
+        
+        # Force kill any remaining processes
+        REMAINING_PIDS=$(pgrep -f "uvicorn app.main:app" 2>/dev/null || true)
+        if [ -n "$REMAINING_PIDS" ]; then
+            echo "  - Force stopping remaining process(es)..."
+            echo "$REMAINING_PIDS" | xargs kill -9 2>/dev/null || true
+            sleep 1
+        fi
+        
         echo -e "${GREEN}Application stopped${NC}"
     else
         echo -e "${YELLOW}Application is not running${NC}"
@@ -162,7 +173,7 @@ stop() {
 restart() {
     echo "Restarting $APP_NAME FastAPI Application..."
     stop
-    sleep 2
+    sleep 3
     start
 }
 

@@ -76,6 +76,7 @@ rsync -avz --delete \
     --include='.env' \
     --exclude='.env.example' \
     --filter=':- .gitignore' \
+    --exclude='venv/' \
     --exclude='.git/' \
     --exclude='.gitignore' \
     ./ "$EC2_HOST:$TARGET_DIR/"
@@ -94,7 +95,7 @@ elif [ "$REDEPLOY" = true ]; then
     echo "============================================"
     echo "  Triggering Redeployment on EC2            "
     echo "============================================"
-    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && bash deployment_scripts/manage.sh restart"
+    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && if [ ! -d 'venv' ]; then echo 'Virtual environment missing, recreating...'; bash deployment_scripts/deploy.sh production; else bash deployment_scripts/manage.sh restart; fi"
     echo "Redeployment command executed."
 fi
 

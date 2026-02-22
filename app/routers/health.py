@@ -18,7 +18,8 @@ def health():
     return {
         "status": "healthy",
         "agent_configured": agent_client.access_token is not None,
-        "asset_version_id": settings.CHATNOW_ASSET_ID if settings.CHATNOW_ASSET_ID else "not configured",
+        "chatnow_asset_id": settings.CHATNOW_ASSET_ID if settings.CHATNOW_ASSET_ID else "not configured",
+        "intellichat_asset_id": settings.INTELLICHAT_ASSET_ID if settings.INTELLICHAT_ASSET_ID else "not configured"
     }
 
 
@@ -27,9 +28,9 @@ def get_config():
     """Get current configuration (without sensitive data)."""
     settings = get_settings()
     return {
-        "asset_version_id": settings.CHATNOW_ASSET_ID if settings.CHATNOW_ASSET_ID else "not configured",
-        "agent_name": settings.AGENT_NAME,
-        "conversation_name": settings.CONVERSATION_NAME,
+        "chatnow_asset_id": settings.CHATNOW_ASSET_ID if settings.CHATNOW_ASSET_ID else "not configured",
+        "intellichat_asset_id" : settings.INTELLICHAT_ASSET_ID if settings.INTELLICHAT_ASSET_ID else "not configured",
+        "app_name": settings.APP_NAME,
         "query_timeout": settings.QUERY_TIMEOUT,
         "conversation_count": len(conversation_store),
     }
