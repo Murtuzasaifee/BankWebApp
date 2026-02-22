@@ -1,5 +1,5 @@
 """
-Configuration for Good Bank Chat Application.
+Configuration for ANB Chat Application.
 
 Uses pydantic-settings to load configuration from .env file.
 Environment variables override .env values (useful for AWS deployment).
@@ -23,11 +23,11 @@ class Settings(BaseSettings):
     PLATFORM_PASSWORD: str = ""
 
     # Application Branding
-    APP_NAME: str = "Good Bank"
+    APP_NAME: str = "ANB"
     AGENT_NAME: str = "{APP_NAME} Support Agent"
     CONVERSATION_NAME: str = "{APP_NAME} Customer Support Chat"
     CURRENCY: str = "SAR"
-    SUPPORT_EMAIL: str = "customercare@goodbank.com"
+    SUPPORT_EMAIL: str = "customercare@anb.com"
     LOCATION: str = "Riyadh, KSA"
 
     # Agent Configuration
