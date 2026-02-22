@@ -87,6 +87,13 @@ rsync -avz --delete \
 echo ""
 echo "Sync Complete!"
 
+# Kill any process running on port 8000 before deployment
+if [ "$DEPLOY" = true ] || [ "$REDEPLOY" = true ] || [ "$FRESH" = true ]; then
+    echo "Checking if port 8000 is in use on EC2..."
+    $SSH_CMD "$EC2_HOST" "PID=\$(sudo lsof -t -i:8000 2>/dev/null || true); if [ -n \"\$PID\" ]; then echo \"  - Killing process on port 8000 (PID: \$PID)...\"; sudo kill -9 \$PID; sleep 2; echo \"  - Port 8000 is now free.\"; else echo \"  - Port 8000 is free.\"; fi"
+    echo ""
+fi
+
 # Handle optional deployment scripts
 if [ "$DEPLOY" = true ]; then
     echo "============================================"
@@ -105,7 +112,7 @@ elif [ "$FRESH" = true ]; then
     echo "  Triggering Fresh Deployment on EC2        "
     echo "============================================"
     echo "Removing existing virtual environment and redeploying from scratch..."
-    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && bash deployment_scripts/manage.sh stop; rm -rf venv; bash deployment_scripts/deploy.sh production"
+    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && rm -rf venv; bash deployment_scripts/deploy.sh production"
     echo "Fresh deployment command executed."
 fi
 
