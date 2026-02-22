@@ -48,6 +48,15 @@ class Settings(BaseSettings):
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
     }
+    
+    def __init__(self, **data):
+        super().__init__(**data)
+        # Failsafe: if deployed to production but host wasn't updated
+        if self.ENVIRONMENT == "production":
+            if self.SERVER_HOST == "127.0.0.1":
+                self.SERVER_HOST = "0.0.0.0"
+            # Force debug off in production
+            self.DEBUG_MODE = False
 
     def get_agent_name(self) -> str:
         """Get agent name with fallback to default based on APP_NAME."""

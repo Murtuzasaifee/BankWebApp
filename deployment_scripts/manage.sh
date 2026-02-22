@@ -38,6 +38,11 @@ get_config() {
         PORT="8000"
         ENV="unknown"
     fi
+    
+    # Failsafe: if running in production but using localhost, force 0.0.0.0
+    if [ "$ENV" = "production" ] && [ "$HOST" = "127.0.0.1" ]; then
+        HOST="0.0.0.0"
+    fi
 }
 
 # Get public or local IP
