@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     # Application Branding
     APP_NAME: str = "Good Bank"
     CURRENCY: str = "SAR"
+    SUPPORT_EMAIL: str = "customercare@goodbank.com"
+    LOCATION: str = "Riyadh, KSA"
 
     # Agent Configuration
     ASSET_VERSION_ID: str = ""
