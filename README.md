@@ -151,7 +151,7 @@ bash deployment_scripts/manage.sh logs -f
    Ensure you set appropriate values for:
    - `PLATFORM_USERNAME` and `PLATFORM_PASSWORD`
    - `API_KEY` and `WORKSPACE_ID`
-   - `ASSET_VERSION_ID` and related IDs
+   - `CHATNOW_ASSET_ID` and related IDs
    - `SECRET_KEY` (generate a strong key)
 
 5. **Deploy and run**
@@ -229,8 +229,8 @@ PLATFORM_USERNAME=your_username
 PLATFORM_PASSWORD=your_password
 
 # Agent Configuration
-ASSET_VERSION_ID=guest_agent_asset_version_id
-ASSET_VERSION_ID_LOGGED_IN=logged_in_agent_asset_version_id
+CHATNOW_ASSET_ID=guest_agent_asset_version_id
+INTELLICHAT_ASSET_ID=logged_in_agent_asset_version_id
 LOAN_AGENT_ASSET_ID=loan_processing_agent_asset_id
 AGENT_NAME=Bank Support Agent
 CONVERSATION_NAME=Bank Customer Support Chat

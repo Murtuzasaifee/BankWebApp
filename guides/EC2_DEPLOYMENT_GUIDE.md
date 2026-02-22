@@ -109,15 +109,9 @@ bankapp/
 
 ## 4. Configure Environment
 
-On the EC2 instance:
+The `sync_to_ec2.sh` script automatically securely copies your configured `.env` file from your local machine to the EC2 instance, while explicitly ignoring `.env.example`. This ensures your production environment variables are safely transported during deployment without extra steps.
 
-```bash
-cd /home/ec2-user/bankapp
-
-# If you haven't uploaded .env, create from template
-cp .env.example .env
-nano .env
-```
+Before running the initial sync, ensure your local `.env` has the correct production settings:
 
 ### Critical .env Settings for EC2
 
@@ -129,6 +123,7 @@ SERVER_PORT=8000
 # Set to false for production
 DEBUG_MODE=false
 
+
 # Fill in your actual credentials
 ENVIRONMENT=production
 SECRET_KEY=your_secure_random_key_here
@@ -137,8 +132,8 @@ API_KEY=your_api_key
 WORKSPACE_ID=your_workspace_id
 PLATFORM_USERNAME=your_username
 PLATFORM_PASSWORD=your_password
-ASSET_VERSION_ID=your_asset_id
-ASSET_VERSION_ID_LOGGED_IN=your_logged_in_asset_id
+CHATNOW_ASSET_ID=your_asset_id
+INTELLICHAT_ASSET_ID=your_logged_in_asset_id
 LOAN_AGENT_ASSET_ID=your_loan_agent_asset_id
 ```
 
@@ -217,16 +212,19 @@ The easiest and most robust way to push changes from your local machine to your 
 ### Basic Code Update
 From your local machine project directory:
 ```bash
-# Basic sync (using default SSH configuration)
-bash deployment_scripts/sync_to_ec2.sh ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
-
-# Sync using a specific AWS PEM key
+# Basic sync without restarting the app
 bash deployment_scripts/sync_to_ec2.sh -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
 ```
 *Note: After a basic sync, you will still need to manually restart the application on the EC2 instance.*
 
-### Update Code AND Automatically Redeploy (Recommended)
-You can append the `--redeploy` flag to the script. This flag synchronizes your files securely and immediately logs into your EC2 instance to restart your application automatically.
+### Initial Deployment (`--deploy`)
+If this is your **first time** deploying the code to the instance, you can use the `--deploy` flag. This will sync all files, set up the virtual environment, install requirements, and start the app.
+```bash
+bash deployment_scripts/sync_to_ec2.sh --deploy -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
+```
+
+### Update Code AND Automatically Redeploy (`--redeploy`)
+For everyday code updates, use the `--redeploy` flag. This synchronizes your files and seamlessly restarts your running application.
 
 ```bash
 bash deployment_scripts/sync_to_ec2.sh --redeploy -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
@@ -302,6 +300,18 @@ python3 --version   # Should be 3.8+
 # Reinstall packages
 source venv/bin/activate
 pip install --force-reinstall -r requirements.txt
+```
+
+### Complete App Removal
+
+If you need to start fresh or remove the application completely from the EC2 instance, you can delete the entire project directory:
+
+```bash
+# Make sure the app is stopped first
+bash deployment_scripts/manage.sh stop
+
+# Remove the application directory completely
+rm -rf ~/bankapp
 ```
 
 ---
