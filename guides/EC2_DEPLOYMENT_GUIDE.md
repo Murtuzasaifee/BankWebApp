@@ -25,7 +25,15 @@
 | Custom TCP | 8000 | 0.0.0.0/0| Application access     |
 
 7. **Storage**: 8 GB gp3 (default, free tier)
-8. Click **Launch Instance**
+8. **Advanced Details** > **User Data**: Expand this section and paste the following script to install dependencies automatically on boot:
+
+   ```bash
+   #!/bin/bash
+   yum update -y
+   yum install -y python3 python3-pip git screen
+   ```
+
+9. Click **Launch Instance**
 
 ### Estimated Cost
 - **Free Tier**: $0/month (first 12 months, t2.micro)
@@ -46,6 +54,8 @@ ssh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP
 ---
 
 ## 3. Install Python 3 on EC2
+
+> **Note**: If you included the User Data script in Step 1, these packages will install automatically on first boot. You can skip the `yum` commands and directly verify the installation.
 
 ```bash
 # Update system packages
@@ -129,11 +139,16 @@ SERVER_PORT=8000
 DEBUG_MODE=false
 
 # Fill in your actual credentials
+ENVIRONMENT=production
+SECRET_KEY=your_secure_random_key_here
+TENANT=your_tenant
 API_KEY=your_api_key
 WORKSPACE_ID=your_workspace_id
 PLATFORM_USERNAME=your_username
 PLATFORM_PASSWORD=your_password
 ASSET_VERSION_ID=your_asset_id
+ASSET_VERSION_ID_LOGGED_IN=your_logged_in_asset_id
+LOAN_AGENT_ASSET_ID=your_loan_agent_asset_id
 ```
 
 ---
