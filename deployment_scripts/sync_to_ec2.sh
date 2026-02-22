@@ -80,6 +80,7 @@ rsync -avz --delete \
     --exclude='.env.example' \
     --filter=':- .gitignore' \
     --exclude='venv/' \
+    --exclude='*.pem' \
     --exclude='.git/' \
     --exclude='.gitignore' \
     ./ "$EC2_HOST:$TARGET_DIR/"
