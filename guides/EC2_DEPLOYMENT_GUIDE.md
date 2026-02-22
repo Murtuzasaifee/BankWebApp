@@ -109,12 +109,23 @@ bankapp/
 
 ## 4. Configure Environment
 
-On the EC2 instance:
+Because your `.env` file contains sensitive secrets, the automated `sync_to_ec2.sh` script intentionally ignores it. 
+
+The easiest way to upload your configured `.env` file is to run one secure copy command from your **local machine**:
 
 ```bash
-cd /home/ec2-user/bankapp
+# Upload .env file
+scp -i your-key.pem .env ec2-user@YOUR_EC2_PUBLIC_IP:/home/ec2-user/bankapp/.env
+```
 
-# If you haven't uploaded .env, create from template
+Alternatively, you can create it directly on the EC2 instance:
+
+```bash
+# SSH into EC2
+ssh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP
+
+# Go to project and create .env
+cd /home/ec2-user/bankapp
 cp .env.example .env
 nano .env
 ```
