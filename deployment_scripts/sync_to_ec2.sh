@@ -8,6 +8,7 @@
 # Examples:
 #   bash deployment_scripts/sync_to_ec2.sh ec2-user@34.22.x.x /home/ec2-user/BankApp
 #   bash deployment_scripts/sync_to_ec2.sh -i ~/.ssh/my_key.pem ec2-user@34.22.x.x /home/ec2-user/BankApp
+#   bash deployment_scripts/sync_to_ec2.sh --deploy ec2-user@34.22.x.x /home/ec2-user/BankApp
 #   bash deployment_scripts/sync_to_ec2.sh --redeploy ec2-user@34.22.x.x /home/ec2-user/BankApp
 # ============================================================================
 
@@ -18,11 +19,13 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Parse arguments
 SSH_KEY=""
+DEPLOY=false
 REDEPLOY=false
 
 while [[ "$#" -gt 2 ]]; do
     case $1 in
         -i|--identity) SSH_KEY="$2"; shift ;;
+        --deploy) DEPLOY=true ;;
         --redeploy) REDEPLOY=true ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
@@ -30,7 +33,7 @@ while [[ "$#" -gt 2 ]]; do
 done
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 [-i key.pem] [--redeploy] <user@ec2-host> <target-directory>"
+    echo "Usage: $0 [-i key.pem] [--deploy] [--redeploy] <user@ec2-host> <target-directory>"
     exit 1
 fi
 
@@ -65,9 +68,13 @@ echo "Syncing files..."
 # -v: verbose
 # -z: compress file data during the transfer
 # --delete: delete extraneous files from destination
+# --include='.env': prioritize explicitly copying the actual credentials
+# --exclude='.env.example': prevent copying the sample template over
 # --filter: use .gitignore patterns to ignore files
 rsync -avz --delete \
     -e "$SSH_CMD" \
+    --include='.env' \
+    --exclude='.env.example' \
     --filter=':- .gitignore' \
     --exclude='.git/' \
     --exclude='.gitignore' \
@@ -76,19 +83,19 @@ rsync -avz --delete \
 echo ""
 echo "Sync Complete!"
 
-# Handle optional redeployment
-if [ "$REDEPLOY" = true ]; then
+# Handle optional deployment scripts
+if [ "$DEPLOY" = true ]; then
+    echo "============================================"
+    echo "  Triggering Initial Deployment on EC2      "
+    echo "============================================"
+    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && bash deployment_scripts/deploy.sh production"
+    echo "Deployment command executed."
+elif [ "$REDEPLOY" = true ]; then
     echo "============================================"
     echo "  Triggering Redeployment on EC2            "
     echo "============================================"
-    
-    echo "Restarting application on remote server..."
-    # The command assumes that deploy.sh or manage.sh handles the restart.
-    # It passes 'production' environment flag to deploy.sh implicitly
-    # or explicitly via the path.
-    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && bash deployment_scripts/deploy.sh production"
-    
-    echo "Redeployment commands executed."
+    $SSH_CMD "$EC2_HOST" "cd $TARGET_DIR && bash deployment_scripts/manage.sh restart"
+    echo "Redeployment command executed."
 fi
 
 echo ""
