@@ -1,49 +1,43 @@
 :root {
-    /* Primary Colors — ANB Brand */
-    --primary: #0072DA;
-    /* ANB Primary Blue */
-    --primary-dark: #0058B8;
-    /* ANB Hover Blue — brighter than navy */
-    --primary-light: #5AACFF;
-    /* ANB Light Blue */
+    /* Primary Colors */
+    --primary: #7C3AED;
+    /* Primary Purple */
+    --primary-dark: #5B21B6;
+    /* Deep Purple (hover states) */
+    --primary-light: #A78BFA;
+    /* Light Purple */
 
     /* Background Colors */
     --white: #FFFFFF;
-    --light-bg: #F7F8F9;
-    /* ANB Light Gray background */
-    --surface-light: #F1F2F5;
-    /* ANB Divider/Surface gray */
+    --light-bg: #F5F3FF;
+    /* Soft Purple-tinted background */
+    --surface-light: #EDE9FE;
+    /* Light purple surface */
 
     /* Text Colors */
-    --text-dark: #272833;
-    /* ANB Charcoal — primary text */
-    --text-muted: #6B6C7E;
-    /* ANB Secondary/muted text */
+    --text-dark: #5B21B6;
+    --text-muted: #545E66;
 
     /* Gradients (Centralized) */
-    --gradient-start: #005FC3;
-    /* Slightly darker ANB Blue */
-    --gradient-end: #0090FF;
-    /* Slightly lighter ANB Blue */
+    --gradient-start: #4C1D95;
+    /* Dark Purple */
+    --gradient-end: #6D28D9;
+    /* Medium Purple */
     --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    --gradient-dark: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+    --gradient-dark: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
     --gradient-hero: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-    --gradient-card-alt: linear-gradient(135deg, #004EA8 0%, #003380 100%);
-    --gradient-card-accent: linear-gradient(135deg, #0072DA 0%, #005FC3 100%);
+    --gradient-card-alt: linear-gradient(135deg, #3B1B6D 0%, #1E0A3C 100%);
+    --gradient-card-accent: linear-gradient(135deg, #17A2B8 0%, #117A8B 100%);
 
     /* Hover/Shadow Colors */
-    --shadow-primary: rgba(0, 114, 218, 0.35);
-    --shadow-dark: rgba(0, 88, 184, 0.35);
+    --shadow-primary: rgba(124, 58, 237, 0.4);
+    --shadow-dark: rgba(91, 33, 182, 0.4);
 
-    /* Status Colors — ANB Brand */
-    --success: #287D3C;
-    /* ANB Forest Green */
-    --warning: #B95000;
-    /* ANB Amber/Orange */
-    --danger: #DA1414;
-    /* ANB Bright Red */
-    --info: #2E5AAC;
-    /* ANB Deep Royal Blue */
+    /* Status Colors (unchanged) */
+    --success: #28A745;
+    --warning: #FFC107;
+    --danger: #D22D2D;
+    --info: #4C1D95;
 }
 
 * {
