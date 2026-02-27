@@ -23,11 +23,12 @@ class Settings(BaseSettings):
     PLATFORM_PASSWORD: str = ""
 
     # Application Branding
-    APP_NAME: str = "ANB"
+    APP_NAME: str = "Good Bank"
+    APP_THEME: str = "goodbank"
     AGENT_NAME: str = "{APP_NAME} Support Agent"
     CONVERSATION_NAME: str = "{APP_NAME} Customer Support Chat"
     CURRENCY: str = "SAR"
-    SUPPORT_EMAIL: str = "customercare@anb.com"
+    SUPPORT_EMAIL: str = "customercare@goodbank.com"
     LOCATION: str = "Riyadh, KSA"
 
     # Agent Configuration
