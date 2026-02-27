@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings, validate_config
 from app.core.dependencies import get_agent_client
 from app.core.logger import setup_logging, get_logger
-from app.routers import pages, auth, chat, loan, health
+from app.routers import pages, auth, chat, loan, health, admin
 
 # Initialize settings and logging
 settings = get_settings()
@@ -84,6 +84,7 @@ app.include_router(auth.router)
 app.include_router(chat.router)
 app.include_router(loan.router)
 app.include_router(health.router)
+app.include_router(admin.router)
 
 
 if __name__ == "__main__":

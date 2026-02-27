@@ -61,3 +61,20 @@ class ConfigResponse(BaseModel):
     conversation_name: str
     query_timeout: int
     conversation_count: int
+
+
+# Admin schemas
+class ApplicationSummary(BaseModel):
+    application_id: str
+    applicant_name: str
+    submission_date: str
+    status: str
+    application_type: str
+    application_html_url: str
+
+
+class DashboardStats(BaseModel):
+    pending: int
+    in_progress: int
+    completed: int
+    total: int

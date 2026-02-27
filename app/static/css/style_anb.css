@@ -150,6 +150,30 @@ body.logged-in .post-login-content {
     box-shadow: 0 5px 20px var(--shadow-dark);
 }
 
+.admin-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--primary);
+    color: var(--primary) !important;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.25s;
+}
+
+.admin-nav-link:hover {
+    background: var(--primary);
+    color: var(--white) !important;
+    transform: translateY(-1px);
+}
+
+.admin-nav-link::after {
+    display: none !important;
+}
+
 .user-nav-info {
     display: flex;
     align-items: center;

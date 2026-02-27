@@ -55,3 +55,71 @@ USERS = {
         'address': 'B25, BUILDING NO 18, BUTINA AREA, SHARJAH'
     }
 }
+
+
+# Demo applications data for Admin panel
+APPLICATIONS = [
+    {
+        'application_id': 'APP-20260115-001',
+        'applicant_name': 'Mohammed Faisal',
+        'user_id': 'usr001',
+        'submission_date': 'Jan 15, 2026',
+        'status': 'Completed',
+        'application_type': 'Personal Loan',
+        'application_html_url': 'https://pf-gtm-general-purpose.s3.amazonaws.com/reports/2026-02-26_06-13-42.html?AWSAccessKeyId=AKIAYS2NUQM2E5HG5N7I&Signature=Ht7YQ0VHYCVlNo5JW9SmrMu29%2BE%3D&Expires=1772691222'
+    },
+    {
+        'application_id': 'APP-20260120-002',
+        'applicant_name': 'Ahmed Al Mansouri',
+        'user_id': 'usr002',
+        'submission_date': 'Jan 20, 2026',
+        'status': 'In Progress',
+        'application_type': 'Home Loan',
+        'application_html_url': 'https://www.w3.org/WAI/demos/bad/after/home.html'
+    },
+    {
+        'application_id': 'APP-20260125-003',
+        'applicant_name': 'Sara Al Khaldi',
+        'user_id': 'usr003',
+        'submission_date': 'Jan 25, 2026',
+        'status': 'Pending',
+        'application_type': 'Auto Loan',
+        'application_html_url': 'https://www.w3.org/WAI/demos/bad/after/home.html'
+    },
+    {
+        'application_id': 'APP-20260201-004',
+        'applicant_name': 'Khalid Al Rashid',
+        'user_id': 'usr004',
+        'submission_date': 'Feb 01, 2026',
+        'status': 'Pending',
+        'application_type': 'Personal Loan',
+        'application_html_url': 'https://www.w3.org/WAI/demos/bad/after/home.html'
+    },
+    {
+        'application_id': 'APP-20260205-005',
+        'applicant_name': 'Fatima Al Zahra',
+        'user_id': 'usr005',
+        'submission_date': 'Feb 05, 2026',
+        'status': 'In Progress',
+        'application_type': 'Home Loan',
+        'application_html_url': 'https://www.w3.org/WAI/demos/bad/after/home.html'
+    },
+    {
+        'application_id': 'APP-20260210-006',
+        'applicant_name': 'Omar Hassan',
+        'user_id': 'usr006',
+        'submission_date': 'Feb 10, 2026',
+        'status': 'Completed',
+        'application_type': 'Auto Loan',
+        'application_html_url': 'https://www.w3.org/WAI/demos/bad/after/home.html'
+    },
+    {
+        'application_id': 'APP-20260215-007',
+        'applicant_name': 'Nour Al Din',
+        'user_id': 'usr007',
+        'submission_date': 'Feb 15, 2026',
+        'status': 'Pending',
+        'application_type': 'Personal Loan',
+        'application_html_url': 'https://www.w3.org/WAI/demos/bad/after/home.html'
+    }
+]
