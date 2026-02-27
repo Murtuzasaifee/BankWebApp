@@ -57,6 +57,15 @@ USERS = {
 }
 
 
+# Admin credentials — separate from regular USERS
+ADMIN_USERS = {
+    'admin': {
+        'password': 'admin@123',
+        'display_name': 'Administrator'
+    }
+}
+
+
 # Demo applications data for Admin panel
 APPLICATIONS = [
     {

@@ -288,6 +288,15 @@
             <a href="/">
                 <i class="fas fa-arrow-left"></i> Back to Site
             </a>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:0.88rem; color:var(--text-muted);">
+                    <i class="fas fa-user-circle"></i> {{ username }}
+                </span>
+                <button onclick="adminLogout()" class="login-nav-btn logout-btn"
+                    style="padding:0.5rem 1.2rem; font-size:0.85rem;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -388,6 +397,13 @@
         </div>
 
     </div>
+
+    <script>
+        function adminLogout() {
+            fetch('/admin/logout', { method: 'POST' })
+                .finally(() => { window.location.href = '/admin/login'; });
+        }
+    </script>
 
 </body>
 
