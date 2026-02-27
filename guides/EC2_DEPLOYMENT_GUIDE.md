@@ -43,9 +43,25 @@
 
 ## 2. Connect to EC2
 
+### Mac / Linux
 ```bash
 # Set permissions on key file
 chmod 400 your-key.pem
+
+# Connect via SSH
+ssh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP
+```
+
+### Windows (PowerShell)
+```powershell
+# Reset all the permissions
+icacls.exe "your-key.pem" /reset
+
+# Grant Access to yourself
+icacls.exe "your-key.pem" /grant:r "$($env:username):(R)"
+
+# Remove everyone else
+icacls.exe "your-key.pem" /inheritance:r
 
 # Connect via SSH
 ssh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP

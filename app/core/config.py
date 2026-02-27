@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # Application Branding
     APP_NAME: str = "Good Bank"
+    APP_THEME: str = "goodbank"
     AGENT_NAME: str = "{APP_NAME} Support Agent"
     CONVERSATION_NAME: str = "{APP_NAME} Customer Support Chat"
     CURRENCY: str = "SAR"

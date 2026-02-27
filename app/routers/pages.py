@@ -21,6 +21,7 @@ def index(request: Request):
         {
             "request": request,
             "app_name": settings.APP_NAME,
+            "theme_css": f"css/style_{settings.APP_THEME}.css",
             "currency": settings.CURRENCY,
             "support_email": settings.SUPPORT_EMAIL,
             "location": settings.LOCATION
