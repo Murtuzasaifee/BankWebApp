@@ -1,14 +1,12 @@
 """
 Admin Service — fetches asset transaction data from the IntellectSee platform API.
 
-Calls the `getAssetTransactionDetails` GraphQL query for each configured asset ID
-in parallel using ThreadPoolExecutor. Transforms raw API data into the normalized
-application format used by the admin dashboard.
+Calls the `getAssetTransactionDetails` GraphQL query for a specific asset ID.
+Transforms raw API data into the normalized application format used by the admin dashboard.
 """
 
 import requests
 from datetime import datetime, timezone, timedelta
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any
 
 from app.core.logger import get_logger
@@ -173,55 +171,46 @@ def _fetch_for_asset(
         return []
 
 
-def fetch_all_applications(agent_client, settings) -> List[Dict[str, Any]]:
+def fetch_applications_for_asset(agent_client, settings, asset_id: str) -> List[Dict[str, Any]]:
     """
-    Fetch transactions for all configured asset IDs in parallel.
+    Fetch transactions for a specific asset ID.
 
     Args:
         agent_client: AgentPlatformClient instance (for auth headers/token refresh)
-        settings: Application settings (for ADMIN_ASSET_IDS, PLATFORM_BASE_URL, WORKSPACE_ID)
+        settings: Application settings (for PLATFORM_BASE_URL, WORKSPACE_ID)
+        asset_id: The specific asset version ID to fetch transactions for
 
     Returns:
-        Combined list of normalized application dicts, sorted by submission_date descending.
+        List of normalized application dicts, sorted by submission_date descending.
     """
-    raw_ids = settings.ADMIN_ASSET_IDS or ""
-    asset_ids = [aid.strip() for aid in raw_ids.split(",") if aid.strip()]
-
-    if not asset_ids:
-        logger.warning("No ADMIN_ASSET_IDS configured — returning empty list")
+    if not asset_id or not asset_id.strip():
+        logger.warning("Empty asset_id provided — returning empty list")
         return []
 
+    asset_id = asset_id.strip()
     headers = agent_client.get_headers()
     platform_url = settings.PLATFORM_BASE_URL
     workspace_id = settings.WORKSPACE_ID
 
-    all_apps: List[Dict[str, Any]] = []
-
-    def _fetch(aid: str):
-        return _fetch_for_asset(aid, platform_url, workspace_id, headers)
-
     try:
-        with ThreadPoolExecutor(max_workers=min(len(asset_ids), 5)) as pool:
-            futures = {pool.submit(_fetch, aid): aid for aid in asset_ids}
-            for future in as_completed(futures):
-                aid = futures[future]
-                try:
-                    result = future.result()
-                    all_apps.extend(result)
-                except PermissionError:
-                    # Token expired — refresh once and retry all
-                    logger.warning("Token expired during fetch, refreshing and retrying...")
-                    agent_client.refresh_access_token()
-                    return fetch_all_applications(agent_client, settings)
-                except Exception as e:
-                    logger.error(f"Error processing asset {aid}: {e}")
-
+        applications = _fetch_for_asset(asset_id, platform_url, workspace_id, headers)
+    except PermissionError:
+        # Token expired — refresh once and retry
+        logger.warning("Token expired during fetch, refreshing and retrying...")
+        agent_client.refresh_access_token()
+        headers = agent_client.get_headers()
+        try:
+            applications = _fetch_for_asset(asset_id, platform_url, workspace_id, headers)
+        except Exception as e:
+            logger.error(f"Error fetching asset {asset_id} after retry: {e}")
+            return []
     except Exception as e:
-        logger.error(f"Error in parallel fetch: {e}")
+        logger.error(f"Error fetching asset {asset_id}: {e}")
+        return []
 
     # Sort by submission_date descending (most recent first)
-    all_apps.sort(key=lambda x: x.get("submission_date", ""), reverse=True)
-    return all_apps
+    applications.sort(key=lambda x: x.get("submission_date", ""), reverse=True)
+    return applications
 
 
 def compute_stats(applications: List[Dict[str, Any]]) -> dict:
@@ -235,3 +224,4 @@ def compute_stats(applications: List[Dict[str, Any]]) -> dict:
         "completed": completed,
         "total": len(applications),
     }
+

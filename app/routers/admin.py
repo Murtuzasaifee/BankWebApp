@@ -17,7 +17,8 @@ from app.core.config import get_settings
 from app.core.dependencies import get_session_manager, get_agent_client
 from app.core.logger import get_logger
 from app.data.demo_data import ADMIN_USERS
-from app.services.admin_service import fetch_all_applications, compute_stats
+from app.data.categories import CATEGORIES, get_category_by_slug
+from app.services.admin_service import fetch_applications_for_asset, compute_stats
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
@@ -42,10 +43,10 @@ def _require_admin(request: Request):
     return session, session_id, sm, None
 
 
-def _fetch_live_data():
-    """Fetch applications from the platform API and compute stats."""
+def _fetch_live_data(asset_id: str):
+    """Fetch applications for a specific asset ID from the platform API and compute stats."""
     agent_client = get_agent_client()
-    applications = fetch_all_applications(agent_client, settings)
+    applications = fetch_applications_for_asset(agent_client, settings, asset_id)
     stats = compute_stats(applications)
     return applications, stats
 
@@ -131,14 +132,16 @@ async def admin_logout(request: Request, response: Response):
 # Admin Dashboard & API
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Admin Dashboard & API
+# ---------------------------------------------------------------------------
+
 @router.get("", response_class=HTMLResponse)
 def admin_dashboard(request: Request):
-    """Serve the admin dashboard with live API data. Requires admin session."""
+    """Serve the admin dashboard with category cards. Requires admin session."""
     session, session_id, sm, redirect = _require_admin(request)
     if redirect:
         return redirect
-
-    applications, stats = _fetch_live_data()
 
     tmpl = templates.TemplateResponse(
         "admin.html",
@@ -146,36 +149,75 @@ def admin_dashboard(request: Request):
             "request": request,
             "app_name": settings.APP_NAME,
             "theme_css": f"css/style_{settings.APP_THEME}.css",
-            "stats": stats,
-            "applications": applications,
-            "username": session.get('admin_username', 'Admin')
+            "username": session.get('admin_username', 'Admin'),
+            "view_mode": "dashboard",
+            "categories": CATEGORIES
         }
     )
     sm.save_session(tmpl, session_id)
     return tmpl
 
 
-@router.get("/api/stats")
-def get_stats(request: Request):
-    """Return dashboard stats as JSON. Requires admin session."""
+@router.get("/category/{slug}", response_class=HTMLResponse)
+def admin_category_detail(request: Request, slug: str):
+    """Serve the admin dashboard category detail view. Requires admin session."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return redirect
+
+    category = get_category_by_slug(slug)
+    if not category:
+        return RedirectResponse(url="/admin", status_code=302)
+
+    applications, stats = _fetch_live_data(category.get("asset_id"))
+
+    tmpl = templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "app_name": settings.APP_NAME,
+            "theme_css": f"css/style_{settings.APP_THEME}.css",
+            "username": session.get('admin_username', 'Admin'),
+            "view_mode": "category",
+            "category": category,
+            "stats": stats,
+            "applications": applications
+        }
+    )
+    sm.save_session(tmpl, session_id)
+    return tmpl
+
+
+@router.get("/api/categories")
+def get_categories(request: Request):
+    """Return list of categories. Requires admin session."""
     session, session_id, sm, redirect = _require_admin(request)
     if redirect:
         return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
 
-    _, stats = _fetch_live_data()
-    resp = JSONResponse(stats)
+    resp = JSONResponse({"categories": CATEGORIES})
     sm.save_session(resp, session_id)
     return resp
 
 
-@router.get("/api/applications")
-def get_applications(request: Request):
-    """Return all applications as JSON. Requires admin session."""
+@router.get("/api/categories/{slug}")
+def get_category_data(request: Request, slug: str):
+    """Return applications and stats for a specific category. Requires admin session."""
     session, session_id, sm, redirect = _require_admin(request)
     if redirect:
         return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
 
-    applications, _ = _fetch_live_data()
-    resp = JSONResponse({"applications": applications})
+    category = get_category_by_slug(slug)
+    if not category:
+        return JSONResponse(status_code=404, content={"error": "Category not found"})
+
+    applications, stats = _fetch_live_data(category.get("asset_id"))
+    
+    resp = JSONResponse({
+        "category": category,
+        "stats": stats,
+        "applications": applications
+    })
     sm.save_session(resp, session_id)
     return resp
+

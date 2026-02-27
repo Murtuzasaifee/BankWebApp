@@ -34,6 +34,125 @@
             font-size: 0.95rem;
         }
 
+        /* Category Cards */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 36px;
+        }
+
+        .category-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid transparent;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-color: rgba(var(--primary-rgb), 0.1);
+        }
+
+        .category-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: rgba(var(--primary-rgb), 0.08);
+            /* Fallback */
+            color: var(--primary);
+            /* Fallback */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .cat-icon-0 {
+            background: rgba(76, 29, 149, 0.12);
+            color: var(--primary);
+        }
+
+        .cat-icon-1 {
+            background: rgba(40, 167, 69, 0.12);
+            color: var(--success);
+        }
+
+        .cat-icon-2 {
+            background: rgba(255, 193, 7, 0.15);
+            color: #e6a800;
+        }
+
+        .cat-icon-3 {
+            background: rgba(124, 58, 237, 0.12);
+            color: var(--primary-dark);
+        }
+
+        .category-info h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .category-info p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .category-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            border-top: 1px solid var(--surface-light);
+            padding-top: 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+        }
+
+        .breadcrumbs a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumbs a:hover {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+
+        .breadcrumbs i {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .breadcrumbs span {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
         /* Stats Cards */
         .stats-grid {
             display: grid;
@@ -240,6 +359,10 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 600px) {
@@ -304,9 +427,42 @@
 
         <!-- Header -->
         <div class="admin-header">
-            <h1>Admin Dashboard</h1>
-            <p>Overview of all applications</p>
+            {% if view_mode == 'dashboard' %}
+            <h1>Dashboard</h1>
+            <p>Select a category to view applications</p>
+            {% else %}
+            <div class="breadcrumbs">
+                <a href="/admin">Dashboard</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>{{ category.name }}</span>
+            </div>
+            <h1>{{ category.name }}</h1>
+            <p>{{ category.description }}</p>
+            {% endif %}
         </div>
+
+        {% if view_mode == 'dashboard' %}
+
+        <!-- Category Cards Grid -->
+        <div class="category-grid">
+            {% for cat in categories %}
+            <a href="/admin/category/{{ cat.slug }}" class="category-card">
+                <div class="category-icon cat-icon-{{ loop.index0 % 4 }}">
+                    <i class="fas {{ cat.icon }}"></i>
+                </div>
+                <div class="category-info">
+                    <h3>{{ cat.name }}</h3>
+                    <p>{{ cat.description }}</p>
+                </div>
+                <div class="category-footer">
+                    <span>Manage Applications</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% elif view_mode == 'category' %}
 
         <!-- Stats Cards -->
         <div class="stats-grid">
@@ -370,6 +526,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% if applications|length > 0 %}
                     {% for app in applications %}
                     <tr>
                         <td data-label="Transaction ID">
@@ -394,9 +551,19 @@
                         </td>
                     </tr>
                     {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.5;"></i>
+                            <p>No applications found for this category.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
+
+        {% endif %}
 
     </div>
 
