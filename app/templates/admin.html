@@ -305,7 +305,7 @@
         <!-- Header -->
         <div class="admin-header">
             <h1>Admin Dashboard</h1>
-            <p>Overview of all loan applications</p>
+            <p>Overview of all applications</p>
         </div>
 
         <!-- Stats Cards -->
@@ -360,10 +360,11 @@
             <table class="applications-table">
                 <thead>
                     <tr>
-                        <th>Application ID</th>
-                        <th>Applicant Name</th>
-                        <th>Type</th>
-                        <th>Submission Date</th>
+                        <th>Transaction ID</th>
+                        <th>Initiated By</th>
+                        <th>Documents</th>
+                        <th>Start Time</th>
+                        <th>Duration</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -371,12 +372,13 @@
                 <tbody>
                     {% for app in applications %}
                     <tr>
-                        <td data-label="Application ID">
-                            <span class="app-id">{{ app.application_id }}</span>
+                        <td data-label="Transaction ID">
+                            <span class="app-id">{{ app.application_id[:8] }}...</span>
                         </td>
-                        <td data-label="Applicant Name">{{ app.applicant_name }}</td>
-                        <td data-label="Type">{{ app.application_type }}</td>
-                        <td data-label="Submission Date">{{ app.submission_date }}</td>
+                        <td data-label="Initiated By">{{ app.applicant_name }}</td>
+                        <td data-label="Documents">{{ app.application_type }}</td>
+                        <td data-label="Start Time">{{ app.submission_date }}</td>
+                        <td data-label="Duration">{{ app.duration }}</td>
                         <td data-label="Status">
                             {% set status_class = app.status | lower | replace(' ', '-') %}
                             <span class="status-badge {{ status_class }}">

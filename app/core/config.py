@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     LOAN_AGENT_ASSET_ID: str = ""
     QUERY_TIMEOUT: int = 60
 
+    # Admin — comma-separated list of asset version IDs to monitor
+    ADMIN_ASSET_IDS: str = ""
+
     # Application Configuration
     ENVIRONMENT: str = "local"  # "local" or "production"
     SECRET_KEY: str = ""

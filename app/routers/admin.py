@@ -1,5 +1,6 @@
 """
 Admin routes — separate login session from regular users.
+Fetches live transaction data from the IntellectSee platform API.
 
 - GET  /admin/login  → serve admin login page
 - POST /admin/login  → validate admin credentials, set admin_logged_in
@@ -13,9 +14,10 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from app.core.config import get_settings
-from app.core.dependencies import get_session_manager
+from app.core.dependencies import get_session_manager, get_agent_client
 from app.core.logger import get_logger
-from app.data.demo_data import APPLICATIONS, ADMIN_USERS
+from app.data.demo_data import ADMIN_USERS
+from app.services.admin_service import fetch_all_applications, compute_stats
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
@@ -40,17 +42,12 @@ def _require_admin(request: Request):
     return session, session_id, sm, None
 
 
-def _get_stats() -> dict:
-    """Calculate application counts by status."""
-    pending = sum(1 for app in APPLICATIONS if app['status'] == 'Pending')
-    in_progress = sum(1 for app in APPLICATIONS if app['status'] == 'In Progress')
-    completed = sum(1 for app in APPLICATIONS if app['status'] == 'Completed')
-    return {
-        'pending': pending,
-        'in_progress': in_progress,
-        'completed': completed,
-        'total': len(APPLICATIONS)
-    }
+def _fetch_live_data():
+    """Fetch applications from the platform API and compute stats."""
+    agent_client = get_agent_client()
+    applications = fetch_all_applications(agent_client, settings)
+    stats = compute_stats(applications)
+    return applications, stats
 
 
 # ---------------------------------------------------------------------------
@@ -136,12 +133,13 @@ async def admin_logout(request: Request, response: Response):
 
 @router.get("", response_class=HTMLResponse)
 def admin_dashboard(request: Request):
-    """Serve the admin dashboard. Requires admin session."""
+    """Serve the admin dashboard with live API data. Requires admin session."""
     session, session_id, sm, redirect = _require_admin(request)
     if redirect:
         return redirect
 
-    stats = _get_stats()
+    applications, stats = _fetch_live_data()
+
     tmpl = templates.TemplateResponse(
         "admin.html",
         {
@@ -149,7 +147,7 @@ def admin_dashboard(request: Request):
             "app_name": settings.APP_NAME,
             "theme_css": f"css/style_{settings.APP_THEME}.css",
             "stats": stats,
-            "applications": APPLICATIONS,
+            "applications": applications,
             "username": session.get('admin_username', 'Admin')
         }
     )
@@ -163,7 +161,9 @@ def get_stats(request: Request):
     session, session_id, sm, redirect = _require_admin(request)
     if redirect:
         return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
-    resp = JSONResponse(_get_stats())
+
+    _, stats = _fetch_live_data()
+    resp = JSONResponse(stats)
     sm.save_session(resp, session_id)
     return resp
 
@@ -174,6 +174,8 @@ def get_applications(request: Request):
     session, session_id, sm, redirect = _require_admin(request)
     if redirect:
         return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
-    resp = JSONResponse({"applications": APPLICATIONS})
+
+    applications, _ = _fetch_live_data()
+    resp = JSONResponse({"applications": applications})
     sm.save_session(resp, session_id)
     return resp
