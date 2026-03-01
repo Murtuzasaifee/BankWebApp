@@ -80,7 +80,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.pending }}</h3>
+                    <h3 data-stat="pending">—</h3>
                     <p>Pending</p>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                     <i class="fas fa-spinner"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.in_progress }}</h3>
+                    <h3 data-stat="in_progress">—</h3>
                     <p>In Progress</p>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.completed }}</h3>
+                    <h3 data-stat="completed">—</h3>
                     <p>Completed</p>
                 </div>
             </div>
@@ -110,17 +110,21 @@
                     <i class="fas fa-layer-group"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>{{ stats.total }}</h3>
+                    <h3 data-stat="total">—</h3>
                     <p>Total Applications</p>
                 </div>
             </div>
         </div>
 
         <!-- Applications Table -->
-        <div class="table-section">
+        <div class="table-section" id="applications-table-section" data-slug="{{ category.slug }}">
             <div class="table-header">
                 <h2>All Applications</h2>
-                <span>{{ stats.total }} applications</span>
+                <span id="table-count">Loading...</span>
+            </div>
+            <div class="table-loading-overlay" id="table-loading-overlay">
+                <i class="fas fa-spinner fa-spin table-spinner"></i>
+                <p>Loading applications...</p>
             </div>
             <table class="applications-table">
                 <thead>
@@ -131,40 +135,7 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% if applications|length > 0 %}
-                    {% for app in applications %}
-                    <tr>
-                        <td data-label="Transaction ID">
-                            <span class="app-id">{{ app.application_id}}</span>
-                        </td>
-                        <td data-label="Submitted Date">{{ app.submission_date }}</td>
-                        <td data-label="Status">
-                            {% set status_class = app.status | lower | replace(' ', '-') %}
-                            <span class="status-badge {{ status_class }}">
-                                <span class="status-dot {{ status_class }}"></span>
-                                {{ app.status }}
-                            </span>
-                        </td>
-                        <td data-label="Action">
-                            {% if app.status == 'Completed' %}
-                            <a href="{{ app.application_html_url }}" target="_blank" rel="noopener noreferrer"
-                                class="btn-view">
-                                <i class="fas fa-external-link-alt"></i> View
-                            </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% else %}
-                    <tr>
-                        <td colspan="4" class="table-empty">
-                            <i class="fas fa-inbox table-empty-icon"></i>
-                            <p>No applications found for this category.</p>
-                        </td>
-                    </tr>
-                    {% endif %}
-                </tbody>
+                <tbody id="applications-tbody"></tbody>
             </table>
         </div>
 
@@ -177,6 +148,116 @@
             fetch('/admin/logout', { method: 'POST' })
                 .finally(() => { window.location.href = '/admin/login'; });
         }
+
+        // --- Helpers ---
+        function statusClass(status) {
+            return status.toLowerCase().replace(/\s+/g, '-');
+        }
+
+        function buildStatusBadge(status) {
+            const cls = statusClass(status);
+            return `<span class="status-badge ${cls}"><span class="status-dot ${cls}"></span>${status}</span>`;
+        }
+
+        function buildActionCell(app) {
+            if (app.status !== 'Completed') return '';
+            return `<button class="btn-view" data-asset-id="${app.asset_id}" data-trace-id="${app.application_id}" onclick="viewApplication(this)">
+                        <i class="fas fa-external-link-alt"></i> View
+                    </button>`;
+        }
+
+        // --- Category Loading ---
+        function populateStats(stats) {
+            document.querySelectorAll('[data-stat]').forEach(el => {
+                const key = el.getAttribute('data-stat');
+                if (stats[key] !== undefined) el.textContent = stats[key];
+            });
+        }
+
+        function populateTable(applications) {
+            const tbody = document.getElementById('applications-tbody');
+            const countEl = document.getElementById('table-count');
+            if (!tbody) return;
+
+            if (!applications || applications.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
+                    <i class="fas fa-inbox table-empty-icon"></i>
+                    <p>No applications found for this category.</p></td></tr>`;
+                if (countEl) countEl.textContent = '0 applications';
+                return;
+            }
+
+            tbody.innerHTML = applications.map(app => `<tr>
+                <td data-label="Transaction ID"><span class="app-id">${app.application_id}</span></td>
+                <td data-label="Submitted Date">${app.submission_date}</td>
+                <td data-label="Status">${buildStatusBadge(app.status)}</td>
+                <td data-label="Action">${buildActionCell(app)}</td>
+            </tr>`).join('');
+            if (countEl) countEl.textContent = `${applications.length} applications`;
+        }
+
+        function loadCategoryData() {
+            const tableSection = document.getElementById('applications-table-section');
+            if (!tableSection) return;   // dashboard view — nothing to do
+
+            const slug = tableSection.getAttribute('data-slug');
+            const overlay = document.getElementById('table-loading-overlay');
+            if (overlay) overlay.style.display = 'flex';
+
+            fetch(`/admin/api/categories/${slug}`)
+                .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+                .then(data => {
+                    populateStats(data.stats || {});
+                    populateTable(data.applications || []);
+                })
+                .catch(err => {
+                    console.error('Failed to load category data:', err);
+                    const tbody = document.getElementById('applications-tbody');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
+                        <i class="fas fa-exclamation-circle table-empty-icon"></i>
+                        <p>Failed to load applications. Please refresh the page.</p></td></tr>`;
+                    const countEl = document.getElementById('table-count');
+                    if (countEl) countEl.textContent = 'Error';
+                })
+                .finally(() => { if (overlay) overlay.style.display = 'none'; });
+        }
+
+        // --- View Button ---
+        function viewApplication(btn) {
+            const assetId = btn.getAttribute('data-asset-id');
+            const traceId = btn.getAttribute('data-trace-id');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            const prevError = btn.closest('td').querySelector('.view-error');
+            if (prevError) prevError.remove();
+
+            fetch(`/admin/api/application/${assetId}/${traceId}`)
+                .then(res => {
+                    if (!res.ok) return res.json().then(b => { throw new Error(b.error || `HTTP ${res.status}`); });
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.presigned_url) {
+                        window.open(data.presigned_url, '_blank', 'noopener,noreferrer');
+                    } else {
+                        throw new Error('No URL available for this application');
+                    }
+                })
+                .catch(err => {
+                    const errMsg = document.createElement('p');
+                    errMsg.className = 'view-error';
+                    errMsg.textContent = err.message || 'Failed to open document';
+                    btn.closest('td').appendChild(errMsg);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-external-link-alt"></i> View';
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCategoryData);
     </script>
 
 </body>

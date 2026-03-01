@@ -9,6 +9,8 @@ Fetches live transaction data from the IntellectSee platform API.
 - GET  /admin/api/*  → JSON endpoints (requires admin_logged_in)
 """
 
+import requests
+
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -19,6 +21,7 @@ from app.core.logger import get_logger
 from app.data.demo_data import ADMIN_USERS
 from app.data.categories import CATEGORIES, get_category_by_slug
 from app.services.admin_service import fetch_applications_for_asset, compute_stats
+from app.services.rest_client import RestClient
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
@@ -169,8 +172,6 @@ def admin_category_detail(request: Request, slug: str):
     if not category:
         return RedirectResponse(url="/admin", status_code=302)
 
-    applications, stats = _fetch_live_data(category.get("asset_id"))
-
     tmpl = templates.TemplateResponse(
         "admin.html",
         {
@@ -180,8 +181,6 @@ def admin_category_detail(request: Request, slug: str):
             "username": session.get('admin_username', 'Admin'),
             "view_mode": "category",
             "category": category,
-            "stats": stats,
-            "applications": applications
         }
     )
     sm.save_session(tmpl, session_id)
@@ -212,7 +211,7 @@ def get_category_data(request: Request, slug: str):
         return JSONResponse(status_code=404, content={"error": "Category not found"})
 
     applications, stats = _fetch_live_data(category.get("asset_id"))
-    
+
     resp = JSONResponse({
         "category": category,
         "stats": stats,
@@ -220,4 +219,34 @@ def get_category_data(request: Request, slug: str):
     })
     sm.save_session(resp, session_id)
     return resp
+
+
+@router.get("/api/application/{asset_id}/{trace_id}")
+def get_application_presigned_url(request: Request, asset_id: str, trace_id: str):
+    """Return presigned URL for a completed application. Requires admin session."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
+
+    try:
+        client = RestClient(base_url=settings.PLATFORM_BASE_URL, agent_client=get_agent_client())
+        data = client.get(f"/invokeasset/governance/{asset_id}/{trace_id}")
+
+        output = data.get("response", {}).get("output", [])
+        presigned_url = output[0].get("presigned_url") if output else None
+
+        if not presigned_url:
+            return JSONResponse(status_code=404, content={"error": "Presigned URL not available"})
+
+        resp = JSONResponse({"presigned_url": presigned_url})
+        sm.save_session(resp, session_id)
+        return resp
+
+    except requests.HTTPError as e:
+        status = e.response.status_code if e.response is not None else 500
+        logger.error(f"HTTP error fetching presigned URL: {e}")
+        return JSONResponse(status_code=status, content={"error": "Platform API error"})
+    except Exception as e:
+        logger.error(f"Error fetching presigned URL asset={asset_id} trace={trace_id}: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to fetch presigned URL"})
 

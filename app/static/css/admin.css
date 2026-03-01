@@ -378,6 +378,39 @@
     opacity: 0.5;
 }
 
+/* Table loading overlay */
+.table-loading-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.table-loading-overlay p { margin: 0; }
+
+.table-spinner {
+    font-size: 1.75rem;
+    color: var(--primary);
+}
+
+/* View button disabled state */
+.btn-view:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Inline error below View button */
+.view-error {
+    font-size: 0.78rem;
+    color: var(--danger, #dc3545);
+    margin: 4px 0 0;
+}
+
 /* Responsive */
 
 @media (max-width: 900px) {
