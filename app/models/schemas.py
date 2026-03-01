@@ -42,11 +42,8 @@ class LoanRequest(BaseModel):
 
 class LoanResponse(BaseModel):
     success: bool
-    reference_number: Optional[str] = None
     message: str
-    agent_triggered: Optional[bool] = None
     trace_id: Optional[str] = None
-    agent_response: Optional[Any] = None
 
 
 class HealthResponse(BaseModel):

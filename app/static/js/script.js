@@ -559,10 +559,7 @@ function submitLoanApplication(event) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
-    // Generate reference number
-    const refNumber = 'LN-' + Date.now().toString().slice(-8);
-
-    // Call backend API to submit loan and trigger agent
+    // Call backend API to submit loan and invoke agent
     fetch('/submit-loan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -575,8 +572,8 @@ function submitLoanApplication(event) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update success modal content with actual reference number from backend
-                document.getElementById('loan-ref-number').textContent = data.reference_number;
+                // Show the platform trace_id as the Application ID
+                document.getElementById('loan-ref-number').textContent = data.trace_id;
                 document.getElementById('loan-type-display').textContent = loanType;
                 document.getElementById('loan-docs-count').textContent = uploadedFiles.length + ' file' + (uploadedFiles.length > 1 ? 's' : '');
 
@@ -587,13 +584,6 @@ function submitLoanApplication(event) {
                 setTimeout(() => {
                     document.getElementById('loan-success-modal').classList.add('active');
                 }, 300);
-
-                // Log agent response if available
-                if (data.agent_triggered && data.agent_response) {
-                    console.log('[Loan Agent] Agent successfully triggered:', data.agent_response);
-                } else {
-                    console.log('[Loan Agent] Loan submitted but agent not triggered');
-                }
 
                 // Reset form for next use
                 setTimeout(() => {
