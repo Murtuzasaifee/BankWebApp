@@ -153,9 +153,15 @@
                 <i class="fas fa-file-alt"></i>
                 <span id="doc-modal-title">Application Document</span>
             </div>
-            <button class="doc-modal-close" onclick="closeDocModal()" aria-label="Close">
-                <i class="fas fa-times"></i>
-            </button>
+            <div class="doc-modal-actions">
+                <a id="doc-modal-new-tab" href="#" target="_blank" rel="noopener noreferrer"
+                   class="doc-modal-action-btn" title="Open in new tab" aria-label="Open in new tab">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                <button class="doc-modal-close doc-modal-action-btn" onclick="closeDocModal()" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
         <div class="doc-modal-body">
             <div class="doc-modal-loading" id="doc-modal-loading">
@@ -244,7 +250,14 @@
             }
 
             tbody.innerHTML = filtered.map(app => `<tr class="row-${statusClass(app.status)}">
-                <td data-label="Transaction ID"><span class="app-id">${app.application_id}</span></td>
+                <td data-label="Transaction ID">
+                    <div class="app-id-cell">
+                        <span class="app-id">${app.application_id}</span>
+                        <button class="btn-copy" onclick="copyId(this, '${app.application_id}')" title="Copy ID">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </td>
                 <td data-label="Submitted Date">${app.submission_date}</td>
                 <td data-label="Status">${buildStatusBadge(app.status)}</td>
                 <td data-label="Action">${buildActionCell(app)}</td>
@@ -288,11 +301,34 @@
                 });
         }
 
+        // --- Copy ID ---
+        function copyId(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = btn.querySelector('i');
+                icon.className = 'fas fa-check';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    icon.className = 'fas fa-copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Fallback for environments without clipboard API
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+        }
+
         // --- Document Viewer Modal ---
         function openDocModal(traceId, url) {
             document.getElementById('doc-modal-title').textContent = `Transaction: ${traceId}`;
             document.getElementById('doc-modal-loading').style.display = 'flex';
             document.getElementById('doc-modal-iframe').src = url;
+            document.getElementById('doc-modal-new-tab').href = url;
             document.getElementById('doc-modal-backdrop').classList.add('active');
             document.getElementById('doc-modal').classList.add('active');
             document.body.style.overflow = 'hidden';

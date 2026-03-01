@@ -665,3 +665,71 @@
 .applications-table tbody tr.row-pending:hover {
     background: rgba(255, 193, 7, 0.09);
 }
+
+/* ============================================================
+   Transaction ID — copy button
+   ============================================================ */
+
+.app-id-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-copy {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s, background 0.15s;
+    line-height: 1;
+}
+
+.applications-table tbody tr:hover .btn-copy {
+    opacity: 1;
+}
+
+.btn-copy:hover {
+    background: rgba(76, 29, 149, 0.08);
+    color: var(--primary);
+}
+
+.btn-copy.copied {
+    color: var(--success);
+    opacity: 1;
+}
+
+/* ============================================================
+   Document Modal — header actions (new-tab + close)
+   ============================================================ */
+
+.doc-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.doc-modal-action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.doc-modal-action-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-dark);
+}
