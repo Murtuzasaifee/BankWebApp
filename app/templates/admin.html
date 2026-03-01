@@ -75,7 +75,7 @@
 
         <!-- Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card" data-filter="pending" onclick="setFilter('pending')">
                 <div class="stat-icon pending">
                     <i class="fas fa-clock"></i>
                 </div>
@@ -85,7 +85,7 @@
                 </div>
             </div>
 
-            <div class="stat-card">
+            <div class="stat-card" data-filter="in-progress" onclick="setFilter('in-progress')">
                 <div class="stat-icon in-progress">
                     <i class="fas fa-spinner"></i>
                 </div>
@@ -95,7 +95,7 @@
                 </div>
             </div>
 
-            <div class="stat-card">
+            <div class="stat-card" data-filter="completed" onclick="setFilter('completed')">
                 <div class="stat-icon completed">
                     <i class="fas fa-check-circle"></i>
                 </div>
@@ -105,7 +105,7 @@
                 </div>
             </div>
 
-            <div class="stat-card">
+            <div class="stat-card" data-filter="all" onclick="setFilter('all')">
                 <div class="stat-icon total">
                     <i class="fas fa-layer-group"></i>
                 </div>
@@ -122,9 +122,11 @@
                 <h2>All Applications</h2>
                 <span id="table-count">Loading...</span>
             </div>
-            <div class="table-loading-overlay" id="table-loading-overlay">
-                <i class="fas fa-spinner fa-spin table-spinner"></i>
-                <p>Loading applications...</p>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">All</button>
+                <button class="filter-tab" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+                <button class="filter-tab" data-filter="in-progress" onclick="setFilter('in-progress')">In Progress</button>
+                <button class="filter-tab" data-filter="completed" onclick="setFilter('completed')">Completed</button>
             </div>
             <table class="applications-table">
                 <thead>
@@ -171,6 +173,10 @@
                 .finally(() => { window.location.href = '/admin/login'; });
         }
 
+        // --- State ---
+        let allApplications = [];
+        let activeFilter = 'all';
+
         // --- Helpers ---
         function statusClass(status) {
             return status.toLowerCase().replace(/\s+/g, '-');
@@ -188,7 +194,67 @@
                     </button>`;
         }
 
-        // --- Category Loading ---
+        // --- Skeleton ---
+        function showSkeleton() {
+            const tbody = document.getElementById('applications-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = Array.from({ length: 5 }, () => `
+                <tr class="skeleton-row">
+                    <td><div class="skeleton-cell" style="width:62%"></div></td>
+                    <td><div class="skeleton-cell" style="width:48%"></div></td>
+                    <td><div class="skeleton-cell" style="width:52%;border-radius:20px"></div></td>
+                    <td><div class="skeleton-cell" style="width:36%"></div></td>
+                </tr>`).join('');
+        }
+
+        // --- Filter ---
+        function setFilter(filter) {
+            activeFilter = filter;
+
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.filter === filter);
+            });
+
+            document.querySelectorAll('.stat-card[data-filter]').forEach(card => {
+                card.classList.toggle('active', card.dataset.filter === filter);
+            });
+
+            renderFiltered();
+        }
+
+        // --- Rendering ---
+        function renderFiltered() {
+            const filtered = activeFilter === 'all'
+                ? allApplications
+                : allApplications.filter(app => statusClass(app.status) === activeFilter);
+
+            const tbody = document.getElementById('applications-tbody');
+            const countEl = document.getElementById('table-count');
+            if (!tbody) return;
+
+            if (!filtered || filtered.length === 0) {
+                const label = activeFilter === 'all' ? 'this category' : `"${activeFilter.replace('-', ' ')}" status`;
+                tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
+                    <i class="fas fa-inbox table-empty-icon"></i>
+                    <p>No applications found for ${label}.</p></td></tr>`;
+                if (countEl) countEl.textContent = activeFilter === 'all'
+                    ? '0 applications'
+                    : `0 of ${allApplications.length}`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(app => `<tr class="row-${statusClass(app.status)}">
+                <td data-label="Transaction ID"><span class="app-id">${app.application_id}</span></td>
+                <td data-label="Submitted Date">${app.submission_date}</td>
+                <td data-label="Status">${buildStatusBadge(app.status)}</td>
+                <td data-label="Action">${buildActionCell(app)}</td>
+            </tr>`).join('');
+
+            if (countEl) countEl.textContent = activeFilter === 'all'
+                ? `${filtered.length} applications`
+                : `${filtered.length} of ${allApplications.length}`;
+        }
+
         function populateStats(stats) {
             document.querySelectorAll('[data-stat]').forEach(el => {
                 const key = el.getAttribute('data-stat');
@@ -196,41 +262,20 @@
             });
         }
 
-        function populateTable(applications) {
-            const tbody = document.getElementById('applications-tbody');
-            const countEl = document.getElementById('table-count');
-            if (!tbody) return;
-
-            if (!applications || applications.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
-                    <i class="fas fa-inbox table-empty-icon"></i>
-                    <p>No applications found for this category.</p></td></tr>`;
-                if (countEl) countEl.textContent = '0 applications';
-                return;
-            }
-
-            tbody.innerHTML = applications.map(app => `<tr>
-                <td data-label="Transaction ID"><span class="app-id">${app.application_id}</span></td>
-                <td data-label="Submitted Date">${app.submission_date}</td>
-                <td data-label="Status">${buildStatusBadge(app.status)}</td>
-                <td data-label="Action">${buildActionCell(app)}</td>
-            </tr>`).join('');
-            if (countEl) countEl.textContent = `${applications.length} applications`;
-        }
-
+        // --- Data Loading ---
         function loadCategoryData() {
             const tableSection = document.getElementById('applications-table-section');
-            if (!tableSection) return;   // dashboard view — nothing to do
+            if (!tableSection) return;
 
             const slug = tableSection.getAttribute('data-slug');
-            const overlay = document.getElementById('table-loading-overlay');
-            if (overlay) overlay.style.display = 'flex';
+            showSkeleton();
 
             fetch(`/admin/api/categories/${slug}`)
                 .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
                 .then(data => {
                     populateStats(data.stats || {});
-                    populateTable(data.applications || []);
+                    allApplications = data.applications || [];
+                    setFilter('all');
                 })
                 .catch(err => {
                     console.error('Failed to load category data:', err);
@@ -240,8 +285,7 @@
                         <p>Failed to load applications. Please refresh the page.</p></td></tr>`;
                     const countEl = document.getElementById('table-count');
                     if (countEl) countEl.textContent = 'Error';
-                })
-                .finally(() => { if (overlay) overlay.style.display = 'none'; });
+                });
         }
 
         // --- Document Viewer Modal ---
