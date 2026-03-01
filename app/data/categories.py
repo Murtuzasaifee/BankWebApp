@@ -8,7 +8,7 @@ CATEGORIES = [
         "slug": "account-opening",
         "name": "Account Opening",
         "icon": "fa-university",
-        "description": "New account applications",
+        "description": "Current, Savings & Stock Trading Accounts",
         "asset_id": "d252aeb6-6e5f-4476-bdbb-00c95475eb12",
     },
     {

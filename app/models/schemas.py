@@ -40,6 +40,7 @@ class LoanRequest(BaseModel):
     comments: Optional[str] = ""
 
 
+
 class LoanResponse(BaseModel):
     success: bool
     message: str

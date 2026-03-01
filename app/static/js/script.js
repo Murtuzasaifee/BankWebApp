@@ -444,12 +444,12 @@ function updateLoanInfo() {
 
 function handleFileUpload(event) {
     const files = event.target.files;
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 20 * 1024 * 1024; // 20MB
 
     for (let file of files) {
         // Check file size
         if (file.size > maxSize) {
-            alert(`File "${file.name}" is too large. Maximum size is 5MB.`);
+            alert(`File "${file.name}" is too large. Maximum size is 20MB.`);
             continue;
         }
 
@@ -620,6 +620,162 @@ function openLoanModal() {
     updateSubmitButton();
     document.getElementById('loan-info').style.display = 'none';
     document.getElementById('loan-modal').classList.add('active');
+}
+
+// ---------------------------------------------------------------------------
+// Stock Trading Account
+// ---------------------------------------------------------------------------
+
+let uploadedStockFiles = [];     // Metadata for display
+let uploadedStockRawFiles = [];  // Actual File objects sent to the backend
+
+function handleStockFileUpload(event) {
+    const files = event.target.files;
+    const maxSize = 20 * 1024 * 1024; // 20MB
+
+    for (let file of files) {
+        if (file.size > maxSize) {
+            alert(`File "${file.name}" is too large. Maximum size is 20MB.`);
+            continue;
+        }
+        if (uploadedStockFiles.find(f => f.name === file.name && f.size === file.size)) {
+            alert(`File "${file.name}" is already uploaded.`);
+            continue;
+        }
+        uploadedStockFiles.push({ name: file.name, size: file.size, type: file.type });
+        uploadedStockRawFiles.push(file);
+    }
+
+    event.target.value = '';
+    displayStockUploadedFiles();
+    updateStockSubmitButton();
+}
+
+function displayStockUploadedFiles() {
+    const container = document.getElementById('stock-uploaded-files-container');
+    const filesList = document.getElementById('stock-uploaded-files-list');
+    const fileCount = document.getElementById('stock-file-count');
+
+    if (uploadedStockFiles.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'block';
+    fileCount.textContent = uploadedStockFiles.length;
+
+    filesList.innerHTML = uploadedStockFiles.map((file, index) => {
+        const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+        return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem; background: #F8F9FA; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                    <i class="${getFileIcon(file.name)}" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; color: var(--text-dark); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">${fileSize}</div>
+                    </div>
+                </div>
+                <button type="button" onclick="removeStockFile(${index})" style="background: transparent; border: none; color: #DC3545; cursor: pointer; padding: 0.5rem; font-size: 1.2rem;" title="Remove file">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function removeStockFile(index) {
+    uploadedStockFiles.splice(index, 1);
+    uploadedStockRawFiles.splice(index, 1);
+    displayStockUploadedFiles();
+    updateStockSubmitButton();
+}
+
+function updateStockSubmitButton() {
+    const submitBtn = document.getElementById('stock-submit-btn');
+    const requirements = document.getElementById('stock-requirements');
+
+    if (uploadedStockFiles.length > 0) {
+        submitBtn.style.display = 'block';
+        requirements.style.display = 'none';
+    } else {
+        submitBtn.style.display = 'none';
+        requirements.style.display = 'block';
+    }
+}
+
+function openStockModal() {
+    uploadedStockFiles = [];
+    uploadedStockRawFiles = [];
+    document.getElementById('stock-form').reset();
+    displayStockUploadedFiles();
+    updateStockSubmitButton();
+    document.getElementById('stock-modal').classList.add('active');
+}
+
+function closeStockSuccessModal() {
+    document.getElementById('stock-success-modal').classList.remove('active');
+}
+
+function submitStockApplication(event) {
+    event.preventDefault();
+
+    const accountType = document.getElementById('stock-account-type').value;
+    const comments = document.getElementById('stock-comments').value;
+
+    if (uploadedStockRawFiles.length === 0) {
+        alert('Please upload at least one PDF document to proceed.');
+        return;
+    }
+
+    const submitBtn = document.getElementById('stock-submit-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    // Build multipart form data — browser sets Content-Type with boundary automatically
+    const formData = new FormData();
+    for (const file of uploadedStockRawFiles) {
+        formData.append('files', file, file.name);
+    }
+
+    fetch('/submit-stock-account', {
+        method: 'POST',
+        body: formData   // No Content-Type header — let the browser set the multipart boundary
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('stock-ref-number').textContent = data.trace_id;
+                document.getElementById('stock-type-display').textContent = accountType;
+                document.getElementById('stock-docs-count').textContent = uploadedStockRawFiles.length + ' file' + (uploadedStockRawFiles.length > 1 ? 's' : '');
+
+                closeModal('stock-modal');
+
+                setTimeout(() => {
+                    document.getElementById('stock-success-modal').classList.add('active');
+                }, 300);
+
+                setTimeout(() => {
+                    document.getElementById('stock-form').reset();
+                    uploadedStockFiles = [];
+                    uploadedStockRawFiles = [];
+                    displayStockUploadedFiles();
+                    updateStockSubmitButton();
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 500);
+            } else {
+                alert('Error: ' + (data.message || 'Failed to submit stock account application'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting stock account application:', error);
+            alert('An error occurred while submitting your application. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
 }
 
 document.getElementById('paybill-form')?.addEventListener('submit', function (e) {
