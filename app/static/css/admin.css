@@ -411,6 +411,123 @@
     margin: 4px 0 0;
 }
 
+/* Document Viewer Modal */
+
+.doc-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+.doc-modal-backdrop.active {
+    display: block;
+}
+
+.doc-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    width: min(92vw, 1100px);
+    height: min(88vh, 860px);
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+    z-index: 1001;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+}
+
+.doc-modal.active {
+    display: flex;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.doc-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--surface-light);
+    flex-shrink: 0;
+    background: var(--light-bg);
+}
+
+.doc-modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+.doc-modal-title-group i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.doc-modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+
+.doc-modal-close:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-dark);
+}
+
+.doc-modal-body {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.doc-modal-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    background: var(--white);
+    z-index: 1;
+}
+
+.doc-modal-loading i {
+    font-size: 1.75rem;
+    color: var(--primary);
+}
+
+.doc-modal-loading p { margin: 0; }
+
+.doc-modal-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
 /* Responsive */
 
 @media (max-width: 900px) {
