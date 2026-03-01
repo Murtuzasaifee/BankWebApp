@@ -13,12 +13,6 @@ from app.core.logger import get_logger
 
 logger = get_logger()
 
-# View URL template — opens transaction detail in the IntellectSee UI
-_VIEW_URL_TEMPLATE = (
-    "https://us.intellectseecstag.com/purplefabric/assetmonitor"
-    "/ws/{workspace_id}/workflow/asset/{asset_id}/transcation/{transaction_id}"
-)
-
 # Status mapping: API status → display status
 _STATUS_MAP = {
     "COMPLETED": "Completed",
@@ -149,11 +143,6 @@ def _fetch_for_asset(
                 "submission_date": _format_start_time(item.get("start_time", "")),
                 "status": display_status,
                 "application_type": f"{item.get('total_documents', 0)} doc(s)",
-                "application_html_url": _VIEW_URL_TEMPLATE.format(
-                    workspace_id=workspace_id,
-                    asset_id=asset_version_id,
-                    transaction_id=item.get("transaction_id", ""),
-                ),
                 "duration": _format_duration(item.get("duration")),
                 "error_description": item.get("error_description") or "",
                 "asset_id": asset_version_id,
