@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} | Admin Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', path=theme_css) }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/admin.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo">{{ app_name }}</div>
+        <div class="nav-links">
+            <a href="/">
+                <i class="fas fa-arrow-left"></i> Back to Site
+            </a>
+            <div class="nav-user">
+                <span class="nav-username">
+                    <i class="fas fa-user-circle"></i> {{ username }}
+                </span>
+                <button onclick="adminLogout()" class="login-nav-btn logout-btn admin-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+
+        <!-- Header -->
+        <div class="admin-header">
+            {% if view_mode == 'dashboard' %}
+            <h1>Dashboard</h1>
+            <p>Select a category to view applications</p>
+            {% else %}
+            <div class="breadcrumbs">
+                <a href="/admin">Dashboard</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>{{ category.name }}</span>
+            </div>
+            <h1>{{ category.name }}</h1>
+            <p>{{ category.description }}</p>
+            {% endif %}
+        </div>
+
+        {% if view_mode == 'dashboard' %}
+
+        <!-- Category Cards Grid -->
+        <div class="category-grid">
+            {% for cat in categories %}
+            <a href="/admin/category/{{ cat.slug }}" class="category-card">
+                <div class="category-icon cat-icon-{{ loop.index0 % 4 }}">
+                    <i class="fas {{ cat.icon }}"></i>
+                </div>
+                <div class="category-info">
+                    <h3>{{ cat.name }}</h3>
+                    <p>{{ cat.description }}</p>
+                </div>
+                <div class="category-footer">
+                    <span>Manage Applications</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% elif view_mode == 'category' %}
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card" data-filter="pending" onclick="setFilter('pending')">
+                <div class="stat-icon pending">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-stat="pending">—</h3>
+                    <p>Pending</p>
+                </div>
+            </div>
+
+            <div class="stat-card" data-filter="in-progress" onclick="setFilter('in-progress')">
+                <div class="stat-icon in-progress">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-stat="in_progress">—</h3>
+                    <p>In Progress</p>
+                </div>
+            </div>
+
+            <div class="stat-card" data-filter="completed" onclick="setFilter('completed')">
+                <div class="stat-icon completed">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-stat="completed">—</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+
+            <div class="stat-card" data-filter="all" onclick="setFilter('all')">
+                <div class="stat-icon total">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-stat="total">—</h3>
+                    <p>Total Applications</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applications Table -->
+        <div class="table-section" id="applications-table-section" data-slug="{{ category.slug }}">
+            <div class="table-header">
+                <h2>All Applications</h2>
+                <span id="table-count">Loading...</span>
+            </div>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">All</button>
+                <button class="filter-tab" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+                <button class="filter-tab" data-filter="in-progress" onclick="setFilter('in-progress')">In Progress</button>
+                <button class="filter-tab" data-filter="completed" onclick="setFilter('completed')">Completed</button>
+            </div>
+            <table class="applications-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Submitted Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="applications-tbody"></tbody>
+            </table>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div class="doc-modal-backdrop" id="doc-modal-backdrop" onclick="closeDocModal()"></div>
+    <div class="doc-modal" id="doc-modal" role="dialog" aria-modal="true" aria-labelledby="doc-modal-title">
+        <div class="doc-modal-header">
+            <div class="doc-modal-title-group">
+                <i class="fas fa-file-alt"></i>
+                <span id="doc-modal-title">Application Document</span>
+            </div>
+            <div class="doc-modal-actions">
+                <a id="doc-modal-new-tab" href="#" target="_blank" rel="noopener noreferrer"
+                   class="doc-modal-action-btn" title="Open in new tab" aria-label="Open in new tab">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                <button class="doc-modal-close doc-modal-action-btn" onclick="closeDocModal()" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="doc-modal-body">
+            <div class="doc-modal-loading" id="doc-modal-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading document...</p>
+            </div>
+            <iframe id="doc-modal-iframe" class="doc-modal-iframe" src="about:blank"
+                onload="onIframeLoad()" title="Application Document"></iframe>
+        </div>
+    </div>
+
+    <script>
+        function adminLogout() {
+            fetch('/admin/logout', { method: 'POST' })
+                .finally(() => { window.location.href = '/admin/login'; });
+        }
+
+        // --- State ---
+        let allApplications = [];
+        let activeFilter = 'all';
+
+        // --- Helpers ---
+        function statusClass(status) {
+            return status.toLowerCase().replace(/\s+/g, '-');
+        }
+
+        function buildStatusBadge(status) {
+            const cls = statusClass(status);
+            return `<span class="status-badge ${cls}"><span class="status-dot ${cls}"></span>${status}</span>`;
+        }
+
+        function buildActionCell(app) {
+            if (app.status !== 'Completed') return '';
+            return `<button class="btn-view" data-asset-id="${app.asset_id}" data-trace-id="${app.application_id}" onclick="viewApplication(this)">
+                        <i class="fas fa-file-alt"></i> View
+                    </button>`;
+        }
+
+        // --- Skeleton ---
+        function showSkeleton() {
+            const tbody = document.getElementById('applications-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = Array.from({ length: 5 }, () => `
+                <tr class="skeleton-row">
+                    <td><div class="skeleton-cell" style="width:62%"></div></td>
+                    <td><div class="skeleton-cell" style="width:48%"></div></td>
+                    <td><div class="skeleton-cell" style="width:52%;border-radius:20px"></div></td>
+                    <td><div class="skeleton-cell" style="width:36%"></div></td>
+                </tr>`).join('');
+        }
+
+        // --- Filter ---
+        function setFilter(filter) {
+            activeFilter = filter;
+
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.filter === filter);
+            });
+
+            document.querySelectorAll('.stat-card[data-filter]').forEach(card => {
+                card.classList.toggle('active', card.dataset.filter === filter);
+            });
+
+            renderFiltered();
+        }
+
+        // --- Rendering ---
+        function renderFiltered() {
+            const filtered = activeFilter === 'all'
+                ? allApplications
+                : allApplications.filter(app => statusClass(app.status) === activeFilter);
+
+            const tbody = document.getElementById('applications-tbody');
+            const countEl = document.getElementById('table-count');
+            if (!tbody) return;
+
+            if (!filtered || filtered.length === 0) {
+                const label = activeFilter === 'all' ? 'this category' : `"${activeFilter.replace('-', ' ')}" status`;
+                tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
+                    <i class="fas fa-inbox table-empty-icon"></i>
+                    <p>No applications found for ${label}.</p></td></tr>`;
+                if (countEl) countEl.textContent = activeFilter === 'all'
+                    ? '0 applications'
+                    : `0 of ${allApplications.length}`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(app => `<tr class="row-${statusClass(app.status)}">
+                <td data-label="Transaction ID">
+                    <div class="app-id-cell">
+                        <span class="app-id">${app.application_id}</span>
+                        <button class="btn-copy" onclick="copyId(this, '${app.application_id}')" title="Copy ID">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </td>
+                <td data-label="Submitted Date">${app.submission_date}</td>
+                <td data-label="Status">${buildStatusBadge(app.status)}</td>
+                <td data-label="Action">${buildActionCell(app)}</td>
+            </tr>`).join('');
+
+            if (countEl) countEl.textContent = activeFilter === 'all'
+                ? `${filtered.length} applications`
+                : `${filtered.length} of ${allApplications.length}`;
+        }
+
+        function populateStats(stats) {
+            document.querySelectorAll('[data-stat]').forEach(el => {
+                const key = el.getAttribute('data-stat');
+                if (stats[key] !== undefined) el.textContent = stats[key];
+            });
+        }
+
+        // --- Data Loading ---
+        function loadCategoryData() {
+            const tableSection = document.getElementById('applications-table-section');
+            if (!tableSection) return;
+
+            const slug = tableSection.getAttribute('data-slug');
+            showSkeleton();
+
+            fetch(`/admin/api/categories/${slug}`)
+                .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+                .then(data => {
+                    populateStats(data.stats || {});
+                    allApplications = data.applications || [];
+                    setFilter('all');
+                })
+                .catch(err => {
+                    console.error('Failed to load category data:', err);
+                    const tbody = document.getElementById('applications-tbody');
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
+                        <i class="fas fa-exclamation-circle table-empty-icon"></i>
+                        <p>Failed to load applications. Please refresh the page.</p></td></tr>`;
+                    const countEl = document.getElementById('table-count');
+                    if (countEl) countEl.textContent = 'Error';
+                });
+        }
+
+        // --- Copy ID ---
+        function copyId(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = btn.querySelector('i');
+                icon.className = 'fas fa-check';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    icon.className = 'fas fa-copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // Fallback for environments without clipboard API
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+        }
+
+        // --- Document Viewer Modal ---
+        function openDocModal(traceId, url) {
+            document.getElementById('doc-modal-title').textContent = `Transaction: ${traceId}`;
+            document.getElementById('doc-modal-loading').style.display = 'flex';
+            document.getElementById('doc-modal-iframe').src = url;
+            document.getElementById('doc-modal-new-tab').href = url;
+            document.getElementById('doc-modal-backdrop').classList.add('active');
+            document.getElementById('doc-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDocModal() {
+            document.getElementById('doc-modal-backdrop').classList.remove('active');
+            document.getElementById('doc-modal').classList.remove('active');
+            document.getElementById('doc-modal-iframe').src = 'about:blank';
+            document.body.style.overflow = '';
+        }
+
+        function onIframeLoad() {
+            document.getElementById('doc-modal-loading').style.display = 'none';
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeDocModal();
+        });
+
+        // --- View Button ---
+        function viewApplication(btn) {
+            const assetId = btn.getAttribute('data-asset-id');
+            const traceId = btn.getAttribute('data-trace-id');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            const prevError = btn.closest('td').querySelector('.view-error');
+            if (prevError) prevError.remove();
+
+            fetch(`/admin/api/application/${assetId}/${traceId}`)
+                .then(res => {
+                    if (!res.ok) return res.json().then(b => { throw new Error(b.error || `HTTP ${res.status}`); });
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.presigned_url) {
+                        openDocModal(traceId, data.presigned_url);
+                    } else {
+                        throw new Error('No URL available for this application');
+                    }
+                })
+                .catch(err => {
+                    const errMsg = document.createElement('p');
+                    errMsg.className = 'view-error';
+                    errMsg.textContent = err.message || 'Failed to open document';
+                    btn.closest('td').appendChild(errMsg);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-file-alt"></i> View';
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCategoryData);
+    </script>
+
+</body>
+
+</html>

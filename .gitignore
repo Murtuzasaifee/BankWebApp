@@ -19,3 +19,4 @@ app.pid
 *.bak
 logs/
 *.pem
+project_state/

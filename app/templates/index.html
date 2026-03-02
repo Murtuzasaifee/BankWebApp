@@ -252,6 +252,11 @@
                         <div class="action-title">Loan Application</div>
                     </div>
 
+                    <div class="action-card" onclick="openStockModal()">
+                        <div class="action-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="action-title">Stock Trading</div>
+                    </div>
+
                     <div class="action-card" onclick="openCardsModal()">
                         <div class="action-icon"><i class="fas fa-credit-card"></i></div>
                         <div class="action-title">My Cards</div>
@@ -475,7 +480,7 @@
                                 <i class="fas fa-cloud-upload-alt"
                                     style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: var(--primary);"></i>
                                 Click to upload documents or drag & drop
-                                <br><small style="font-size: 0.85rem;">PDF, JPG, PNG, DOC (Max 5MB per file)</small>
+                                <br><small style="font-size: 0.85rem;">PDF, JPG, PNG, DOC (Max 20MB per file)</small>
                             </button>
                         </div>
                     </div>
@@ -734,10 +739,9 @@
                                 <i class="fas fa-file-invoice-dollar" style="color: white; font-size: 1.5rem;"></i>
                             </div>
                             <div style="flex: 1;">
-                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Application
-                                    Reference</p>
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Application ID</p>
                                 <h3 style="margin: 0.3rem 0 0 0; font-size: 1.3rem; color: var(--primary-dark); font-family: 'Courier New', monospace;"
-                                    id="loan-ref-number">LN-12345678</h3>
+                                    id="loan-ref-number">—</h3>
                             </div>
                         </div>
 
@@ -813,6 +817,194 @@
                     </div>
 
                     <button onclick="closeLoanSuccessModal()" class="btn-submit" style="width: 100%; margin: 0;">
+                        <i class="fas fa-check-circle"></i> Got It, Thanks!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Trading Account Modal -->
+    <div id="stock-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-chart-line"></i> Stock Trading Account</h2>
+                <button class="modal-close" onclick="closeModal('stock-modal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="stock-form" onsubmit="submitStockApplication(event)">
+                    <div class="form-group">
+                        <label><i class="fas fa-list"></i> Select Account Type *</label>
+                        <select id="stock-account-type" required>
+                            <option value="">-- Select Account Type --</option>
+                            <option value="Stock Trading Account">Stock Trading Account</option>
+                            <option value="Margin Trading Account">Margin Trading Account</option>
+                            <option value="Options Trading Account">Options Trading Account</option>
+                            <option value="Demat Account">Demat Account</option>
+                        </select>
+                    </div>
+
+                    <div style="background: #F0F8FF; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
+                        <p style="margin: 0; font-size: 0.95rem; color: var(--text-dark);">
+                            <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                            <strong>Required Documents:</strong> Emirates ID, Salary Certificate, Bank Statement (last 3 months), Proof of Address
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-upload"></i> Upload Documents *</label>
+                        <div style="position: relative;">
+                            <input type="file" id="stock-documents" multiple accept=".pdf"
+                                style="display: none;" onchange="handleStockFileUpload(event)">
+                            <button type="button" onclick="document.getElementById('stock-documents').click()"
+                                style="width: 100%; padding: 1.5rem; background: #F8F9FA; border: 2px dashed #CCC; border-radius: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.3s; font-size: 1rem;">
+                                <i class="fas fa-file-pdf"
+                                    style="font-size: 2rem; display: block; margin-bottom: 0.5rem; color: var(--primary);"></i>
+                                Click to upload PDF documents
+                                <br><small style="font-size: 0.85rem;">PDF only (Max 20MB per file)</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="stock-uploaded-files-container" style="display: none; margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.8rem; color: var(--primary-dark); font-weight: 600;">
+                            <i class="fas fa-file-alt"></i> Uploaded Documents (<span id="stock-file-count">0</span>)
+                        </label>
+                        <div id="stock-uploaded-files-list"
+                            style="max-height: 200px; overflow-y: auto; border: 1px solid #E8ECF0; border-radius: 10px; padding: 0.5rem;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-comment"></i> Comments / Additional Information</label>
+                        <textarea id="stock-comments" rows="4"
+                            placeholder="Please provide any additional information about your stock trading account application..."
+                            style="width: 100%; padding: 1rem 1.2rem; border: 2px solid #E8ECF0; border-radius: 12px; font-family: inherit; font-size: 1rem; resize: vertical; transition: all 0.3s;"></textarea>
+                    </div>
+
+                    <button type="submit" id="stock-submit-btn" class="btn-submit" style="display: none;">
+                        <i class="fas fa-paper-plane"></i> Submit Application
+                    </button>
+
+                    <div id="stock-requirements"
+                        style="background: #EEF5FF; padding: 1rem; border-radius: 10px; margin-top: 1rem; border-left: 4px solid var(--warning);">
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--text-dark);">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                            <strong>Note:</strong> Please upload at least one document to proceed with the application.
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Trading Account Success Modal -->
+    <div id="stock-success-modal" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-body" style="padding: 0;">
+                <div
+                    style="background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%); padding: 3rem 2rem; text-align: center; border-radius: 25px 25px 0 0; position: relative; overflow: hidden;">
+                    <div
+                        style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+                    </div>
+                    <div
+                        style="position: absolute; bottom: -30px; left: -30px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+                    </div>
+                    <div style="position: relative; z-index: 10;">
+                        <div
+                            style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; animation: scaleIn 0.5s ease;">
+                            <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #1565C0;"></i>
+                        </div>
+                        <h2
+                            style="color: white; font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.5rem;">
+                            Application Submitted!</h2>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Your stock trading account application has been received successfully</p>
+                    </div>
+                </div>
+
+                <div style="padding: 2.5rem 2rem;">
+                    <div style="background: #F8F9FA; border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem;">
+                            <div
+                                style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-chart-line" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Application ID</p>
+                                <h3 style="margin: 0.3rem 0 0 0; font-size: 1.3rem; color: var(--primary-dark); font-family: 'Courier New', monospace;"
+                                    id="stock-ref-number">—</h3>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 2px dashed #E8ECF0; padding-top: 1.2rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Account Type</p>
+                                    <p style="margin: 0.3rem 0 0 0; font-weight: 600; color: var(--primary-dark);"
+                                        id="stock-type-display">Stock Trading Account</p>
+                                </div>
+                                <div>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Documents Uploaded</p>
+                                    <p style="margin: 0.3rem 0 0 0; font-weight: 600; color: var(--primary-dark);"
+                                        id="stock-docs-count">1 file</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="background: #EEF5FF; border-radius: 15px; padding: 1.5rem; margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
+                        <h4 style="margin: 0 0 1rem 0; color: var(--primary-dark); font-size: 1.1rem;">
+                            <i class="fas fa-clock" style="color: var(--primary);"></i> What Happens Next?
+                        </h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <div style="display: flex; gap: 1rem; align-items: start;">
+                                <div
+                                    style="width: 30px; height: 30px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
+                                    1</div>
+                                <div>
+                                    <p style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
+                                        Document Verification</p>
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                                        Within 1 business day</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: start;">
+                                <div
+                                    style="width: 30px; height: 30px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
+                                    2</div>
+                                <div>
+                                    <p style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
+                                        KYC & Risk Assessment</p>
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                                        2-3 business days</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: start;">
+                                <div
+                                    style="width: 30px; height: 30px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
+                                    3</div>
+                                <div>
+                                    <p style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
+                                        Account Activation</p>
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                                        Within 5 business days</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #E8F5E9; border-radius: 15px; padding: 1.2rem; margin-bottom: 1.5rem;">
+                        <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;">
+                            <i class="fas fa-phone" style="color: #4CAF50;"></i>
+                            <strong>Need Help?</strong> Contact our trading support team at <strong>600 56 56 56</strong>
+                            or email <strong>trading@goodbank.com</strong>
+                        </p>
+                    </div>
+
+                    <button onclick="closeStockSuccessModal()" class="btn-submit" style="width: 100%; margin: 0;">
                         <i class="fas fa-check-circle"></i> Got It, Thanks!
                     </button>
                 </div>
