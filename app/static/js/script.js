@@ -951,6 +951,12 @@ async function handleLogin(event) {
         return;
     }
 
+    const submitBtn = document.querySelector('#login-form button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+    errorDiv.classList.remove('show');
+
     try {
         const response = await fetch('/login', {
             method: 'POST',
@@ -965,10 +971,14 @@ async function handleLogin(event) {
         } else {
             errorDiv.textContent = data.message || 'Login failed';
             errorDiv.classList.add('show');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         }
     } catch (error) {
         errorDiv.textContent = 'An error occurred during login. Please try again.';
         errorDiv.classList.add('show');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
         console.error('Login error:', error);
     }
 }

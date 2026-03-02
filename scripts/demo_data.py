@@ -55,14 +55,3 @@ USERS = {
         'address': 'B25, BUILDING NO 18, BUTINA AREA, SHARJAH'
     }
 }
-
-
-# Admin credentials — separate from regular USERS
-ADMIN_USERS = {
-    'admin': {
-        'password': 'admin@123',
-        'display_name': 'Administrator'
-    }
-}
-
-

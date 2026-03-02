@@ -18,7 +18,6 @@ from fastapi.templating import Jinja2Templates
 from app.core.config import get_settings
 from app.core.dependencies import get_session_manager, get_agent_client
 from app.core.logger import get_logger
-from app.data.demo_data import ADMIN_USERS
 from app.data.categories import CATEGORIES, get_category_by_slug
 from app.services.admin_service import fetch_applications_for_asset, compute_stats
 from app.services.rest_client import RestClient
@@ -90,9 +89,9 @@ async def admin_login_submit(request: Request, response: Response):
         sm = get_session_manager()
         session_id, session = sm.get_session(request)
 
-        if username in ADMIN_USERS and ADMIN_USERS[username]['password'] == password:
+        if username == settings.ADMIN_USERNAME and password == settings.ADMIN_PASSWORD:
             session['admin_logged_in'] = True
-            session['admin_username'] = ADMIN_USERS[username]['display_name']
+            session['admin_username'] = settings.ADMIN_DISPLAY_NAME
             redirect = RedirectResponse(url="/admin", status_code=303)
             sm.save_session(redirect, session_id)
             logger.info(f"Admin logged in: {username}")
