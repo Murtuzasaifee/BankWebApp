@@ -6,4 +6,5 @@ jinja2
 python-multipart
 requests
 loguru
-psycopg2-binary
+psycopg[binary]
+psycopg-pool
