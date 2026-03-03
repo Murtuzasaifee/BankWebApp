@@ -37,3 +37,26 @@ CREATE TABLE IF NOT EXISTS transactions (
     icon            VARCHAR(30) NOT NULL,
     created_at      TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS categories (
+    id              SERIAL PRIMARY KEY,
+    slug            VARCHAR(50) UNIQUE NOT NULL,
+    name            VARCHAR(100) NOT NULL,
+    icon            VARCHAR(50) NOT NULL,
+    description     TEXT,
+    display_order   INT DEFAULT 0,
+    is_active       BOOLEAN DEFAULT TRUE,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS subcategories (
+    id              SERIAL PRIMARY KEY,
+    category_id     INT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    slug            VARCHAR(50) NOT NULL,
+    name            VARCHAR(100) NOT NULL,
+    asset_id        VARCHAR(100),
+    display_order   INT DEFAULT 0,
+    is_active       BOOLEAN DEFAULT TRUE,
+    created_at      TIMESTAMP DEFAULT NOW(),
+    UNIQUE(category_id, slug)
+);

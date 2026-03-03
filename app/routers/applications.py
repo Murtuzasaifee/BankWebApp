@@ -18,7 +18,7 @@ from app.core.config import get_settings
 from app.core.dependencies import get_agent_client, get_session_manager
 from app.core.logger import get_logger
 from app.services.rest_client import RestClient
-from app.data.categories import get_category_by_slug
+from app.services.category_service import get_asset_id
 
 router = APIRouter()
 logger = get_logger()
@@ -28,12 +28,9 @@ logger = get_logger()
 # Shared helpers
 # ---------------------------------------------------------------------------
 
-def _asset_id_for(slug: str) -> str | None:
-    """Return the asset_id for the given category slug, or None if unconfigured."""
-    category = get_category_by_slug(slug)
-    if not category:
-        return None
-    return category.get("asset_id") or None
+def _asset_id_for(category_slug: str, subcategory_slug: str) -> str | None:
+    """Return the asset_id for the given category/subcategory slugs, or None if unconfigured."""
+    return get_asset_id(category_slug, subcategory_slug)
 
 
 def _invoke_asset(asset_id: str, payload: dict, settings, agent_client) -> str:
@@ -104,7 +101,7 @@ def submit_loan(body: LoanRequest, request: Request, response: Response):
 
         logger.info(f"[Loan Application] Type: {body.loan_type}, Files: {body.files_count}")
 
-        asset_id = _asset_id_for("loan-application")
+        asset_id = _asset_id_for("loan-application", "personal-loan")
         if not asset_id:
             return JSONResponse(
                 status_code=500,
@@ -167,7 +164,7 @@ async def submit_stock_account(
 
         logger.info(f"[Stock Account] Files: {len(files)}")
 
-        asset_id = _asset_id_for("account-opening")
+        asset_id = _asset_id_for("account-opening", "demat-account")
         if not asset_id:
             return JSONResponse(
                 status_code=500,

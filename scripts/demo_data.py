@@ -29,7 +29,7 @@ USERS = {
             {'merchant': 'Noon KSA', 'date': 'Jan 13, 2026', 'time': '22:05', 'type': 'Credit Card', 'amount': -800.00, 'status': 'Failed', 'icon': 'shopping-cart', 'id': 'TXN-3005'}
         ]
     },
-    'Ahmed Al Mansouri': {
+    'Ahmed Mansouri': {
         'password': 'password',
         'display_name': 'Ahmed Al Mansouri',
         'user_id': 'usr002',

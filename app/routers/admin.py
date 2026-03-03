@@ -18,7 +18,7 @@ from fastapi.templating import Jinja2Templates
 from app.core.config import get_settings
 from app.core.dependencies import get_session_manager, get_agent_client
 from app.core.logger import get_logger
-from app.data.categories import CATEGORIES, get_category_by_slug
+from app.services.category_service import get_all_categories, get_category_by_slug
 from app.services.admin_service import fetch_applications_for_asset, compute_stats
 from app.services.rest_client import RestClient
 
@@ -45,12 +45,25 @@ def _require_admin(request: Request):
     return session, session_id, sm, None
 
 
-def _fetch_live_data(asset_id: str):
-    """Fetch applications for a specific asset ID from the platform API and compute stats."""
+def _fetch_live_data_for_category(category: dict):
+    """
+    Fetch and merge applications for all subcategories of a category.
+    Each application is annotated with subcategory_name.
+    """
     agent_client = get_agent_client()
-    applications = fetch_applications_for_asset(agent_client, settings, asset_id)
-    stats = compute_stats(applications)
-    return applications, stats
+    all_applications = []
+    for sub in category.get("subcategories", []):
+        asset_id = sub.get("asset_id") or ""
+        if not asset_id.strip():
+            continue
+        apps = fetch_applications_for_asset(agent_client, settings, asset_id)
+        for app in apps:
+            app["subcategory_name"] = sub["name"]
+        all_applications.extend(apps)
+
+    all_applications.sort(key=lambda x: x.get("submission_date", ""), reverse=True)
+    stats = compute_stats(all_applications)
+    return all_applications, stats
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +166,7 @@ def admin_dashboard(request: Request):
             "theme_css": f"css/style_{settings.APP_THEME}.css",
             "username": session.get('admin_username', 'Admin'),
             "view_mode": "dashboard",
-            "categories": CATEGORIES
+            "categories": get_all_categories()
         }
     )
     sm.save_session(tmpl, session_id)
@@ -193,7 +206,7 @@ def get_categories(request: Request):
     if redirect:
         return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
 
-    resp = JSONResponse({"categories": CATEGORIES})
+    resp = JSONResponse({"categories": get_all_categories()})
     sm.save_session(resp, session_id)
     return resp
 
@@ -209,7 +222,7 @@ def get_category_data(request: Request, slug: str):
     if not category:
         return JSONResponse(status_code=404, content={"error": "Category not found"})
 
-    applications, stats = _fetch_live_data(category.get("asset_id"))
+    applications, stats = _fetch_live_data_for_category(category)
 
     resp = JSONResponse({
         "category": category,
