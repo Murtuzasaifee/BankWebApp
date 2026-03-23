@@ -74,7 +74,14 @@ app = FastAPI(
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://goodbank.site", 
+        "https://www.goodbank.site",
+        "http://goodbank.site",
+        "http://www.goodbank.site",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

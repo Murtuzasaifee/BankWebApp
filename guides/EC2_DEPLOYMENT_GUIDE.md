@@ -332,6 +332,51 @@ rm -rf ~/bankapp
 
 ---
 
+## 11. Domain & HTTPS Setup (Nginx)
+
+To serve the application securely on a domain (e.g., `goodbank.site`) instead of `http://YOUR_EC2_IP:8000`, follow these steps:
+
+### 1. Update AWS Security Group
+- Open port **80 (HTTP)** and **443 (HTTPS)** for `0.0.0.0/0` in your EC2 instance's Security Group.
+
+### 2. Configure DNS
+- Add an **A record** in your domain registrar pointing `goodbank.site` to the EC2 Public IP.
+- Add a **CNAME** or **A record** for `www.goodbank.site` pointing to the same EC2 Public IP.
+
+### 3. Install Nginx and Certbot
+SSH into your EC2 instance and run:
+```bash
+# Note: Amazon Linux 2023 instructions
+sudo yum install nginx augeas-libs -y
+sudo python3 -m venv /opt/certbot/
+sudo /opt/certbot/bin/pip install --upgrade pip
+sudo /opt/certbot/bin/pip install certbot certbot-nginx
+sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+```
+
+### 4. Apply Nginx Configuration
+We have provided a template Nginx configuration. Copy it to the Nginx config directory:
+```bash
+# Verify the configuration file
+nano /home/ec2-user/bankapp/deployment_scripts/bankapp_nginx.conf
+
+# Copy to nginx
+sudo cp /home/ec2-user/bankapp/deployment_scripts/bankapp_nginx.conf /etc/nginx/conf.d/bankapp.conf
+
+# Start Nginx
+sudo systemctl enable nginx
+sudo systemctl start nginx
+```
+
+### 5. Install SSL Certificate
+Run `certbot` to generate the SSL certificates and automatically update the Nginx configuration to force HTTPS:
+```bash
+sudo certbot --nginx -d goodbank.site -d www.goodbank.site
+```
+Ensure your application is running (`bash deployment_scripts/manage.sh start`), and you should now be able to securely visit `https://goodbank.site`!
+
+---
+
 ## Quick Reference
 
 | Action | Command |
