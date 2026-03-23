@@ -27,7 +27,9 @@ CATEGORIES = [
     },
 ]
 
-def get_category_by_slug(slug: str) -> dict | None:
+from typing import Optional
+
+def get_category_by_slug(slug: str) -> Optional[dict]:
     """Return category dict by slug, or None if not found."""
     for cat in CATEGORIES:
         if cat["slug"] == slug:

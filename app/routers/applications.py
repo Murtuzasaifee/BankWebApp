@@ -8,7 +8,7 @@ The asset ID comes from categories.py; only the payload and transport differ:
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, File, Form, Request, Response, UploadFile
 from fastapi.responses import JSONResponse
@@ -28,7 +28,7 @@ logger = get_logger()
 # Shared helpers
 # ---------------------------------------------------------------------------
 
-def _asset_id_for(slug: str) -> str | None:
+def _asset_id_for(slug: str) -> Optional[str]:
     """Return the asset_id for the given category slug, or None if unconfigured."""
     category = get_category_by_slug(slug)
     if not category:
