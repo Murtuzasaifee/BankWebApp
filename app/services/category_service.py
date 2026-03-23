@@ -5,6 +5,7 @@ Replaces the static `app/data/categories.py` lookups for runtime use.
 `app/data/categories.py` is retained as seed data source only.
 """
 
+from typing import Optional
 from app.db.connection import execute_query
 
 
@@ -22,7 +23,7 @@ def get_all_categories() -> list[dict]:
     return categories
 
 
-def get_category_by_slug(slug: str) -> dict | None:
+def get_category_by_slug(slug: str) -> Optional[dict]:
     """Return a single active category by slug, or None if not found."""
     rows = execute_query(
         "SELECT id, slug, name, icon, description, display_order "
@@ -45,7 +46,7 @@ def get_subcategories(category_id: int) -> list[dict]:
     )
 
 
-def get_asset_id(category_slug: str, subcategory_slug: str) -> str | None:
+def get_asset_id(category_slug: str, subcategory_slug: str) -> Optional[str]:
     """
     Return the asset_id for a specific category + subcategory pair.
     Returns None if either slug is not found or the asset_id is empty.

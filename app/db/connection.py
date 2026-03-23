@@ -19,7 +19,8 @@ from app.core.logger import get_logger
 
 logger = get_logger()
 
-_pool: ConnectionPool | None = None
+from typing import Optional
+_pool: Optional[ConnectionPool] = None
 
 
 # ---------------------------------------------------------------------------

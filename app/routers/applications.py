@@ -28,7 +28,7 @@ logger = get_logger()
 # Shared helpers
 # ---------------------------------------------------------------------------
 
-def _asset_id_for(category_slug: str, subcategory_slug: str) -> str | None:
+def _asset_id_for(category_slug: str, subcategory_slug: str) -> Optional[str]:
     """Return the asset_id for the given category/subcategory slugs, or None if unconfigured."""
     return get_asset_id(category_slug, subcategory_slug)
 
