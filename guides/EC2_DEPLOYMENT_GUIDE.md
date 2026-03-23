@@ -74,11 +74,12 @@ ssh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP
 From your **local machine**, you can upload the project using either of these two methods:
 
 ### Option A: Using the Synchronization Script (Recommended)
-This method is faster and automatically ignores unnecessary files (like `.env`, `venv/`, `__pycache__`):
+This method is faster and automatically ignores unnecessary files (like `.env`, `venv/`, `__pycache__`). It also automatically creates the target folder if it doesn't exist:
 ```bash
 # Upload using rsync
 bash deployment_scripts/sync_to_ec2.sh -i your-key.pem ec2-user@YOUR_EC2_PUBLIC_IP /home/ec2-user/bankapp
 ```
+*Note: You can also use `--identity` instead of `-i` for the SSH key flag.*
 
 ### Option B: Manual Upload via SCP
 If you don't have rsync or prefer a direct secure copy:
@@ -234,16 +235,23 @@ bash deployment_scripts/sync_to_ec2.sh -i your-key.pem ec2-user@YOUR_EC2_IP /hom
 *Note: After a basic sync, you will still need to manually restart the application on the EC2 instance.*
 
 ### Initial Deployment (`--deploy`)
-If this is your **first time** deploying the code to the instance, you can use the `--deploy` flag. This will sync all files, set up the virtual environment, install requirements, and start the app.
+If this is your **first time** deploying the code to the instance, you can use the `--deploy` flag. This will sync all files, automatically kill any existing processes on port 8000, set up the virtual environment, install requirements, and start the app.
 ```bash
 bash deployment_scripts/sync_to_ec2.sh --deploy -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
 ```
 
 ### Update Code AND Automatically Redeploy (`--redeploy`)
-For everyday code updates, use the `--redeploy` flag. This synchronizes your files and seamlessly restarts your running application.
+For everyday code updates, use the `--redeploy` flag. This synchronizes your files, kills any existing processes on port 8000, and gracefully restarts your application. If the virtual environment (`venv`) is missing, it will automatically perform a full setup instead of just a restart.
 
 ```bash
 bash deployment_scripts/sync_to_ec2.sh --redeploy -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
+```
+
+### Complete Redeployment (`--fresh`)
+If you need to completely rebuild the python environment, use the `--fresh` flag. This synchronizes files, stops the app, completely removes the existing virtual environment (`venv`), and redeploys from scratch.
+
+```bash
+bash deployment_scripts/sync_to_ec2.sh --fresh -i your-key.pem ec2-user@YOUR_EC2_IP /home/ec2-user/bankapp
 ```
 
 ### Manual Restart Command (If not using `--redeploy`)

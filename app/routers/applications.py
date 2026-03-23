@@ -8,7 +8,7 @@ The asset ID comes from categories.py; only the payload and transport differ:
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, File, Form, Request, Response, UploadFile
 from fastapi.responses import JSONResponse
