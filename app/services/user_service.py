@@ -22,14 +22,42 @@ def _build_user_dict(user_row, accounts_rows, txn_rows):
     # Convert Decimals
     data["monthly_salary"] = _to_float(data.get("monthly_salary"))
 
+    # Build payment_instruments from accounts rows
+    data["payment_instruments"] = []
+    for a in accounts_rows:
+        limits = {}
+        if a.get("per_txn_limit") is not None:
+            limits["per_transaction_limit"] = _to_float(a["per_txn_limit"])
+        if a.get("daily_limit") is not None:
+            limits["daily_transaction_limit"] = _to_float(a["daily_limit"])
+        if a.get("monthly_limit") is not None:
+            limits["monthly_transaction_limit"] = _to_float(a["monthly_limit"])
+        if a.get("available_credit") is not None:
+            limits["available_credit"] = _to_float(a["available_credit"])
+
+        data["payment_instruments"].append({
+            "instrument_type": a.get("instrument_type"),
+            "instrument_id": a.get("instrument_id"),
+            "account_number": a.get("account_number"),
+            "account_type": a.get("account_type"),
+            "account_status": a.get("account_status"),
+            "branch_code": a.get("branch_code"),
+            "currency": a.get("currency"),
+            "status": a.get("account_status", "Active"),
+            "balance": _to_float(a.get("balance")),
+            "limits": limits,
+        })
+
+    # Keep the simple accounts list for the dashboard UI
     data["accounts"] = [
         {
             "type": a["type"],
             "balance": _to_float(a["balance"]),
-            "number": a["number"],
+            "number": a["account_number"],
         }
         for a in accounts_rows
     ]
+
     data["transactions"] = [
         {
             "id": t["txn_id"],
@@ -44,6 +72,7 @@ def _build_user_dict(user_row, accounts_rows, txn_rows):
         for t in txn_rows
     ]
     return data
+
 
 
 def get_user_by_credentials(username: str, password: str):
@@ -63,7 +92,9 @@ def get_user_by_credentials(username: str, password: str):
     user_id = user_row["user_id"]
 
     accounts = execute_query(
-        "SELECT type, balance, number FROM accounts WHERE user_id = %s",
+        "SELECT type, balance, account_number, account_type, account_status, branch_code, currency, "
+        "instrument_type, instrument_id, per_txn_limit, daily_limit, monthly_limit, available_credit "
+        "FROM accounts WHERE user_id = %s",
         (user_id,),
     )
     transactions = execute_query(
@@ -89,7 +120,9 @@ def get_user_profile(user_id: str):
     user_row = rows[0]
 
     accounts = execute_query(
-        "SELECT type, balance, number FROM accounts WHERE user_id = %s",
+        "SELECT type, balance, account_number, account_type, account_status, branch_code, currency, "
+        "instrument_type, instrument_id, per_txn_limit, daily_limit, monthly_limit, available_credit "
+        "FROM accounts WHERE user_id = %s",
         (user_id,),
     )
     transactions = execute_query(

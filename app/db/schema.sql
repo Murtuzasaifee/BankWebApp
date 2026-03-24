@@ -11,16 +11,27 @@ CREATE TABLE IF NOT EXISTS users (
     monthly_salary  DECIMAL(12,2),
     mobile          VARCHAR(30),
     address         TEXT,
+    kyc_status      VARCHAR(30) DEFAULT 'Completed',
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS accounts (
-    id              SERIAL PRIMARY KEY,
-    user_id         VARCHAR(20) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    type            VARCHAR(50) NOT NULL,
-    balance         DECIMAL(12,2) DEFAULT 0,
-    number          VARCHAR(50) NOT NULL,
-    created_at      TIMESTAMP DEFAULT NOW()
+    id               SERIAL PRIMARY KEY,
+    user_id          VARCHAR(20) NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    type             VARCHAR(50) NOT NULL,
+    balance          DECIMAL(12,2) DEFAULT 0,
+    account_number   VARCHAR(50) NOT NULL,
+    account_type     VARCHAR(100),
+    account_status   VARCHAR(30) DEFAULT 'Active',
+    branch_code      VARCHAR(50),
+    currency         VARCHAR(10) DEFAULT 'SAR',
+    instrument_type  VARCHAR(50),
+    instrument_id    VARCHAR(50),
+    per_txn_limit    DECIMAL(12,2),
+    daily_limit      DECIMAL(12,2),
+    monthly_limit    DECIMAL(12,2),
+    available_credit DECIMAL(12,2),
+    created_at       TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
