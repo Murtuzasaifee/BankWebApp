@@ -21,6 +21,9 @@
             <a href="/">
                 <i class="fas fa-arrow-left"></i> Back to Site
             </a>
+            <a href="/admin/settings" class="nav-settings-btn{% if view_mode == 'settings' %} active{% endif %}" title="Asset Configuration">
+                <i class="fas fa-cog"></i>
+            </a>
             <div class="nav-user">
                 <span class="nav-username">
                     <i class="fas fa-user-circle"></i> {{ username }}
@@ -39,6 +42,14 @@
             {% if view_mode == 'dashboard' %}
             <h1>Dashboard</h1>
             <p>Select a category to view applications</p>
+            {% elif view_mode == 'settings' %}
+            <div class="breadcrumbs">
+                <a href="/admin">Dashboard</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>Asset Configuration</span>
+            </div>
+            <h1>Asset Configuration</h1>
+            <p>Manage ChatNow, IntelliChat, and subcategory asset IDs</p>
             {% else %}
             <div class="breadcrumbs">
                 <a href="/admin">Dashboard</a>
@@ -71,12 +82,14 @@
             {% endfor %}
         </div>
 
+        {% elif view_mode == 'settings' %}
+
         <!-- Asset Configuration Panel -->
         <div class="asset-config-panel" id="asset-config-panel">
             <div class="asset-config-header">
                 <div class="asset-config-title">
                     <i class="fas fa-sliders-h"></i>
-                    <h2>Asset Configuration</h2>
+                    <h2>Asset IDs</h2>
                 </div>
                 <div class="asset-config-actions">
                     <button id="btn-reload-config" class="btn-reload-config" onclick="reloadConfig()" title="Reload cache from DB without saving">
@@ -99,11 +112,11 @@
                     <div class="asset-fields-grid">
                         <div class="asset-field">
                             <label for="field-chatnow">ChatNow Asset ID <span class="asset-label-hint">(Guest chat)</span></label>
-                            <input type="text" id="field-chatnow" name="chatnow_asset_id" class="asset-input" placeholder="e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                            <input type="text" id="field-chatnow" name="chatnow" class="asset-input" placeholder="e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
                         </div>
                         <div class="asset-field">
                             <label for="field-intellichat">IntelliChat Asset ID <span class="asset-label-hint">(Logged-in chat)</span></label>
-                            <input type="text" id="field-intellichat" name="intellichat_asset_id" class="asset-input" placeholder="e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                            <input type="text" id="field-intellichat" name="intellichat" class="asset-input" placeholder="e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
                         </div>
                     </div>
                 </div>
@@ -115,7 +128,7 @@
                         <table class="asset-table" id="subcategory-asset-table">
                             <thead>
                                 <tr>
-                                    <th>Category / Subcategory</th>
+                                    <th>Subcategory</th>
                                     <th>Asset ID</th>
                                 </tr>
                             </thead>
@@ -458,7 +471,7 @@
 
         function loadAssetConfig() {
             const panel = document.getElementById('asset-config-panel');
-            if (!panel) return;  // not on dashboard view
+            if (!panel) return;  // only on settings view
 
             fetch('/admin/api/asset-config')
                 .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
@@ -475,8 +488,8 @@
         }
 
         function populateAssetConfig(data) {
-            document.getElementById('field-chatnow').value = data.chatnow_asset_id || '';
-            document.getElementById('field-intellichat').value = data.intellichat_asset_id || '';
+            document.getElementById('field-chatnow').value = data.chatnow || '';
+            document.getElementById('field-intellichat').value = data.intellichat || '';
 
             _subcategoryRows = data.subcategories || [];
             const tbody = document.getElementById('subcategory-tbody');
@@ -514,8 +527,8 @@
             }));
 
             const body = {
-                chatnow_asset_id: document.getElementById('field-chatnow').value.trim(),
-                intellichat_asset_id: document.getElementById('field-intellichat').value.trim(),
+                chatnow: document.getElementById('field-chatnow').value.trim(),
+                intellichat: document.getElementById('field-intellichat').value.trim(),
                 subcategories
             };
 

@@ -64,7 +64,6 @@ CREATE TABLE IF NOT EXISTS subcategories (
     category_id     INT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     slug            VARCHAR(50) NOT NULL,
     name            VARCHAR(100) NOT NULL,
-    asset_id        VARCHAR(100),
     display_order   INT DEFAULT 0,
     is_active       BOOLEAN DEFAULT TRUE,
     created_at      TIMESTAMP DEFAULT NOW(),

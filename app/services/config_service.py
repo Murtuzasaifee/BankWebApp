@@ -5,14 +5,19 @@ All asset IDs (CHATNOW, INTELLICHAT, and every subcategory) are stored in the
 `app_config` DB table and loaded once at application startup into a module-level
 cache. This means zero DB queries per request for asset ID lookups.
 
+Key naming convention in app_config:
+  - Chat agents : chatnow, intellichat
+  - Subcategories: <sub_slug with hyphens replaced by underscores>
+                   e.g. savings_account, personal_loan, demat_account
+
 Public API:
-    load_asset_ids()                        — called once at startup
-    get_chatnow_asset_id() -> str           — cached chatnow value
-    get_intellichat_asset_id() -> str       — cached intellichat value
-    get_subcategory_asset_id(cat, sub) -> str|None  — cached subcategory value
-    get_all_cached_asset_ids() -> dict      — full cache snapshot (for admin UI)
-    reload_asset_ids()                      — re-load from DB (called by admin API)
-    update_asset_ids(updates: dict) -> None — persist to DB then reload cache
+    load_asset_ids()                          — called once at startup
+    get_chatnow_asset_id() -> str             — cached chatnow value
+    get_intellichat_asset_id() -> str         — cached intellichat value
+    get_subcategory_asset_id(sub_slug) -> str|None — cached subcategory value
+    get_all_cached_asset_ids() -> dict        — full cache snapshot (for admin UI)
+    reload_asset_ids()                        — re-load from DB (called by admin API)
+    update_asset_ids(updates: dict) -> None   — persist to DB then reload cache
 """
 
 from typing import Optional
@@ -27,16 +32,17 @@ logger = get_logger()
 _cache: dict[str, str] = {}
 
 # Key constants for the two chat-agent IDs
-_KEY_CHATNOW = "chatnow_asset_id"
-_KEY_INTELLICHAT = "intellichat_asset_id"
+_KEY_CHATNOW = "chatnow"
+_KEY_INTELLICHAT = "intellichat"
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _subcategory_key(cat_slug: str, sub_slug: str) -> str:
-    return f"asset.{cat_slug}.{sub_slug}"
+def _sub_key(sub_slug: str) -> str:
+    """Convert a subcategory slug to an app_config key, e.g. savings-account → savings_account."""
+    return sub_slug.replace("-", "_")
 
 
 def _load_from_db() -> dict[str, str]:
@@ -46,17 +52,6 @@ def _load_from_db() -> dict[str, str]:
     return {row["key"]: (row["value"] or "") for row in rows}
 
 
-def _fallback_from_env() -> dict[str, str]:
-    """Build a minimal cache from .env settings (used when DB is unavailable)."""
-    from app.core.config import get_settings
-    settings = get_settings()
-    cache: dict[str, str] = {
-        _KEY_CHATNOW: settings.CHATNOW_ASSET_ID or "",
-        _KEY_INTELLICHAT: settings.INTELLICHAT_ASSET_ID or "",
-    }
-    return cache
-
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -64,11 +59,8 @@ def _fallback_from_env() -> dict[str, str]:
 def load_asset_ids() -> None:
     """
     Load all asset IDs from the app_config DB table into the in-memory cache.
-
-    Falls back to .env values for the two chat-agent IDs if the DB is not
-    configured or if the app_config table has no relevant rows yet.
-
     Called once during application startup (lifespan).
+    Raises a warning if the DB pool is unavailable or the table is empty.
     """
     global _cache
 
@@ -80,34 +72,24 @@ def load_asset_ids() -> None:
         db_data = _load_from_db()
 
         if not db_data:
-            # Table exists but is empty — seed defaults from .env
             logger.warning(
-                "app_config table is empty. Falling back to .env values. "
-                "Run scripts/migrate_add_app_config.py to seed the DB."
+                "app_config table is empty — asset IDs not loaded. "
+                "Run: python scripts/migrate_add_app_config.py"
             )
-            _cache = _fallback_from_env()
+            _cache = {}
         else:
             _cache = db_data
-            # If chat agent IDs are missing from DB, supplement from .env
-            from app.core.config import get_settings
-            settings = get_settings()
-            if not _cache.get(_KEY_CHATNOW) and settings.CHATNOW_ASSET_ID:
-                _cache[_KEY_CHATNOW] = settings.CHATNOW_ASSET_ID
-            if not _cache.get(_KEY_INTELLICHAT) and settings.INTELLICHAT_ASSET_ID:
-                _cache[_KEY_INTELLICHAT] = settings.INTELLICHAT_ASSET_ID
 
         logger.info(
             f"Asset IDs loaded from app_config — "
             f"chatnow={_cache.get(_KEY_CHATNOW, '')!r}, "
             f"intellichat={_cache.get(_KEY_INTELLICHAT, '')!r}, "
-            f"subcategories={sum(1 for k in _cache if k.startswith('asset.'))}"
+            f"subcategory_count={sum(1 for k in _cache if k not in (_KEY_CHATNOW, _KEY_INTELLICHAT))}"
         )
 
     except Exception as e:
-        logger.warning(
-            f"Could not load asset IDs from DB ({e}). Falling back to .env values."
-        )
-        _cache = _fallback_from_env()
+        _cache = {}
+        logger.warning(f"Could not load asset IDs from DB: {e}. Cache is empty.")
 
 
 def reload_asset_ids() -> None:
@@ -117,21 +99,22 @@ def reload_asset_ids() -> None:
 
 
 def get_chatnow_asset_id() -> str:
-    """Return the cached CHATNOW asset ID (empty string if not set)."""
+    """Return the cached ChatNow asset ID (empty string if not set)."""
     return _cache.get(_KEY_CHATNOW, "")
 
 
 def get_intellichat_asset_id() -> str:
-    """Return the cached INTELLICHAT asset ID (empty string if not set)."""
+    """Return the cached IntelliChat asset ID (empty string if not set)."""
     return _cache.get(_KEY_INTELLICHAT, "")
 
 
-def get_subcategory_asset_id(cat_slug: str, sub_slug: str) -> Optional[str]:
+def get_subcategory_asset_id(sub_slug: str) -> Optional[str]:
     """
-    Return the cached asset ID for a category/subcategory pair.
+    Return the cached asset ID for a subcategory slug.
+    e.g. get_subcategory_asset_id('savings-account') looks up key 'savings_account'.
     Returns None if not found or the stored value is empty.
     """
-    key = _subcategory_key(cat_slug, sub_slug)
+    key = _sub_key(sub_slug)
     value = _cache.get(key, "")
     return value if value else None
 
@@ -142,24 +125,26 @@ def get_all_cached_asset_ids() -> dict:
 
     Structure:
     {
-        "chatnow_asset_id": "...",
-        "intellichat_asset_id": "...",
+        "chatnow": "...",
+        "intellichat": "...",
         "subcategories": [
-            {"key": "asset.account-opening.savings-account", "value": "...", "label": "account-opening / savings-account"},
+            {"key": "savings_account", "value": "...", "label": "Savings Account"},
             ...
         ]
     }
     """
+    # Keys that are NOT subcategory entries
+    agent_keys = {_KEY_CHATNOW, _KEY_INTELLICHAT}
+
     subcategories = []
     for key, value in sorted(_cache.items()):
-        if key.startswith("asset."):
-            parts = key.split(".", 2)  # ["asset", "cat-slug", "sub-slug"]
-            label = f"{parts[1]} / {parts[2]}" if len(parts) == 3 else key
+        if key not in agent_keys:
+            label = key.replace("_", " ").title()
             subcategories.append({"key": key, "value": value, "label": label})
 
     return {
-        "chatnow_asset_id": _cache.get(_KEY_CHATNOW, ""),
-        "intellichat_asset_id": _cache.get(_KEY_INTELLICHAT, ""),
+        "chatnow": _cache.get(_KEY_CHATNOW, ""),
+        "intellichat": _cache.get(_KEY_INTELLICHAT, ""),
         "subcategories": subcategories,
     }
 
@@ -167,7 +152,6 @@ def get_all_cached_asset_ids() -> dict:
 def update_asset_ids(updates: dict) -> None:
     """
     Persist a dict of {key: value} pairs to the app_config table and reload the cache.
-
     Used by the admin API to save changes made via the UI.
     """
     from app.db.connection import execute_command

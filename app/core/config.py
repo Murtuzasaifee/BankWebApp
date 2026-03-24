@@ -32,8 +32,6 @@ class Settings(BaseSettings):
     LOCATION: str = "Riyadh, KSA"
 
     # Agent Configuration
-    CHATNOW_ASSET_ID: str = ""
-    INTELLICHAT_ASSET_ID: str = ""
     QUERY_TIMEOUT: int = 60
 
     # Database Configuration (Supabase Postgres)
@@ -67,6 +65,7 @@ class Settings(BaseSettings):
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
+        "extra": "ignore",
     }
     
     def __init__(self, **data):

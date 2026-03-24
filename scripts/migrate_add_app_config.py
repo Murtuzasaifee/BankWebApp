@@ -2,9 +2,12 @@
 Migration script — creates the app_config table and seeds all asset IDs.
 
 Seeds:
-  - chatnow_asset_id      from CHATNOW_ASSET_ID in .env
-  - intellichat_asset_id  from INTELLICHAT_ASSET_ID in .env
-  - asset.<cat>.<sub>     from every row in the subcategories table
+  - chatnow       — Asset version ID for the guest ChatNow agent
+  - intellichat   — Asset version ID for the logged-in IntelliChat agent
+  - <sub_slug>    — one row per subcategory (hyphens → underscores)
+                    e.g. savings_account, personal_loan, demat_account
+
+Key naming: simple single-word keys (no dots, no category prefix).
 
 Safe to run multiple times (uses ON CONFLICT DO UPDATE).
 
@@ -18,7 +21,6 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.db.connection import get_connection
-from app.core.config import get_settings
 
 # ---------------------------------------------------------------------------
 # DDL
@@ -37,14 +39,13 @@ UPSERT = """
 INSERT INTO app_config (key, value, description)
 VALUES (%s, %s, %s)
 ON CONFLICT (key) DO UPDATE SET
-    value      = EXCLUDED.value,
+    value       = EXCLUDED.value,
     description = EXCLUDED.description,
     updated_at  = NOW();
 """
 
 
 def migrate():
-    settings = get_settings()
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -52,27 +53,20 @@ def migrate():
             cur.execute(CREATE_TABLE)
             print("✔  app_config table ensured")
 
-            # 2. Seed chat agent asset IDs from .env
+            # 2. Seed chat agent rows (values left blank — admin sets them via UI)
             chat_rows = [
-                (
-                    "chatnow_asset_id",
-                    settings.CHATNOW_ASSET_ID or "",
-                    "Asset version ID for the guest ChatNow agent",
-                ),
-                (
-                    "intellichat_asset_id",
-                    settings.INTELLICHAT_ASSET_ID or "",
-                    "Asset version ID for the logged-in IntelliChat agent",
-                ),
+                ("chatnow",      "", "Asset version ID for the guest ChatNow agent"),
+                ("intellichat",  "", "Asset version ID for the logged-in IntelliChat agent"),
             ]
             for row in chat_rows:
                 cur.execute(UPSERT, row)
-            print(f"✔  Seeded {len(chat_rows)} chat agent asset ID rows")
+            print(f"✔  Seeded {len(chat_rows)} chat agent rows (values blank — set via Admin UI)")
 
-            # 3. Seed subcategory asset IDs from the subcategories table
+            # 3. Seed subcategory rows from the subcategories table
+            #    Key = sub_slug with hyphens replaced by underscores
             cur.execute(
                 """
-                SELECT c.slug AS cat_slug, s.slug AS sub_slug, s.asset_id, s.name
+                SELECT s.slug AS sub_slug, s.name AS sub_name
                 FROM subcategories s
                 JOIN categories c ON c.id = s.category_id
                 WHERE c.is_active = TRUE AND s.is_active = TRUE
@@ -81,18 +75,23 @@ def migrate():
             sub_rows = cur.fetchall()
             seeded_subs = 0
             for row in sub_rows:
-                # row is a tuple: (cat_slug, sub_slug, asset_id, name)
-                cat_slug, sub_slug, asset_id, sub_name = row
-                key = f"asset.{cat_slug}.{sub_slug}"
-                cur.execute(
-                    UPSERT,
-                    (key, asset_id or "", f"Asset ID for {sub_name}"),
-                )
+                sub_slug, sub_name = row
+                key = sub_slug.replace("-", "_")
+                cur.execute(UPSERT, (key, "", f"Asset ID for {sub_name}"))
                 seeded_subs += 1
-            print(f"✔  Seeded {seeded_subs} subcategory asset ID rows")
+            print(f"✔  Seeded {seeded_subs} subcategory rows (values blank — set via Admin UI)")
+
+            # 4. Drop the now-unused asset_id column from subcategories (idempotent)
+            cur.execute(
+                """
+                ALTER TABLE subcategories
+                    DROP COLUMN IF EXISTS asset_id;
+                """
+            )
+            print("✔  Dropped asset_id column from subcategories (if it existed)")
 
         conn.commit()
-        print("\n✅  Migration complete. app_config table is ready.")
+        print("\n✅  Migration complete. Set asset IDs via the Admin UI → Asset Configuration.")
     except Exception as e:
         conn.rollback()
         print(f"\n❌  Migration failed: {e}")

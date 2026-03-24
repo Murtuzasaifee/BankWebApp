@@ -290,6 +290,31 @@ def get_request_logs_api(request: Request, request_type: str = None):
 
 
 # ---------------------------------------------------------------------------
+# Settings Page
+# ---------------------------------------------------------------------------
+
+@router.get("/settings")
+def admin_settings(request: Request):
+    """Render the admin settings page (asset configuration)."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return redirect
+
+    resp = templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "app_name": settings.APP_NAME,
+            "theme_css": f"css/style_{settings.APP_THEME}.css",
+            "username": session.get("admin_username", "Admin"),
+            "view_mode": "settings",
+        },
+    )
+    sm.save_session(resp, session_id)
+    return resp
+
+
+# ---------------------------------------------------------------------------
 # Asset Config API
 # ---------------------------------------------------------------------------
 
@@ -311,10 +336,10 @@ async def save_asset_config(request: Request):
     Persist updated asset IDs to app_config and reload the in-memory cache.
     Accepts JSON body:
     {
-      "chatnow_asset_id": "...",
-      "intellichat_asset_id": "...",
+      "chatnow": "...",
+      "intellichat": "...",
       "subcategories": [
-        {"key": "asset.account-opening.savings-account", "value": "..."}, ...
+        {"key": "savings_account", "value": "..."}, ...
       ]
     }
     Requires admin session.
@@ -330,16 +355,17 @@ async def save_asset_config(request: Request):
 
     updates: dict = {}
 
-    if "chatnow_asset_id" in body:
-        updates["chatnow_asset_id"] = (body["chatnow_asset_id"] or "").strip()
+    if "chatnow" in body:
+        updates["chatnow"] = (body["chatnow"] or "").strip()
 
-    if "intellichat_asset_id" in body:
-        updates["intellichat_asset_id"] = (body["intellichat_asset_id"] or "").strip()
+    if "intellichat" in body:
+        updates["intellichat"] = (body["intellichat"] or "").strip()
 
     for item in body.get("subcategories", []):
         key = (item.get("key") or "").strip()
         value = (item.get("value") or "").strip()
-        if key.startswith("asset."):
+        # Accept any simple key (no dots — that was the old format)
+        if key and "." not in key:
             updates[key] = value
 
     if not updates:
