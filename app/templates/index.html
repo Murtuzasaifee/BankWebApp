@@ -16,20 +16,25 @@
 <body>
 
     <nav class="navbar">
-        <div class="logo">{{ app_name }}</div>
+        <div class="logo">
+            <div class="logo-emblem"><i class="fas fa-university"></i></div>
+            <span>{{ app_name }}</span>
+        </div>
         <div class="nav-links" id="nav-links">
             <a href="#services" class="pre-login-nav">Services</a>
-            <a href="#features" class="pre-login-nav">Features</a>
-            <a href="#about" class="pre-login-nav">About</a>
+            <a href="#features" class="pre-login-nav">Why Us</a>
             <a href="#contact" class="pre-login-nav">Contact</a>
-            <a href="javascript:void(0)" class="pre-login-nav open-account-nav" onclick="openSavingsModal()"
-                style="background: var(--primary); color: white; padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 600; transition: all 0.3s;">
+            <div class="nav-sep pre-login-nav"></div>
+            <a href="javascript:void(0)" class="pre-login-nav nav-open-btn" onclick="openSavingsModal()">
                 <i class="fas fa-piggy-bank"></i> Open Account
             </a>
-            <a href="#" class="post-login-nav" style="display: none;" onclick="scrollToDashboard()">Dashboard</a>
-            <a href="#" class="post-login-nav" style="display: none;" onclick="openTransferModal()">Transfer</a>
-            <a href="#" class="post-login-nav" style="display: none;" onclick="openCardsModal()">My Cards</a>
-            <a href="#" class="post-login-nav" style="display: none;" onclick="openChat()">Support</a>
+            <a href="javascript:void(0)" class="post-login-nav" style="display: none;"
+                onclick="scrollToDashboard()">Dashboard</a>
+            <a href="javascript:void(0)" class="post-login-nav" style="display: none;"
+                onclick="openTransferModal()">Transfer</a>
+            <a href="javascript:void(0)" class="post-login-nav" style="display: none;" onclick="openCardsModal()">My
+                Cards</a>
+            <a href="javascript:void(0)" class="post-login-nav" style="display: none;" onclick="openChat()">Support</a>
             <button class="login-nav-btn" onclick="showLoginModal()" id="login-btn">
                 <i class="fas fa-user"></i> Login
             </button>
@@ -44,237 +49,295 @@
     </nav>
 
     <div class="pre-login-content">
-        <section class="hero-section">
-            <div class="hero-pattern"></div>
-            <div class="hero-content">
-                <h1 class="hero-title">Your Trusted Banking Partner</h1>
-                <p class="hero-subtitle">Premium banking services tailored for the Middle East</p>
-                <div class="hero-buttons">
-                    <button class="btn-primary" onclick="openSavingsModal()">
-                        <i class="fas fa-piggy-bank"></i> Open an Account
-                    </button>
-                    <button class="btn-secondary" onclick="openChat()">
-                        <i class="fas fa-comments"></i> Talk to Us
-                    </button>
-                    <button class="btn-secondary" onclick="showLoginModal()">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Open Account CTA Banner -->
-        <section id="open-account-banner"
-            style="background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%); padding: 4rem 5%; border-bottom: 1px solid rgba(124, 58, 237, 0.1);">
-            <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 3rem; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 280px;">
-                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(124, 58, 237, 0.1); color: var(--primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem;">
-                        <i class="fas fa-star"></i> No Hidden Fees
-                    </div>
-                    <h2 style="font-family: 'Playfair Display', serif; font-size: 2.4rem; color: var(--primary-dark); margin-bottom: 1rem; line-height: 1.3;">
-                        Start Your Banking Journey Today
-                    </h2>
-                    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.7;">
-                        Open a Savings or Current account in minutes. Upload your documents online and get your account activated within 5–7 business days — no branch visit needed.
-                    </p>
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-                        <button onclick="openSavingsModal()"
-                            style="background: var(--gradient-primary); color: white; border: none; padding: 1rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.6rem; box-shadow: 0 4px 15px var(--shadow-primary);"
-                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px var(--shadow-dark)'"
-                            onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 15px var(--shadow-primary)'">
-                            <i class="fas fa-piggy-bank"></i> Open Account Now
-                        </button>
-                        <span style="font-size: 0.9rem; color: var(--text-muted);">
-                            <i class="fas fa-shield-alt" style="color: var(--primary);"></i> Secure &amp; 100% Online
-                        </span>
+        <!-- Merged Hero + Slider -->
+        <section class="hero-slider-section">
+            <div class="hero-slider" id="heroSlider">
+                <!-- Slide 1: Account Opening -->
+                <div class="hero-slide active">
+                    <div class="hero-slide-inner">
+                        <div class="hero-slide-content">
+                            <div class="hero-slide-badge"><i class="fas fa-star"></i> No Branch Visit Needed</div>
+                            <h1 class="hero-title">Open Your Savings Account Today</h1>
+                            <p class="hero-subtitle">100% online. Upload your documents and get your account activated
+                                in 5–7 business days.</p>
+                            <div class="hero-buttons">
+                                <button class="btn-primary" onclick="openSavingsModal()">
+                                    <i class="fas fa-piggy-bank"></i> Open Account
+                                </button>
+                                <button class="btn-secondary" onclick="openChat()">
+                                    <i class="fas fa-comments"></i> Talk to Us
+                                </button>
+                            </div>
+                            <div class="hero-trust-pills">
+                                <span class="hero-trust-pill"><i class="fas fa-check-circle"></i> Zero Hidden
+                                    Fees</span>
+                                <span class="hero-trust-pill"><i class="fas fa-bolt"></i> 5–7 Day Activation</span>
+                                <span class="hero-trust-pill"><i class="fas fa-shield-alt"></i> Central Bank
+                                    Insured</span>
+                            </div>
+                        </div>
+                        <div class="hero-slide-visual">
+                            <div class="hero-visual-ring hero-visual-ring-1"></div>
+                            <div class="hero-visual-ring hero-visual-ring-2"></div>
+                            <div class="hero-visual-icon"><i class="fas fa-piggy-bank"></i></div>
+                        </div>
                     </div>
                 </div>
-                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; flex-shrink: 0;">
-                    <div onclick="openSavingsModal()"
-                        style="background: white; border-radius: 20px; padding: 2rem 1.5rem; text-align: center; min-width: 150px; box-shadow: 0 8px 30px rgba(124,58,237,0.12); cursor: pointer; transition: all 0.3s; border: 2px solid transparent;"
-                        onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'"
-                        onmouseout="this.style.transform=''; this.style.borderColor='transparent'">
-                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i class="fas fa-piggy-bank" style="font-size: 1.6rem; color: #2E7D32;"></i>
+                <!-- Slide 2: AI Banking -->
+                <div class="hero-slide">
+                    <div class="hero-slide-inner hero-slide-blue">
+                        <div class="hero-slide-content">
+                            <div class="hero-slide-badge"><i class="fas fa-robot"></i> AI-Powered · 24/7</div>
+                            <h1 class="hero-title">Meet Your Smart Banking Assistant</h1>
+                            <p class="hero-subtitle">Instant answers on your accounts, transactions, and products —
+                                always available, completely secure.</p>
+                            <div class="hero-buttons">
+                                <button class="btn-primary" onclick="openChat()">
+                                    <i class="fas fa-comments"></i> Chat Now
+                                </button>
+                                <button class="btn-secondary" onclick="showLoginModal()">
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </button>
+                            </div>
+                            <div class="hero-trust-pills">
+                                <span class="hero-trust-pill"><i class="fas fa-bolt"></i> Instant Responses</span>
+                                <span class="hero-trust-pill"><i class="fas fa-clock"></i> Always Available</span>
+                                <span class="hero-trust-pill"><i class="fas fa-lock"></i> Secure Chat</span>
+                            </div>
                         </div>
-                        <div style="font-weight: 700; color: var(--primary-dark); font-size: 1rem; margin-bottom: 0.3rem;">Savings Account</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Earn interest on deposits</div>
-                        <div style="margin-top: 0.8rem; background: #E8F5E9; color: #2E7D32; padding: 0.3rem 0.8rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">Available Now</div>
-                    </div>
-                    <div onclick="openSavingsModal()"
-                        style="background: white; border-radius: 20px; padding: 2rem 1.5rem; text-align: center; min-width: 150px; box-shadow: 0 8px 30px rgba(124,58,237,0.12); cursor: pointer; transition: all 0.3s; border: 2px solid transparent;"
-                        onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'"
-                        onmouseout="this.style.transform=''; this.style.borderColor='transparent'">
-                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i class="fas fa-university" style="font-size: 1.6rem; color: #E65100;"></i>
+                        <div class="hero-slide-visual">
+                            <div class="hero-visual-ring hero-visual-ring-1"></div>
+                            <div class="hero-visual-ring hero-visual-ring-2"></div>
+                            <div class="hero-visual-icon"><i class="fas fa-robot"></i></div>
                         </div>
-                        <div style="font-weight: 700; color: var(--primary-dark); font-size: 1rem; margin-bottom: 0.3rem;">Current Account</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Unlimited transactions</div>
-                        <div style="margin-top: 0.8rem; background: #FFF3E0; color: #E65100; padding: 0.3rem 0.8rem; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">Coming Soon</div>
                     </div>
                 </div>
             </div>
-            <!-- Steps strip -->
-            <div style="max-width: 1200px; margin: 3rem auto 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-                <div style="display: flex; align-items: center; gap: 1rem; background: white; padding: 1rem 1.2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(124,58,237,0.08);">
-                    <div style="width: 36px; height: 36px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 700; font-size: 0.9rem;">1</div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">Download Form</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Fill the application</div>
+            <!-- Arrow controls -->
+            <button class="hero-arrow hero-arrow-prev" onclick="moveSlide(-1)"><i
+                    class="fas fa-chevron-left"></i></button>
+            <button class="hero-arrow hero-arrow-next" onclick="moveSlide(1)"><i
+                    class="fas fa-chevron-right"></i></button>
+            <!-- Bottom bar: stats + dots -->
+            <div class="hero-bottom-bar">
+                <div class="hero-stats-row">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">2M+</span>
+                        <span class="hero-stat-label">Customers</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">50+</span>
+                        <span class="hero-stat-label">Years of Trust</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">100+</span>
+                        <span class="hero-stat-label">Branches &amp; ATMs</span>
+                    </div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">24/7</span>
+                        <span class="hero-stat-label">Customer Support</span>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 1rem; background: white; padding: 1rem 1.2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(124,58,237,0.08);">
-                    <div style="width: 36px; height: 36px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 700; font-size: 0.9rem;">2</div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">Upload Documents</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Emirates ID, KYC &amp; more</div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 1rem; background: white; padding: 1rem 1.2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(124,58,237,0.08);">
-                    <div style="width: 36px; height: 36px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 700; font-size: 0.9rem;">3</div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">Verification</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">KYC in 2–3 days</div>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 1rem; background: white; padding: 1rem 1.2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(124,58,237,0.08);">
-                    <div style="width: 36px; height: 36px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 700; font-size: 0.9rem;">4</div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary-dark); font-size: 0.9rem;">Account Active</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Welcome kit delivered</div>
-                    </div>
+                <div class="hero-slide-dots">
+                    <span class="hero-slider-dot active" onclick="goToSlide(0)"></span>
+                    <span class="hero-slider-dot" onclick="goToSlide(1)"></span>
                 </div>
             </div>
         </section>
 
         <section class="services-section" id="services">
+            <div class="section-eyebrow">WHAT WE OFFER</div>
             <h2 class="section-title">Our Premium Services</h2>
-            <p class="section-subtitle">Discover world-class banking solutions designed for your success</p>
+            <p class="section-subtitle">Comprehensive financial solutions crafted for individuals and businesses across
+                the Middle East</p>
 
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-credit-card"></i></div>
-                    <h3 class="service-title">Multi-Currency Cards</h3>
-                    <p class="service-description">Manage multiple currencies seamlessly with our premium prepaid cards
-                        featuring locked-in exchange rates.</p>
-                    <a href="#" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-
-                <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-building"></i></div>
-                    <h3 class="service-title">SME Financing</h3>
-                    <p class="service-description">Tailored financial solutions to fuel your business growth and
-                        expansion in the Middle East.</p>
-                    <a href="#" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-
-                <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-money-bill-wave"></i></div>
-                    <h3 class="service-title">Salary Transfer (WPS)</h3>
-                    <p class="service-description">Automated payroll solutions fully compliant with UAE Central Bank
-                        regulations.</p>
-                    <a href="#" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
-                </div>
-
-                <div class="service-card" onclick="openSavingsModal()" style="cursor: pointer;">
-                    <div class="service-icon"><i class="fas fa-piggy-bank"></i></div>
+            <div class="services-grid-new">
+                <div class="service-card service-card-featured" onclick="openSavingsModal()">
+                    <div class="svc-feat-deco svc-feat-deco-1"></div>
+                    <div class="svc-feat-deco svc-feat-deco-2"></div>
+                    <div class="svc-feat-badge"><i class="fas fa-star"></i> Open Today</div>
+                    <div class="svc-feat-icon"><i class="fas fa-piggy-bank"></i></div>
                     <h3 class="service-title">Open a Bank Account</h3>
-                    <p class="service-description">Open a Savings or Current account online in minutes. Secure, paperless, and fully verified.</p>
-                    <a href="javascript:void(0)" class="service-link" onclick="event.stopPropagation(); openSavingsModal()">Apply Now <i class="fas fa-arrow-right"></i></a>
+                    <p class="service-description">Start your banking journey online. Upload your documents and get your
+                        Savings account activated in 5–7 business days — no branch visit needed.</p>
+                    <div class="svc-feat-cta">Get Started <i class="fas fa-arrow-right"></i></div>
+                    <div class="svc-feat-trust"><i class="fas fa-shield-alt"></i> Central Bank Licensed &amp; Insured
+                    </div>
                 </div>
 
                 <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <div class="service-icon-wrap service-icon-green"><i class="fas fa-hand-holding-usd"></i></div>
+                    <span class="service-badge-tag">Lending</span>
+                    <h3 class="service-title">Personal Loans</h3>
+                    <p class="service-description">Flexible personal loans with competitive interest rates and rapid
+                        approval for residents with salary transfer.</p>
+                    <a href="javascript:void(0)" class="service-link" onclick="showLoginModal()">Apply Now <i
+                            class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon-wrap service-icon-blue"><i class="fas fa-money-bill-wave"></i></div>
+                    <span class="service-badge-tag">Payroll</span>
+                    <h3 class="service-title">Salary Transfer (WPS)</h3>
+                    <p class="service-description">Automated payroll solutions fully compliant with Central Bank WPS
+                        regulations for businesses of all sizes.</p>
+                    <a href="javascript:void(0)" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon-wrap service-icon-purple"><i class="fas fa-mobile-alt"></i></div>
+                    <span class="service-badge-tag">Digital</span>
                     <h3 class="service-title">Digital Banking</h3>
-                    <p class="service-description">Experience banking at your fingertips with our advanced mobile and
-                        online platforms.</p>
-                    <a href="#" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
+                    <p class="service-description">Advanced mobile and online platforms for instant transfers, payments,
+                        bill management, and full account control.</p>
+                    <a href="javascript:void(0)" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
                 </div>
 
                 <div class="service-card">
-                    <div class="service-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="service-icon-wrap service-icon-indigo"><i class="fas fa-chart-line"></i></div>
+                    <span class="service-badge-tag">Investments</span>
                     <h3 class="service-title">Wealth Management</h3>
-                    <p class="service-description">Expert financial advisory and personalized wealth management
-                        solutions.</p>
-                    <a href="#" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
+                    <p class="service-description">Expert financial advisory and personalized wealth management to grow
+                        and protect your assets for the long term.</p>
+                    <a href="javascript:void(0)" class="service-link">Learn More <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
         </section>
 
         <section class="features-section" id="features">
-            <h2 class="section-title">Why Choose {{ app_name }}</h2>
-            <p class="section-subtitle">Excellence in every transaction</p>
+            <div class="section-eyebrow">WHY GOOD BANK</div>
+            <h2 class="section-title">Banking Built Around You</h2>
+            <p class="section-subtitle">Over 50 years of innovation, trust, and excellence in financial services</p>
 
-            <div class="features-grid">
-                <div class="feature-box">
-                    <div class="feature-icon"><i class="fas fa-lock"></i></div>
-                    <h4 class="feature-title">Secure Banking</h4>
-                    <p class="feature-text">Bank-grade security with multi-layer authentication</p>
+            <div class="features-grid-new">
+                <div class="feature-card">
+                    <div class="feature-card-number">01</div>
+                    <div class="feature-icon-new"><i class="fas fa-lock"></i></div>
+                    <h4 class="feature-title">Bank-Grade Security</h4>
+                    <p class="feature-text">Multi-layer authentication, end-to-end encryption, and real-time fraud
+                        monitoring keep your money and data safe around the clock.</p>
                 </div>
-
-                <div class="feature-box">
-                    <div class="feature-icon"><i class="fas fa-clock"></i></div>
+                <div class="feature-card">
+                    <div class="feature-card-number">02</div>
+                    <div class="feature-icon-new"><i class="fas fa-headset"></i></div>
                     <h4 class="feature-title">24/7 Support</h4>
-                    <p class="feature-text">Round-the-clock customer service for your peace of mind</p>
+                    <p class="feature-text">Round-the-clock customer assistance via phone, secure chat, or in-branch —
+                        always here when you need us most.</p>
                 </div>
-
-                <div class="feature-box">
-                    <div class="feature-icon"><i class="fas fa-globe"></i></div>
+                <div class="feature-card">
+                    <div class="feature-card-number">03</div>
+                    <div class="feature-icon-new"><i class="fas fa-globe"></i></div>
                     <h4 class="feature-title">Global Reach</h4>
-                    <p class="feature-text">Access your accounts anywhere in the world</p>
+                    <p class="feature-text">Access your accounts from anywhere in the world with 100+ ATMs,
+                        international transfers, and global banking partnerships.</p>
                 </div>
-
-                <div class="feature-box">
-                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="feature-card">
+                    <div class="feature-card-number">04</div>
+                    <div class="feature-icon-new"><i class="fas fa-percentage"></i></div>
                     <h4 class="feature-title">Competitive Rates</h4>
-                    <p class="feature-text">Best-in-class interest rates and low fees</p>
+                    <p class="feature-text">Best-in-class interest rates, low transaction fees, and completely
+                        transparent pricing — no hidden charges, ever.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-number">05</div>
+                    <div class="feature-icon-new"><i class="fas fa-bolt"></i></div>
+                    <h4 class="feature-title">Instant Transactions</h4>
+                    <p class="feature-text">Real-time transfers, instant payment notifications, and same-day processing
+                        for all domestic and international transactions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-number">06</div>
+                    <div class="feature-icon-new"><i class="fas fa-award"></i></div>
+                    <h4 class="feature-title">Award-Winning Service</h4>
+                    <p class="feature-text">Recognised as the Middle East's Most Trusted Bank for 10 consecutive years
+                        by leading international financial institutions.</p>
                 </div>
             </div>
         </section>
 
         <footer class="footer" id="contact">
-            <div class="footer-grid">
-                <div class="footer-column">
-                    <h4>About {{ app_name }}</h4>
-                    <p style="color: rgba(255,255,255); line-height: 1.7;">
-                        {{ app_name }} is a leading banking institution in the Middle East, committed to providing
-                        exceptional financial services with a personal touch.
-                    </p>
-                </div>
-
-                <div class="footer-column">
-                    <h4>Quick Links</h4>
-                    <ul class="footer-links">
-                        <li><a href="#">E-banking Forms</a></li>
-                        <li><a href="#">Branches & ATMs</a></li>
-                        <li><a href="#">Security Tips</a></li>
-                        <li><a href="#">Fees & Charges</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-column">
-                    <h4>Contact Us</h4>
-                    <ul class="footer-links">
-                        <li><i class="fas fa-phone"></i> 800 124 1234</li>
-                        <li><i class="fas fa-envelope"></i> <a href="mailto:{{ support_email }}">{{ support_email }}</a>
-                        </li>
-                        <li><i class="fas fa-map-marker-alt"></i> {{ location }}</li>
-                    </ul>
-                </div>
-
-                <div class="footer-column">
-                    <h4>Follow Us</h4>
-                    <div style="display: flex; gap: 1rem; font-size: 1.5rem;">
-                        <a href="#" style="color: var(--white);"><i class="fab fa-facebook"></i></a>
-                        <a href="#" style="color: var(--white);"><i class="fab fa-twitter"></i></a>
-                        <a href="#" style="color: var(--white);"><i class="fab fa-instagram"></i></a>
-                        <a href="#" style="color: var(--white);"><i class="fab fa-linkedin"></i></a>
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="footer-logo">{{ app_name }}</div>
+                    <p class="footer-tagline">Your Trusted Banking Partner</p>
+                    <p class="footer-desc">A leading banking institution in the Middle East, delivering exceptional
+                        financial services with integrity and innovation since 1975.</p>
+                    <div class="footer-social">
+                        <a href="javascript:void(0)" class="footer-social-icon" title="Facebook"><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a href="javascript:void(0)" class="footer-social-icon" title="Twitter"><i
+                                class="fab fa-twitter"></i></a>
+                        <a href="javascript:void(0)" class="footer-social-icon" title="Instagram"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="javascript:void(0)" class="footer-social-icon" title="LinkedIn"><i
+                                class="fab fa-linkedin-in"></i></a>
                     </div>
+                </div>
+
+                <div class="footer-links-col">
+                    <h5 class="footer-col-title">Services</h5>
+                    <ul class="footer-nav">
+                        <li><a href="javascript:void(0)" onclick="openSavingsModal()">Open an Account</a></li>
+                        <li><a href="javascript:void(0)" onclick="showLoginModal()">Personal Loans</a></li>
+                        <li><a href="javascript:void(0)">Multi-Currency Cards</a></li>
+                        <li><a href="javascript:void(0)">SME Financing</a></li>
+                        <li><a href="javascript:void(0)">Digital Banking</a></li>
+                        <li><a href="javascript:void(0)">Wealth Management</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links-col">
+                    <h5 class="footer-col-title">Quick Links</h5>
+                    <ul class="footer-nav">
+                        <li><a href="javascript:void(0)">E-banking Forms</a></li>
+                        <li><a href="javascript:void(0)">Branches &amp; ATMs</a></li>
+                        <li><a href="javascript:void(0)">Security Tips</a></li>
+                        <li><a href="javascript:void(0)">Fees &amp; Charges</a></li>
+                        <li><a href="javascript:void(0)">Careers</a></li>
+                        <li><a href="javascript:void(0)">Media Centre</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-contact-col">
+                    <h5 class="footer-col-title">Get in Touch</h5>
+                    <ul class="footer-contact-list">
+                        <li>
+                            <div class="footer-contact-icon"><i class="fas fa-phone-alt"></i></div>
+                            <div>
+                                <div class="footer-contact-label">Toll Free</div>
+                                <div class="footer-contact-value">800 124 1234</div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="footer-contact-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <div class="footer-contact-label">Email</div>
+                                <a class="footer-contact-value" href="mailto:{{ support_email }}">{{ support_email
+                                    }}</a>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="footer-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div>
+                                <div class="footer-contact-label">Headquarters</div>
+                                <div class="footer-contact-value">{{ location }}</div>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="footer-bottom">
-                <p>&copy; 2026 {{ app_name }}. All rights reserved. | Licensed by Central Bank</p>
+            <div class="footer-divider"></div>
+
+            <div class="footer-bottom-row">
+                <p class="footer-copyright">&copy; 2026 {{ app_name }}. All rights reserved.</p>
+                <div class="footer-regulatory">
+                    <span class="footer-reg-badge"><i class="fas fa-university"></i> Licensed by Central Bank</span>
+                    <span class="footer-reg-badge"><i class="fas fa-shield-alt"></i> Deposit Protection Scheme</span>
+                </div>
             </div>
         </footer>
     </div>
@@ -1135,7 +1198,8 @@
                         style="display: none; background: #FFF3E0; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid #FF9800;">
                         <p style="margin: 0; font-size: 0.95rem; color: #E65100;">
                             <i class="fas fa-clock" style="color: #FF9800;"></i>
-                            <strong>Coming Soon!</strong> Current Account opening will be available shortly. Please select Savings Account to proceed.
+                            <strong>Coming Soon!</strong> Current Account opening will be available shortly. Please
+                            select Savings Account to proceed.
                         </p>
                     </div>
 
@@ -1156,7 +1220,8 @@
                             style="background: #F0F8FF; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
                             <p style="margin: 0; font-size: 0.95rem; color: var(--text-dark);">
                                 <i class="fas fa-info-circle" style="color: var(--primary);"></i>
-                                <strong>Required Documents:</strong> Filled Account Opening Form, Emirates ID, KYC Documents, Proof of Address, Salary Certificate
+                                <strong>Required Documents:</strong> Filled Account Opening Form, Emirates ID, KYC
+                                Documents, Proof of Address, Salary Certificate
                             </p>
                         </div>
 
@@ -1178,7 +1243,8 @@
                         <div id="savings-uploaded-files-container" style="display: none; margin-bottom: 1.5rem;">
                             <label
                                 style="display: block; margin-bottom: 0.8rem; color: var(--primary-dark); font-weight: 600;">
-                                <i class="fas fa-file-alt"></i> Uploaded Documents (<span id="savings-file-count">0</span>)
+                                <i class="fas fa-file-alt"></i> Uploaded Documents (<span
+                                    id="savings-file-count">0</span>)
                             </label>
                             <div id="savings-uploaded-files-list"
                                 style="max-height: 200px; overflow-y: auto; border: 1px solid #E8ECF0; border-radius: 10px; padding: 0.5rem;">
@@ -1200,7 +1266,8 @@
                             style="background: #EEF5FF; padding: 1rem; border-radius: 10px; margin-top: 1rem; border-left: 4px solid var(--warning);">
                             <p style="margin: 0; font-size: 0.9rem; color: var(--text-dark);">
                                 <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
-                                <strong>Note:</strong> Please upload at least one document to proceed with the application.
+                                <strong>Note:</strong> Please upload at least one document to proceed with the
+                                application.
                             </p>
                         </div>
                     </div>
@@ -1229,7 +1296,8 @@
                         <h2
                             style="color: white; font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.5rem;">
                             Application Submitted!</h2>
-                        <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Your bank account application has been received successfully</p>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Your bank account application has
+                            been received successfully</p>
                     </div>
                 </div>
 
@@ -1255,7 +1323,8 @@
                                         id="savings-type-display">Savings Account</p>
                                 </div>
                                 <div>
-                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Documents Uploaded</p>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Documents
+                                        Uploaded</p>
                                     <p style="margin: 0.3rem 0 0 0; font-weight: 600; color: #2E7D32;"
                                         id="savings-docs-count">1 file</p>
                                 </div>
@@ -1274,8 +1343,10 @@
                                     style="width: 30px; height: 30px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
                                     1</div>
                                 <div>
-                                    <p style="margin: 0; font-weight: 600; color: #2E7D32; font-size: 0.95rem;">Document Verification</p>
-                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Within 1 business day</p>
+                                    <p style="margin: 0; font-weight: 600; color: #2E7D32; font-size: 0.95rem;">Document
+                                        Verification</p>
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
+                                        Within 1 business day</p>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 1rem; align-items: start;">
@@ -1283,8 +1354,10 @@
                                     style="width: 30px; height: 30px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
                                     2</div>
                                 <div>
-                                    <p style="margin: 0; font-weight: 600; color: #2E7D32; font-size: 0.95rem;">KYC Verification</p>
-                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">2-3 business days</p>
+                                    <p style="margin: 0; font-weight: 600; color: #2E7D32; font-size: 0.95rem;">KYC
+                                        Verification</p>
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">2-3
+                                        business days</p>
                                 </div>
                             </div>
                             <div style="display: flex; gap: 1rem; align-items: start;">
@@ -1292,8 +1365,10 @@
                                     style="width: 30px; height: 30px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
                                     3</div>
                                 <div>
-                                    <p style="margin: 0; font-weight: 600; color: #2E7D32; font-size: 0.95rem;">Account Activation &amp; Welcome Kit</p>
-                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">5-7 business days</p>
+                                    <p style="margin: 0; font-weight: 600; color: #2E7D32; font-size: 0.95rem;">Account
+                                        Activation &amp; Welcome Kit</p>
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">5-7
+                                        business days</p>
                                 </div>
                             </div>
                         </div>
@@ -1307,7 +1382,8 @@
                         </p>
                     </div>
 
-                    <button onclick="closeSavingsSuccessModal()" class="btn-submit" style="width: 100%; margin: 0; background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);">
+                    <button onclick="closeSavingsSuccessModal()" class="btn-submit"
+                        style="width: 100%; margin: 0; background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);">
                         <i class="fas fa-check-circle"></i> Got It, Thanks!
                     </button>
                 </div>

@@ -231,7 +231,6 @@ PLATFORM_PASSWORD=your_password
 # Agent Configuration
 CHATNOW_ASSET_ID=guest_agent_asset_version_id
 INTELLICHAT_ASSET_ID=logged_in_agent_asset_version_id
-LOAN_AGENT_ASSET_ID=loan_processing_agent_asset_id
 AGENT_NAME=Bank Support Agent
 CONVERSATION_NAME=Bank Customer Support Chat
 QUERY_TIMEOUT=60

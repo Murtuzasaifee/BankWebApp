@@ -151,7 +151,6 @@ PLATFORM_USERNAME=your_username
 PLATFORM_PASSWORD=your_password
 CHATNOW_ASSET_ID=your_asset_id
 INTELLICHAT_ASSET_ID=your_logged_in_asset_id
-LOAN_AGENT_ASSET_ID=your_loan_agent_asset_id
 ```
 
 ---

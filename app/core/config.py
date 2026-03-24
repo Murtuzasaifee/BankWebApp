@@ -34,7 +34,6 @@ class Settings(BaseSettings):
     # Agent Configuration
     CHATNOW_ASSET_ID: str = ""
     INTELLICHAT_ASSET_ID: str = ""
-    LOAN_AGENT_ASSET_ID: str = ""
     QUERY_TIMEOUT: int = 60
 
     # Database Configuration (Supabase Postgres)

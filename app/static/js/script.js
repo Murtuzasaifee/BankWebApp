@@ -1222,3 +1222,38 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 // Initialize
 checkAuthStatus();
+
+// ==================== PROMOTIONAL SLIDER ====================
+
+let currentSlide = 0;
+const totalPromoSlides = 2;
+let promoSliderInterval = null;
+
+function goToSlide(index) {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-slider-dot');
+    if (!slides.length || !dots.length) return;
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = ((index % totalPromoSlides) + totalPromoSlides) % totalPromoSlides;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+}
+
+function moveSlide(direction) {
+    goToSlide(currentSlide + direction);
+    resetPromoInterval();
+}
+
+function resetPromoInterval() {
+    if (promoSliderInterval) clearInterval(promoSliderInterval);
+    promoSliderInterval = setInterval(() => goToSlide(currentSlide + 1), 5000);
+}
+
+function initPromoSlider() {
+    const slider = document.getElementById('heroSlider');
+    if (!slider) return;
+    promoSliderInterval = setInterval(() => goToSlide(currentSlide + 1), 5000);
+}
+
+document.addEventListener('DOMContentLoaded', initPromoSlider);
