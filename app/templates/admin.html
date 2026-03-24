@@ -15,23 +15,28 @@
 
 <body>
 
-    <nav class="navbar">
-        <div class="logo">{{ app_name }}</div>
-        <div class="nav-links">
-            <a href="/">
+    <nav class="admin-navbar">
+        <div class="admin-nav-brand">
+            <div class="admin-logo-emblem">
+                <i class="fas fa-university"></i>
+            </div>
+            <span class="admin-nav-title">{{ app_name }}</span>
+            <span class="admin-nav-badge">Admin</span>
+        </div>
+        <div class="admin-nav-right">
+            <a href="/" class="admin-nav-link">
                 <i class="fas fa-arrow-left"></i> Back to Site
             </a>
-            <a href="/admin/settings" class="nav-settings-btn{% if view_mode == 'settings' %} active{% endif %}" title="Asset Configuration">
-                <i class="fas fa-cog"></i>
+            <a href="/admin/settings" class="admin-nav-link admin-nav-settings{% if view_mode == 'settings' %} active{% endif %}" title="Asset Configuration">
+                <i class="fas fa-cog"></i> Settings
             </a>
-            <div class="nav-user">
-                <span class="nav-username">
-                    <i class="fas fa-user-circle"></i> {{ username }}
-                </span>
-                <button onclick="adminLogout()" class="login-nav-btn logout-btn admin-logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+            <div class="admin-nav-user">
+                <div class="admin-nav-avatar">{{ username[0]|upper }}</div>
+                <span class="admin-nav-username">{{ username }}</span>
             </div>
+            <button onclick="adminLogout()" class="admin-nav-logout admin-logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
     </nav>
 
@@ -245,6 +250,14 @@
                 onload="onIframeLoad()" title="Application Document"></iframe>
         </div>
     </div>
+
+    <footer class="admin-footer">
+        <span class="admin-footer-copy">&copy; 2026 {{ app_name }} &mdash; Admin Portal</span>
+        <div class="admin-footer-right">
+            <span class="admin-footer-badge"><i class="fas fa-shield-alt"></i> Secured</span>
+            <span class="admin-footer-badge"><i class="fas fa-circle"></i> Online</span>
+        </div>
+    </footer>
 
     <script>
         // --- Logout ---
