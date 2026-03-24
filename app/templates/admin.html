@@ -174,7 +174,13 @@
     </div>
 
     <script>
+        // --- Logout ---
         function adminLogout() {
+            const btn = document.querySelector('.admin-logout-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging out...';
+            }
             fetch('/admin/logout', { method: 'POST' })
                 .finally(() => { window.location.href = '/admin/login'; });
         }

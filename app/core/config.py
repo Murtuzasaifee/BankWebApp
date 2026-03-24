@@ -37,6 +37,23 @@ class Settings(BaseSettings):
     LOAN_AGENT_ASSET_ID: str = ""
     QUERY_TIMEOUT: int = 60
 
+    # Database Configuration (Supabase Postgres)
+    DATABASE_URL: str = ""
+    DB_USER: str = ""
+    DB_PASSWORD: str = ""
+    DB_HOST: str = ""
+    DB_PORT: int = 5432
+    DB_NAME: str = ""
+
+    # API Authentication
+    API_ID: str = ""
+    API_SECRET: str = ""
+
+    # Admin Credentials
+    ADMIN_USERNAME: str = "admin"
+    ADMIN_PASSWORD: str = "admin@123"
+    ADMIN_DISPLAY_NAME: str = "Administrator"
+
     # Application Configuration
     ENVIRONMENT: str = "local"  # "local" or "production"
     SECRET_KEY: str = ""

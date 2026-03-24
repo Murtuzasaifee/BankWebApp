@@ -1,14 +1,15 @@
 """
-Authentication routes - login, logout, auth status.
+Authentication routes - login, logout, auth status, user profile.
 """
 
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 
 from app.models.schemas import LoginRequest
-from app.data.demo_data import USERS
 from app.core.dependencies import conversation_store, get_session_manager
 from app.core.logger import get_logger
+from app.core.api_auth import verify_api_key
+from app.services.user_service import get_user_by_credentials, get_user_profile
 
 router = APIRouter()
 logger = get_logger()
@@ -19,7 +20,7 @@ def login(body: LoginRequest, request: Request, response: Response):
     """
     Handle user login.
 
-    Validates credentials against demo USERS dict,
+    Validates credentials against the users DB table,
     sets session data, and clears existing conversations.
     """
     try:
@@ -29,11 +30,12 @@ def login(body: LoginRequest, request: Request, response: Response):
         username = body.username.strip()
         password = body.password.strip()
 
-        # Check if user exists and password matches
-        if username in USERS and USERS[username]['password'] == password:
+        user_data = get_user_by_credentials(username, password)
+
+        if user_data:
             session['logged_in'] = True
             session['username'] = username
-            session['user_data'] = USERS[username]
+            session['user_data'] = user_data
 
             # Ensure session has an ID for conversation tracking
             if 'session_id' not in session:
@@ -120,3 +122,27 @@ def auth_status(request: Request, response: Response):
         "username": username,
         "user_data": user_data,
     }
+
+
+@router.get("/api/users/{user_id}/profile")
+def user_profile(user_id: str, request: Request):
+    """
+    Get user profile by user_id.
+
+    Requires X-API-ID and X-API-SECRET headers.
+    Returns all user fields with accounts and transactions (no password).
+    """
+    # Verify API credentials
+    auth_error = verify_api_key(request)
+    if auth_error:
+        return auth_error
+
+    profile = get_user_profile(user_id)
+
+    if not profile:
+        return JSONResponse(
+            status_code=404,
+            content={"detail": "User not found"},
+        )
+
+    return profile

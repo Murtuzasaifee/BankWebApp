@@ -170,3 +170,11 @@
 .back-link:hover {
     color: var(--primary);
 }
+
+/* Login button disabled state */
+
+.btn-admin-login:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+    transform: none;
+}

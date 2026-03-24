@@ -458,8 +458,6 @@
                             <option value="Personal Loan">Personal Loan</option>
                             <option value="Home Loan">Home Loan</option>
                             <option value="Car Loan">Car Loan</option>
-                            <option value="Business Loan">Business Loan</option>
-                            <option value="Education Loan">Education Loan</option>
                         </select>
                     </div>
 
@@ -839,25 +837,24 @@
                         <label><i class="fas fa-list"></i> Select Account Type *</label>
                         <select id="stock-account-type" required>
                             <option value="">-- Select Account Type --</option>
-                            <option value="Stock Trading Account">Stock Trading Account</option>
-                            <option value="Margin Trading Account">Margin Trading Account</option>
-                            <option value="Options Trading Account">Options Trading Account</option>
                             <option value="Demat Account">Demat Account</option>
                         </select>
                     </div>
 
-                    <div style="background: #F0F8FF; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
+                    <div
+                        style="background: #F0F8FF; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
                         <p style="margin: 0; font-size: 0.95rem; color: var(--text-dark);">
                             <i class="fas fa-info-circle" style="color: var(--primary);"></i>
-                            <strong>Required Documents:</strong> Emirates ID, Salary Certificate, Bank Statement (last 3 months), Proof of Address
+                            <strong>Required Documents:</strong> Filled Account Opening Form, Emirates ID, Salary
+                            Certificate, Bank Statement (last 3 months), Proof of Address
                         </p>
                     </div>
 
                     <div class="form-group">
                         <label><i class="fas fa-upload"></i> Upload Documents *</label>
                         <div style="position: relative;">
-                            <input type="file" id="stock-documents" multiple accept=".pdf"
-                                style="display: none;" onchange="handleStockFileUpload(event)">
+                            <input type="file" id="stock-documents" multiple accept=".pdf" style="display: none;"
+                                onchange="handleStockFileUpload(event)">
                             <button type="button" onclick="document.getElementById('stock-documents').click()"
                                 style="width: 100%; padding: 1.5rem; background: #F8F9FA; border: 2px dashed #CCC; border-radius: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.3s; font-size: 1rem;">
                                 <i class="fas fa-file-pdf"
@@ -869,7 +866,8 @@
                     </div>
 
                     <div id="stock-uploaded-files-container" style="display: none; margin-bottom: 1.5rem;">
-                        <label style="display: block; margin-bottom: 0.8rem; color: var(--primary-dark); font-weight: 600;">
+                        <label
+                            style="display: block; margin-bottom: 0.8rem; color: var(--primary-dark); font-weight: 600;">
                             <i class="fas fa-file-alt"></i> Uploaded Documents (<span id="stock-file-count">0</span>)
                         </label>
                         <div id="stock-uploaded-files-list"
@@ -920,7 +918,8 @@
                         <h2
                             style="color: white; font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.5rem;">
                             Application Submitted!</h2>
-                        <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Your stock trading account application has been received successfully</p>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Your stock trading account
+                            application has been received successfully</p>
                     </div>
                 </div>
 
@@ -946,7 +945,8 @@
                                         id="stock-type-display">Stock Trading Account</p>
                                 </div>
                                 <div>
-                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Documents Uploaded</p>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Documents
+                                        Uploaded</p>
                                     <p style="margin: 0.3rem 0 0 0; font-weight: 600; color: var(--primary-dark);"
                                         id="stock-docs-count">1 file</p>
                                 </div>
@@ -965,7 +965,8 @@
                                     style="width: 30px; height: 30px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
                                     1</div>
                                 <div>
-                                    <p style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
+                                    <p
+                                        style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
                                         Document Verification</p>
                                     <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
                                         Within 1 business day</p>
@@ -976,7 +977,8 @@
                                     style="width: 30px; height: 30px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
                                     2</div>
                                 <div>
-                                    <p style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
+                                    <p
+                                        style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
                                         KYC & Risk Assessment</p>
                                     <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
                                         2-3 business days</p>
@@ -987,7 +989,8 @@
                                     style="width: 30px; height: 30px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-weight: 600; font-size: 0.85rem;">
                                     3</div>
                                 <div>
-                                    <p style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
+                                    <p
+                                        style="margin: 0; font-weight: 600; color: var(--primary-dark); font-size: 0.95rem;">
                                         Account Activation</p>
                                     <p style="margin: 0.2rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">
                                         Within 5 business days</p>
@@ -999,7 +1002,8 @@
                     <div style="background: #E8F5E9; border-radius: 15px; padding: 1.2rem; margin-bottom: 1.5rem;">
                         <p style="margin: 0; font-size: 0.9rem; color: #2E7D32;">
                             <i class="fas fa-phone" style="color: #4CAF50;"></i>
-                            <strong>Need Help?</strong> Contact our trading support team at <strong>600 56 56 56</strong>
+                            <strong>Need Help?</strong> Contact our trading support team at <strong>600 56 56
+                                56</strong>
                             or email <strong>trading@goodbank.com</strong>
                         </p>
                     </div>

@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings, validate_config
 from app.core.dependencies import get_agent_client
 from app.core.logger import setup_logging, get_logger
+from app.db.connection import init_pool, close_pool
 from app.routers import pages, auth, chat, applications, health, admin
 
 # Initialize settings and logging
@@ -43,6 +44,9 @@ async def lifespan(app: FastAPI):
     # Initialize agent client eagerly (triggers token refresh)
     get_agent_client()
 
+    # Initialize DB connection pool (no-op if DB_HOST not configured)
+    init_pool()
+
     logger.info("=" * 80)
     logger.info(f"{settings.APP_NAME} Chat Server Starting...")
     logger.info("=" * 80)
@@ -58,6 +62,7 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown
+    close_pool()
     logger.info(f"{settings.APP_NAME} Chat Server Shutting Down...")
 
 
@@ -69,7 +74,14 @@ app = FastAPI(
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://goodbank.site", 
+        "https://www.goodbank.site",
+        "http://goodbank.site",
+        "http://www.goodbank.site",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

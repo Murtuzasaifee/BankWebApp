@@ -20,5 +20,5 @@ app.pid
 logs/
 *.pem
 project_state/
-.claude/
 CLAUDE.md
+.claude/

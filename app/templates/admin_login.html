@@ -33,7 +33,7 @@
             </div>
             {% endif %}
 
-            <form action="/admin/login" method="post">
+            <form id="login-form" action="/admin/login" method="post">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <div class="input-wrapper">
@@ -52,7 +52,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-admin-login">
+                <button type="submit" id="login-btn" class="btn-admin-login">
                     <i class="fas fa-sign-in-alt"></i> Sign In to Admin
                 </button>
             </form>
@@ -63,6 +63,15 @@
 
         </div>
     </div>
+
+    <script>
+        // --- Login form: spinner on submit ---
+        document.getElementById('login-form').addEventListener('submit', function () {
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+        });
+    </script>
 </body>
 
 </html>
