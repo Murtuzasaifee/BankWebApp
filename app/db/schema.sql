@@ -4,12 +4,11 @@ CREATE TABLE IF NOT EXISTS users (
     username        VARCHAR(100) UNIQUE NOT NULL,
     password        VARCHAR(255) NOT NULL,
     display_name    VARCHAR(100) NOT NULL,
-    customer_id     VARCHAR(50),
+    country_code    VARCHAR(10),
     account_number  VARCHAR(50),
     employer        VARCHAR(100),
     designation     VARCHAR(100),
     monthly_salary  DECIMAL(12,2),
-    emirates_id     VARCHAR(30),
     mobile          VARCHAR(30),
     address         TEXT,
     created_at      TIMESTAMP DEFAULT NOW()

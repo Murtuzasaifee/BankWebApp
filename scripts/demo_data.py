@@ -14,7 +14,7 @@ USERS = {
         'password': 'password',
         'display_name': 'Mohammed Faisal',
         'user_id': 'usr001',
-        'customer_id': f'{APP_NAME}-CUST-459812',
+        'country_code': 'KSA',
         'account_number': f'{APP_NAME}-SAV-77889900',
         'accounts': [
             {'type': 'Savings Account', 'balance': 8450.00, 'number': f'{APP_NAME}-SAV-••••9900'},
@@ -33,7 +33,7 @@ USERS = {
         'password': 'password',
         'display_name': 'Ahmed Al Mansouri',
         'user_id': 'usr002',
-        'customer_id': f'{APP_NAME}-CUST-289034',
+        'country_code': 'UAE',
         'account_number': f'{APP_NAME}-SAL-123456789012',
         'accounts': [
             {'type': 'Salary Account', 'balance': 81749.00, 'number': f'{APP_NAME}-SAL-••••9012'},
@@ -50,7 +50,6 @@ USERS = {
         'employer': 'ASHARQIA TECH SOLUTIONS',
         'designation': 'SOFTWARE ENGINEER',
         'monthly_salary': 35000.00,
-        'emirates_id': '784-123-1234567-1',
         'mobile': '+971-50-2847361',
         'address': 'B25, BUILDING NO 18, BUTINA AREA, SHARJAH'
     }

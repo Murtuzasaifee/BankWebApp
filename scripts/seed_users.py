@@ -33,22 +33,21 @@ def seed_users(conn):
     upsert_user_sql = """
         INSERT INTO users (
             user_id, username, password, display_name,
-            customer_id, account_number, employer, designation,
-            monthly_salary, emirates_id, mobile, address
+            country_code, account_number, employer, designation,
+            monthly_salary, mobile, address
         ) VALUES (
             %(user_id)s, %(username)s, %(password)s, %(display_name)s,
-            %(customer_id)s, %(account_number)s, %(employer)s, %(designation)s,
-            %(monthly_salary)s, %(emirates_id)s, %(mobile)s, %(address)s
+            %(country_code)s, %(account_number)s, %(employer)s, %(designation)s,
+            %(monthly_salary)s, %(mobile)s, %(address)s
         )
         ON CONFLICT (username) DO UPDATE SET
             password = EXCLUDED.password,
             display_name = EXCLUDED.display_name,
-            customer_id = EXCLUDED.customer_id,
+            country_code = EXCLUDED.country_code,
             account_number = EXCLUDED.account_number,
             employer = EXCLUDED.employer,
             designation = EXCLUDED.designation,
             monthly_salary = EXCLUDED.monthly_salary,
-            emirates_id = EXCLUDED.emirates_id,
             mobile = EXCLUDED.mobile,
             address = EXCLUDED.address;
     """
@@ -73,12 +72,11 @@ def seed_users(conn):
                 "username": username,
                 "password": data.get("password"),
                 "display_name": data.get("display_name", username),
-                "customer_id": data.get("customer_id"),
+                "country_code": data.get("country_code"),
                 "account_number": data.get("account_number"),
                 "employer": data.get("employer"),
                 "designation": data.get("designation"),
                 "monthly_salary": data.get("monthly_salary"),
-                "emirates_id": data.get("emirates_id"),
                 "mobile": data.get("mobile"),
                 "address": data.get("address"),
             })
