@@ -28,7 +28,7 @@ SEED = [
             {
                 "slug": "savings-account",
                 "name": "Savings Account",
-                "asset_id": "",
+                "asset_id": "02149755-d3a6-4990-952a-8020b9bf8d5a",
                 "display_order": 1,
             },
             {
