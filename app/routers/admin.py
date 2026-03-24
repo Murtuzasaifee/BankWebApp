@@ -262,3 +262,24 @@ def get_application_presigned_url(request: Request, asset_id: str, trace_id: str
         logger.error(f"Error fetching presigned URL asset={asset_id} trace={trace_id}: {e}")
         return JSONResponse(status_code=500, content={"error": "Failed to fetch presigned URL"})
 
+
+@router.get("/admin/api/request-logs")
+def get_request_logs_api(request: Request, request_type: str = None):
+    """Return request logs, optionally filtered by type. Requires admin session."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
+
+    from app.services.request_log_service import get_request_logs, get_request_log_stats
+    logs = get_request_logs(request_type=request_type)
+    stats = get_request_log_stats()
+
+    # Serialize datetime objects to strings
+    for log in logs:
+        if log.get("created_at") and hasattr(log["created_at"], "isoformat"):
+            log["created_at"] = log["created_at"].isoformat()
+
+    resp = JSONResponse({"logs": logs, "stats": stats})
+    sm.save_session(resp, session_id)
+    return resp
+

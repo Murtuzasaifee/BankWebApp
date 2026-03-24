@@ -19,6 +19,7 @@ from app.core.dependencies import get_agent_client, get_session_manager
 from app.core.logger import get_logger
 from app.services.rest_client import RestClient
 from app.services.category_service import get_asset_id
+from app.services.request_log_service import log_request
 
 router = APIRouter()
 logger = get_logger()
@@ -118,6 +119,20 @@ def submit_loan(body: LoanRequest, request: Request, response: Response):
         }
 
         trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
+        user_id = session.get("user_id") if session else None
+        try:
+            log_request(
+                request_type="loan-application",
+                user_id=user_id,
+                account_type=body.loan_type,
+                trace_id=trace_id,
+                document_count=body.files_count,
+                ip_address=request.client.host if request.client else None,
+                user_agent=request.headers.get("user-agent"),
+                comments=body.comments,
+            )
+        except Exception as log_err:
+            logger.warning(f"[Loan Application] Failed to log request: {log_err}")
         sm.save_session(response, session_id)
         return {"success": True, "trace_id": trace_id, "message": "Loan application submitted successfully"}
 
@@ -180,6 +195,19 @@ async def submit_stock_account(
             )
 
         trace_id = _invoke_asset_multipart(asset_id, multipart_files, settings, agent_client)
+        user_id = session.get("user_id") if session else None
+        try:
+            log_request(
+                request_type="stock-account",
+                user_id=user_id,
+                account_type="Demat Account",
+                trace_id=trace_id,
+                document_count=len(files),
+                ip_address=request.client.host if request.client else None,
+                user_agent=request.headers.get("user-agent"),
+            )
+        except Exception as log_err:
+            logger.warning(f"[Stock Account] Failed to log request: {log_err}")
         sm.save_session(response, session_id)
         return {
             "success": True,
@@ -199,4 +227,87 @@ async def submit_stock_account(
         return JSONResponse(
             status_code=500,
             content={"success": False, "message": "An error occurred while processing your stock account application"},
+        )
+
+
+# ---------------------------------------------------------------------------
+# Savings / Current Account Opening
+# ---------------------------------------------------------------------------
+
+@router.post("/submit-savings-account")
+async def submit_savings_account(
+    request: Request,
+    response: Response,
+    account_type: str = Form("Savings Account"),
+    comments: str = Form(""),
+    files: List[UploadFile] = File(...),
+):
+    """
+    Accept PDF uploads as multipart form data, invoke the savings account-opening agent,
+    and return the trace_id as Application ID. Available to all users (no login required).
+    """
+    try:
+        settings = get_settings()
+        agent_client = get_agent_client()
+        sm = get_session_manager()
+        session_id, session = sm.get_session(request)
+
+        if not files:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "message": "At least one document is required"},
+            )
+
+        logger.info(f"[Savings Account] Type: {account_type}, Files: {len(files)}")
+
+        asset_id = _asset_id_for("account-opening", "savings-account")
+        if not asset_id:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "message": "Savings account opening asset is not configured"},
+            )
+
+        # Read each uploaded PDF and prepare multipart tuples
+        multipart_files = []
+        for f in files:
+            content = await f.read()
+            multipart_files.append(
+                ("SavingsForm", (f.filename, content, f.content_type or "application/pdf"))
+            )
+
+        trace_id = _invoke_asset_multipart(asset_id, multipart_files, settings, agent_client)
+        user_id = session.get("user_id") if session else None
+        try:
+            log_request(
+                request_type="savings-account",
+                user_id=user_id,
+                account_type=account_type,
+                trace_id=trace_id,
+                document_count=len(files),
+                ip_address=request.client.host if request.client else None,
+                user_agent=request.headers.get("user-agent"),
+                comments=comments or None,
+            )
+        except Exception as log_err:
+            logger.warning(f"[Savings Account] Failed to log request: {log_err}")
+        sm.save_session(response, session_id)
+        return {
+            "success": True,
+            "trace_id": trace_id,
+            "documents_count": len(files),
+            "message": "Savings account application submitted successfully",
+        }
+
+    except ValueError as e:
+        logger.error(f"[Savings Account] No trace_id: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "Account opening agent did not return an application ID"},
+        )
+    except Exception as e:
+        logger.error(f"[Savings Account] Submission failed: {e}")
+        logger.exception("[Savings Account] Exception details")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "An error occurred while processing your account application"},
         )

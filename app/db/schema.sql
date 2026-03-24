@@ -70,3 +70,17 @@ CREATE TABLE IF NOT EXISTS subcategories (
     created_at      TIMESTAMP DEFAULT NOW(),
     UNIQUE(category_id, slug)
 );
+
+CREATE TABLE IF NOT EXISTS request_logs (
+    id              SERIAL PRIMARY KEY,
+    user_id         VARCHAR(20),
+    request_type    VARCHAR(50) NOT NULL,
+    account_type    VARCHAR(50),
+    trace_id        VARCHAR(100),
+    document_count  INT DEFAULT 0,
+    status          VARCHAR(30) DEFAULT 'Submitted',
+    ip_address      VARCHAR(45),
+    user_agent      TEXT,
+    comments        TEXT,
+    created_at      TIMESTAMP DEFAULT NOW()
+);

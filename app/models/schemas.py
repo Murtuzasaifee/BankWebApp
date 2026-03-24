@@ -47,6 +47,25 @@ class LoanResponse(BaseModel):
     trace_id: Optional[str] = None
 
 
+class SavingsAccountResponse(BaseModel):
+    success: bool
+    message: str
+    trace_id: Optional[str] = None
+    documents_count: int = 0
+
+
+class RequestLogEntry(BaseModel):
+    id: int
+    user_id: Optional[str] = None
+    request_type: str
+    account_type: Optional[str] = None
+    trace_id: Optional[str] = None
+    document_count: int = 0
+    status: str
+    ip_address: Optional[str] = None
+    created_at: str
+
+
 class HealthResponse(BaseModel):
     status: str
     agent_configured: bool
