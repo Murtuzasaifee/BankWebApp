@@ -84,3 +84,10 @@ CREATE TABLE IF NOT EXISTS request_logs (
     comments        TEXT,
     created_at      TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS app_config (
+    key         VARCHAR(100) PRIMARY KEY,
+    value       TEXT,
+    description TEXT,
+    updated_at  TIMESTAMP DEFAULT NOW()
+);

@@ -21,6 +21,11 @@ from app.core.logger import get_logger
 from app.services.category_service import get_all_categories, get_category_by_slug
 from app.services.admin_service import fetch_applications_for_asset, compute_stats
 from app.services.rest_client import RestClient
+from app.services.config_service import (
+    get_all_cached_asset_ids,
+    update_asset_ids,
+    reload_asset_ids,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
@@ -283,3 +288,90 @@ def get_request_logs_api(request: Request, request_type: str = None):
     sm.save_session(resp, session_id)
     return resp
 
+
+# ---------------------------------------------------------------------------
+# Asset Config API
+# ---------------------------------------------------------------------------
+
+@router.get("/api/asset-config")
+def get_asset_config(request: Request):
+    """Return all cached asset IDs for the admin UI. Requires admin session."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
+
+    resp = JSONResponse(get_all_cached_asset_ids())
+    sm.save_session(resp, session_id)
+    return resp
+
+
+@router.post("/api/asset-config")
+async def save_asset_config(request: Request):
+    """
+    Persist updated asset IDs to app_config and reload the in-memory cache.
+    Accepts JSON body:
+    {
+      "chatnow_asset_id": "...",
+      "intellichat_asset_id": "...",
+      "subcategories": [
+        {"key": "asset.account-opening.savings-account", "value": "..."}, ...
+      ]
+    }
+    Requires admin session.
+    """
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
+
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"error": "Invalid JSON body"})
+
+    updates: dict = {}
+
+    if "chatnow_asset_id" in body:
+        updates["chatnow_asset_id"] = (body["chatnow_asset_id"] or "").strip()
+
+    if "intellichat_asset_id" in body:
+        updates["intellichat_asset_id"] = (body["intellichat_asset_id"] or "").strip()
+
+    for item in body.get("subcategories", []):
+        key = (item.get("key") or "").strip()
+        value = (item.get("value") or "").strip()
+        if key.startswith("asset."):
+            updates[key] = value
+
+    if not updates:
+        return JSONResponse(status_code=400, content={"error": "No valid fields to update"})
+
+    try:
+        update_asset_ids(updates)
+    except Exception as e:
+        logger.error(f"Failed to update asset config: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to save asset configuration"})
+
+    resp = JSONResponse({"success": True, "updated": len(updates), "config": get_all_cached_asset_ids()})
+    sm.save_session(resp, session_id)
+    return resp
+
+
+@router.post("/api/reload-config")
+def reload_config(request: Request):
+    """
+    Reload the asset ID cache from the DB without changing any values.
+    Requires admin session.
+    """
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
+
+    try:
+        reload_asset_ids()
+    except Exception as e:
+        logger.error(f"Failed to reload asset config: {e}")
+        return JSONResponse(status_code=500, content={"error": "Failed to reload asset configuration"})
+
+    resp = JSONResponse({"success": True, "config": get_all_cached_asset_ids()})
+    sm.save_session(resp, session_id)
+    return resp

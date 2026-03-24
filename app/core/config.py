@@ -99,10 +99,11 @@ def validate_config(settings: Settings) -> Tuple[bool, Optional[str]]:
 
     Returns:
         Tuple of (is_valid, error_message)
-    """
-    if not settings.CHATNOW_ASSET_ID:
-        return False, "CHATNOW_ASSET_ID is required but not set"
 
+    Note: CHATNOW_ASSET_ID and INTELLICHAT_ASSET_ID are NOT validated here.
+    They can be stored in the app_config DB table and loaded at runtime,
+    so their absence from .env is acceptable.
+    """
     if not settings.API_KEY:
         return False, "API_KEY is required but not set"
 
