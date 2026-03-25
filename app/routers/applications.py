@@ -26,6 +26,27 @@ logger = get_logger()
 
 
 # ---------------------------------------------------------------------------
+# Platform API Payload Configurations
+# ---------------------------------------------------------------------------
+PAYLOAD_CONFIG = {
+    "loan": {
+        "input_bucket_path": "loan_due_diligence/p1",
+        "output_bucket_path": "loan_due_diligence/output",
+        "country_iso_code": "UAE",
+        "file_type": "html",
+        "Use_Case": "LOAN_APPLICATION",
+    },
+    "savings_account": {
+        "input_bucket_path": "good_banks/p1",
+        "output_bucket_path": "good_banks/output",
+        "country_code": "KSA",
+        "report_file_type": "html",
+        "use_case": "onboarding",
+        "secondary_language": "NA",
+    }
+}
+
+# ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
 
@@ -110,12 +131,8 @@ def submit_loan(body: LoanRequest, request: Request, response: Response):
             )
 
         payload = {
-            "input_bucket_path": "loan_due_diligence/p1",
-            "country_iso_code": "UAE",
+            **PAYLOAD_CONFIG["loan"],
             "current_date": datetime.now().strftime("%d/%m/%Y"),
-            "output_bucket_path": "loan_due_diligence/output",
-            "file_type": "html",
-            "Use_Case": "LOAN_APPLICATION",
         }
 
         trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
@@ -256,14 +273,9 @@ def submit_savings_account(body: SavingsAccountRequest, request: Request, respon
             )
 
         payload = {
-            "input_bucket_path": body.input_bucket_path,
-            "country_code": body.country_code,
+            **PAYLOAD_CONFIG["savings_account"],
             "current_date": body.current_date,
-            "output_bucket_path": body.output_bucket_path,
-            "report_file_type": body.report_file_type,
-            "use_case": body.use_case,
             "process": body.process,
-            "secondary_language": body.secondary_language,
         }
 
         trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
