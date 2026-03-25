@@ -15,8 +15,8 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 
-from app.core.config import get_settings
-from app.core.dependencies import get_session_manager, get_agent_client
+from app.core.config import get_settings, update_platform_credentials
+from app.core.dependencies import get_session_manager, get_agent_client, reset_agent_client
 from app.core.logger import get_logger
 from app.services.category_service import get_all_categories, get_category_by_slug
 from app.services.admin_service import fetch_applications_for_asset, compute_stats
@@ -308,6 +308,9 @@ def admin_settings(request: Request):
             "theme_css": f"css/style_{settings.APP_THEME}.css",
             "username": session.get("admin_username", "Admin"),
             "view_mode": "settings",
+            "workspace_id": settings.WORKSPACE_ID,
+            "platform_username": settings.PLATFORM_USERNAME,
+            # We don't send the password to the frontend for security.
         },
     )
     sm.save_session(resp, session_id)
@@ -395,9 +398,45 @@ def reload_config(request: Request):
     try:
         reload_asset_ids()
     except Exception as e:
-        logger.error(f"Failed to reload asset config: {e}")
-        return JSONResponse(status_code=500, content={"error": "Failed to reload asset configuration"})
+        logger.error(f"Error checking reload task: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)
 
     resp = JSONResponse({"success": True, "config": get_all_cached_asset_ids()})
     sm.save_session(resp, session_id)
     return resp
+
+
+# ---------------------------------------------------------------------------
+# Platform Credentials API
+# ---------------------------------------------------------------------------
+
+@router.post("/api/platform-credentials")
+async def save_platform_credentials(request: Request):
+    """Save platform credentials to .env and memory."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return redirect
+
+    try:
+        data = await request.json()
+        workspace_id = data.get("workspace_id", "").strip()
+        username = data.get("username", "").strip()
+        password = data.get("password", "").strip()
+
+        # If they left the password blank, it means they don't want to change it.
+        if not password:
+            password = settings.PLATFORM_PASSWORD
+
+        success = update_platform_credentials(workspace_id, username, password)
+        if not success:
+            return JSONResponse({"error": "Failed to save credentials to .env file."}, status_code=500)
+
+        # Force the singleton client to reload its credentials from settings
+        reset_agent_client()
+
+        logger.info(f"Admin '{session.get('admin_username')}' updated platform credentials.")
+        return {"status": "success"}
+
+    except Exception as e:
+        logger.error(f"Error saving platform credentials: {e}")
+        return JSONResponse({"error": str(e)}, status_code=500)

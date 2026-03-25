@@ -5,8 +5,11 @@ Uses pydantic-settings to load configuration from .env file.
 Environment variables override .env values (useful for AWS deployment).
 """
 
+import os
 from functools import lru_cache
 from typing import Optional, Tuple
+
+from dotenv import set_key
 from pydantic_settings import BaseSettings
 
 
@@ -116,3 +119,31 @@ def validate_config(settings: Settings) -> Tuple[bool, Optional[str]]:
         return False, "SECRET_KEY is required but not set"
 
     return True, None
+
+
+def update_platform_credentials(workspace_id: str, username: str, password: str) -> bool:
+    """
+    Update platform credentials in the .env file and in the live memory object.
+    This avoids needing a database for these 3 keys and prevents restart requirements.
+    """
+    settings = get_settings()
+    
+    # 1. Update in memory immediately
+    settings.WORKSPACE_ID = workspace_id
+    settings.PLATFORM_USERNAME = username
+    settings.PLATFORM_PASSWORD = password
+    
+    # 2. Persist to .env file
+    env_file = ".env"
+    try:
+        if not os.path.exists(env_file):
+            open(env_file, 'a').close()
+            
+        set_key(env_file, "WORKSPACE_ID", workspace_id)
+        set_key(env_file, "PLATFORM_USERNAME", username)
+        set_key(env_file, "PLATFORM_PASSWORD", password)
+        return True
+    except Exception as e:
+        from app.core.logger import get_logger
+        get_logger().error(f"Failed to save credentials to .env: {e}")
+        return False

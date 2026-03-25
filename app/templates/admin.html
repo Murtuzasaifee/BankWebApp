@@ -89,6 +89,37 @@
 
         {% elif view_mode == 'settings' %}
 
+        <!-- Platform Credentials Panel -->
+        <div class="asset-config-panel" id="platform-config-panel">
+            <div class="asset-config-header">
+                <div class="asset-config-title">
+                    <i class="fas fa-key"></i>
+                    <h2>Platform Credentials</h2>
+                </div>
+                <div class="asset-config-actions">
+                    <button class="btn-save-config" onclick="savePlatformConfig()" id="btn-save-platform">
+                        <i class="fas fa-save"></i> Save Credentials
+                    </button>
+                </div>
+            </div>
+            <div class="asset-config-section">
+                <div class="asset-fields-grid">
+                    <div class="asset-field">
+                        <label for="field-workspace-id">Workspace ID <span class="asset-label-hint">(required)</span></label>
+                        <input type="text" id="field-workspace-id" class="asset-input" value="{{ workspace_id }}" placeholder="e.g. your-workspace-id">
+                    </div>
+                    <div class="asset-field">
+                        <label for="field-platform-username">Platform Username <span class="asset-label-hint">(required)</span></label>
+                        <input type="text" id="field-platform-username" class="asset-input" value="{{ platform_username }}" placeholder="e.g. admin@tenant">
+                    </div>
+                    <div class="asset-field">
+                        <label for="field-platform-password">Platform Password <span class="asset-label-hint">(leave blank to keep current)</span></label>
+                        <input type="password" id="field-platform-password" class="asset-input" placeholder="••••••••">
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Asset Configuration Panel -->
         <div class="asset-config-panel" id="asset-config-panel">
             <div class="asset-config-header">
@@ -580,6 +611,40 @@
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-sync-alt"></i> Reload from DB';
                 });
+        }
+
+        function savePlatformConfig() {
+            const btn = document.getElementById('btn-save-platform');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            const workspace_id = document.getElementById('field-workspace-id').value.trim();
+            const username = document.getElementById('field-platform-username').value.trim();
+            const password = document.getElementById('field-platform-password').value.trim();
+
+            if (!workspace_id || !username) {
+                showToast('Workspace ID and Username are required.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Credentials';
+                return;
+            }
+
+            fetch('/admin/api/platform-credentials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ workspace_id, username, password })
+            })
+            .then(res => res.json().then(d => ({ ok: res.ok, data: d })))
+            .then(({ ok, data }) => {
+                if (!ok) throw new Error(data.error || 'Save failed');
+                showToast('Platform credentials saved successfully!', 'success');
+                document.getElementById('field-platform-password').value = ''; // clear password field
+            })
+            .catch(err => showToast(err.message || 'Failed to save credentials.', 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Credentials';
+            });
         }
 
         function showToast(message, type) {
