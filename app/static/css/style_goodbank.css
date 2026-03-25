@@ -942,6 +942,95 @@ body.logged-in .post-login-content {
     border: 1px solid #FECACA;
 }
 
+.status-badge.in-progress {
+    background: #F5F3FF;
+    color: #6D28D9;
+    border: 1px solid #DDD6FE;
+}
+
+.status-badge.submitted {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+}
+
+.status-badge.under-review {
+    background: #FFFBEB;
+    color: #92400E;
+    border: 1px solid #FDE68A;
+}
+
+.status-badge.approved {
+    background: #ECFDF5;
+    color: #059669;
+    border: 1px solid #A7F3D0;
+}
+
+.status-badge.rejected {
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+}
+
+/* Status dot for My Applications modal */
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    flex-shrink: 0;
+}
+.status-dot.in-progress  { background: #6D28D9; }
+.status-dot.submitted    { background: #2563eb; }
+.status-dot.under-review { background: #d97706; }
+.status-dot.approved     { background: #059669; }
+.status-dot.rejected     { background: #DC2626; }
+
+/* Filter tabs used in My Applications modal */
+.filter-tab {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: white;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 0.5rem;
+    font-family: 'Inter', sans-serif;
+}
+.filter-tab.active, .filter-tab:hover {
+    background: var(--primary, #7C3AED);
+    color: white;
+    border-color: var(--primary, #7C3AED);
+}
+
+/* My Applications table inside modal */
+#my-apps-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+#my-apps-table th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 2px solid #f1f5f9;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+#my-apps-table td {
+    padding: 0.8rem 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+#my-apps-table tr:last-child td { border-bottom: none; }
+#my-apps-table tr:hover td { background: #fafbff; }
+
 /* Modal Styles */
 .modal {
     display: none;

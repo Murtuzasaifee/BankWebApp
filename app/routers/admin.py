@@ -19,7 +19,8 @@ from app.core.config import get_settings, update_platform_credentials
 from app.core.dependencies import get_session_manager, get_agent_client, reset_agent_client
 from app.core.logger import get_logger
 from app.services.category_service import get_all_categories, get_category_by_slug
-from app.services.admin_service import fetch_applications_for_asset, compute_stats
+from app.services.admin_service import fetch_applications_for_asset, compute_stats, merge_with_db
+from app.services.application_service import update_application_status
 from app.services.rest_client import RestClient
 from app.services.config_service import (
     get_all_cached_asset_ids,
@@ -67,6 +68,7 @@ def _fetch_live_data_for_category(category: dict):
         all_applications.extend(apps)
 
     all_applications.sort(key=lambda x: x.get("submission_date", ""), reverse=True)
+    all_applications = merge_with_db(all_applications)
     stats = compute_stats(all_applications)
     return all_applications, stats
 
@@ -268,23 +270,34 @@ def get_application_presigned_url(request: Request, asset_id: str, trace_id: str
         return JSONResponse(status_code=500, content={"error": "Failed to fetch presigned URL"})
 
 
-@router.get("/admin/api/request-logs")
-def get_request_logs_api(request: Request, request_type: str = None):
-    """Return request logs, optionally filtered by type. Requires admin session."""
+@router.post("/api/applications/{application_id}/status")
+async def update_application_status_api(
+    request: Request,
+    application_id: str,
+):
+    """Approve or reject an application. Requires admin session."""
     session, session_id, sm, redirect = _require_admin(request)
     if redirect:
         return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
 
-    from app.services.request_log_service import get_request_logs, get_request_log_stats
-    logs = get_request_logs(request_type=request_type)
-    stats = get_request_log_stats()
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"error": "Invalid JSON body"})
 
-    # Serialize datetime objects to strings
-    for log in logs:
-        if log.get("created_at") and hasattr(log["created_at"], "isoformat"):
-            log["created_at"] = log["created_at"].isoformat()
+    status = (body.get("status") or "").strip()
+    comments = (body.get("comments") or "").strip() or None
 
-    resp = JSONResponse({"logs": logs, "stats": stats})
+    try:
+        found = update_application_status(application_id, status, comments)
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+    if not found:
+        return JSONResponse(status_code=404, content={"error": f"Application '{application_id}' not found"})
+
+    logger.info(f"Admin '{session.get('admin_username')}' updated {application_id} -> {status}")
+    resp = JSONResponse({"success": True, "application_id": application_id, "status": status})
     sm.save_session(resp, session_id)
     return resp
 

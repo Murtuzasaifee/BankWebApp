@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', path=theme_css) }}">
     <link rel="stylesheet" href="{{ url_for('static', path='css/admin.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -182,51 +183,67 @@
             </div>
         </div>
 
-        <!-- Toast Notification -->
-        <div id="config-toast" class="config-toast" role="alert" aria-live="polite"></div>
-
         {% elif view_mode == 'category' %}
 
         <!-- Stats Cards -->
         <div class="stats-grid">
-            <div class="stat-card" data-filter="pending" onclick="setFilter('pending')">
-                <div class="stat-icon pending">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 data-stat="pending">—</h3>
-                    <p>Pending</p>
-                </div>
-            </div>
-
             <div class="stat-card" data-filter="in-progress" onclick="setFilter('in-progress')">
-                <div class="stat-icon in-progress">
-                    <i class="fas fa-spinner"></i>
-                </div>
+                <div class="stat-icon in-progress"><i class="fas fa-spinner"></i></div>
                 <div class="stat-info">
                     <h3 data-stat="in_progress">—</h3>
                     <p>In Progress</p>
                 </div>
             </div>
-
-            <div class="stat-card" data-filter="completed" onclick="setFilter('completed')">
-                <div class="stat-icon completed">
-                    <i class="fas fa-check-circle"></i>
-                </div>
+            <div class="stat-card" data-filter="pending" onclick="setFilter('pending')">
+                <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
                 <div class="stat-info">
-                    <h3 data-stat="completed">—</h3>
-                    <p>Completed</p>
+                    <h3 data-stat="pending">—</h3>
+                    <p>Pending</p>
                 </div>
             </div>
-
-            <div class="stat-card" data-filter="all" onclick="setFilter('all')">
-                <div class="stat-icon total">
-                    <i class="fas fa-layer-group"></i>
+            <div class="stat-card" data-filter="submitted" onclick="setFilter('submitted')">
+                <div class="stat-icon" style="background:rgba(59,130,246,.12);color:#2563eb">
+                    <i class="fas fa-paper-plane"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 data-stat="total">—</h3>
-                    <p>Total Applications</p>
+                    <h3 data-stat="submitted">—</h3>
+                    <p>Submitted</p>
                 </div>
+            </div>
+            <div class="stat-card" data-filter="approved" onclick="setFilter('approved')">
+                <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3 data-stat="approved">—</h3>
+                    <p>Approved</p>
+                </div>
+            </div>
+            <div class="stat-card" data-filter="rejected" onclick="setFilter('rejected')">
+                <div class="stat-icon" style="background:rgba(229,62,62,.12);color:#e53e3e">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 data-stat="rejected">—</h3>
+                    <p>Rejected</p>
+                </div>
+            </div>
+            <div class="stat-card" data-filter="all" onclick="setFilter('all')">
+                <div class="stat-icon total"><i class="fas fa-layer-group"></i></div>
+                <div class="stat-info">
+                    <h3 data-stat="total">—</h3>
+                    <p>Total</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <h3 class="chart-title"><i class="fas fa-chart-donut"></i> Status Distribution</h3>
+                <div class="chart-wrap"><canvas id="statusDonutChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Applications by Status</h3>
+                <div class="chart-wrap"><canvas id="statusBarChart"></canvas></div>
             </div>
         </div>
 
@@ -238,26 +255,58 @@
             </div>
             <div class="filter-tabs">
                 <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">All</button>
-                <button class="filter-tab" data-filter="pending" onclick="setFilter('pending')">Pending</button>
                 <button class="filter-tab" data-filter="in-progress" onclick="setFilter('in-progress')">In Progress</button>
-                <button class="filter-tab" data-filter="completed" onclick="setFilter('completed')">Completed</button>
+                <button class="filter-tab" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+                <button class="filter-tab" data-filter="submitted" onclick="setFilter('submitted')">Submitted</button>
+                <button class="filter-tab" data-filter="approved" onclick="setFilter('approved')">Approved</button>
+                <button class="filter-tab" data-filter="rejected" onclick="setFilter('rejected')">Rejected</button>
             </div>
             <table class="applications-table">
                 <thead>
                     <tr>
+                        <th>App ID</th>
+                        <th>Applicant</th>
                         <th>Transaction ID</th>
                         <th>Submitted Date</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="applications-tbody"></tbody>
             </table>
         </div>
 
+        <!-- Action Dialog (Approve / Reject with comment) -->
+        <div class="doc-modal-backdrop" id="action-dialog-backdrop" onclick="closeActionDialog()"></div>
+        <div class="doc-modal" id="action-dialog" role="dialog" aria-modal="true" style="max-width:480px;height:auto;max-height:90vh">
+            <div class="doc-modal-header">
+                <div class="doc-modal-title-group">
+                    <i class="fas fa-edit" id="action-dialog-icon"></i>
+                    <span id="action-dialog-title">Confirm Action</span>
+                </div>
+                <div class="doc-modal-actions">
+                    <button class="doc-modal-close doc-modal-action-btn" onclick="closeActionDialog()" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="doc-modal-body" style="padding:1.5rem;overflow-y:auto">
+                <p id="action-dialog-desc" style="margin-bottom:1rem;color:var(--text-secondary,#666)"></p>
+                <label for="action-comment" style="display:block;font-weight:500;margin-bottom:.5rem">Comment <span style="font-weight:400;color:#999">(optional)</span></label>
+                <textarea id="action-comment" rows="3" class="asset-input" style="width:100%;resize:vertical" placeholder="Add a note..."></textarea>
+                <div style="display:flex;gap:.75rem;margin-top:1.25rem;justify-content:flex-end">
+                    <button class="btn-reload-config" onclick="closeActionDialog()">Cancel</button>
+                    <button id="action-confirm-btn" class="btn-save-config" onclick="confirmAction()">Confirm</button>
+                </div>
+            </div>
+        </div>
+
         {% endif %}
 
     </div>
+
+    <!-- Toast Notification (shared across all views) -->
+    <div id="config-toast" class="config-toast" role="alert" aria-live="polite"></div>
 
     <!-- Document Viewer Modal -->
     <div class="doc-modal-backdrop" id="doc-modal-backdrop" onclick="closeDocModal()"></div>
@@ -310,22 +359,43 @@
         // --- State ---
         let allApplications = [];
         let activeFilter = 'all';
+        let _donutChart = null;
+        let _barChart = null;
+        let _pendingAction = null; // {dbApplicationId, status}
 
         // --- Helpers ---
         function statusClass(status) {
-            return status.toLowerCase().replace(/\s+/g, '-');
+            return (status || '').toLowerCase().replace(/\s+/g, '-');
         }
 
-        function buildStatusBadge(status) {
+        function buildStatusBadge(status, idAttr) {
             const cls = statusClass(status);
-            return `<span class="status-badge ${cls}"><span class="status-dot ${cls}"></span>${status}</span>`;
+            const id = idAttr ? ` id="${idAttr}"` : '';
+            return `<span class="status-badge ${cls}"${id}><span class="status-dot ${cls}"></span>${escHtml(status)}</span>`;
+        }
+
+        function escHtml(s) {
+            return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
         function buildActionCell(app) {
-            if (app.status !== 'Completed') return '';
-            return `<button class="btn-view" data-asset-id="${app.asset_id}" data-trace-id="${app.application_id}" onclick="viewApplication(this)">
-                        <i class="fas fa-file-alt"></i> View
-                    </button>`;
+            const status = app.status || '';
+            const dbId = app.db_application_id || '';
+            const assetId = escHtml(app.asset_id || '');
+            const traceId = escHtml(app.application_id || ''); // GUID for presigned URL
+            const buttons = [];
+
+            if (status === 'Submitted') {
+                buttons.push(`<button class="btn-approve" onclick="openActionDialog('${escHtml(dbId)}','Approved')"><i class="fas fa-check"></i> Approve</button>`);
+                buttons.push(`<button class="btn-reject"  onclick="openActionDialog('${escHtml(dbId)}','Rejected')"><i class="fas fa-times"></i> Reject</button>`);
+            }
+            if (status === 'Submitted' || status === 'Approved' || status === 'Rejected') {
+                buttons.push(`<button class="btn-view" data-asset-id="${assetId}" data-trace-id="${traceId}" onclick="viewApplication(this)"><i class="fas fa-file-alt"></i> Review</button>`);
+            }
+            if (status === 'In Progress' || status === 'Pending') {
+                buttons.push(`<button class="btn-view" data-asset-id="${assetId}" data-trace-id="${traceId}" onclick="viewApplication(this)" style="opacity:.7"><i class="fas fa-eye"></i> View</button>`);
+            }
+            return buttons.length ? `<div class="action-btns">${buttons.join('')}</div>` : '<span class="action-done">—</span>';
         }
 
         // --- Skeleton ---
@@ -334,6 +404,8 @@
             if (!tbody) return;
             tbody.innerHTML = Array.from({ length: 5 }, () => `
                 <tr class="skeleton-row">
+                    <td><div class="skeleton-cell" style="width:55%"></div></td>
+                    <td><div class="skeleton-cell" style="width:60%"></div></td>
                     <td><div class="skeleton-cell" style="width:62%"></div></td>
                     <td><div class="skeleton-cell" style="width:48%"></div></td>
                     <td><div class="skeleton-cell" style="width:52%;border-radius:20px"></div></td>
@@ -344,15 +416,12 @@
         // --- Filter ---
         function setFilter(filter) {
             activeFilter = filter;
-
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 tab.classList.toggle('active', tab.dataset.filter === filter);
             });
-
             document.querySelectorAll('.stat-card[data-filter]').forEach(card => {
                 card.classList.toggle('active', card.dataset.filter === filter);
             });
-
             renderFiltered();
         }
 
@@ -367,32 +436,41 @@
             if (!tbody) return;
 
             if (!filtered || filtered.length === 0) {
-                const label = activeFilter === 'all' ? 'this category' : `"${activeFilter.replace('-', ' ')}" status`;
-                tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
+                const label = activeFilter === 'all' ? 'this category' : `"${activeFilter.replace(/-/g,' ')}" status`;
+                tbody.innerHTML = `<tr><td colspan="6" class="table-empty">
                     <i class="fas fa-inbox table-empty-icon"></i>
                     <p>No applications found for ${label}.</p></td></tr>`;
-                if (countEl) countEl.textContent = activeFilter === 'all'
-                    ? '0 applications'
-                    : `0 of ${allApplications.length}`;
+                if (countEl) countEl.textContent = activeFilter === 'all' ? '0 applications' : `0 of ${allApplications.length}`;
                 return;
             }
 
-            tbody.innerHTML = filtered.map(app => `<tr class="row-${statusClass(app.status)}">
-                <td data-label="Transaction ID">
-                    <div class="app-id-cell">
-                        <span class="app-id">${app.application_id}</span>
-                        <button class="btn-copy" onclick="copyId(this, '${app.application_id}')" title="Copy ID">
-                            <i class="fas fa-copy"></i>
-                        </button>
-                    </div>
-                </td>
-                <td data-label="Submitted Date">${app.submission_date}</td>
-                <td data-label="Status">${buildStatusBadge(app.status)}</td>
-                <td data-label="Action">${buildActionCell(app)}</td>
-            </tr>`).join('');
+            tbody.innerHTML = filtered.map(app => {
+                const dbId = app.db_application_id || '';
+                const cls = statusClass(app.status);
+                const badgeId = dbId ? `badge-${escHtml(dbId)}` : '';
+                return `<tr class="row-${cls}" id="${dbId ? 'row-'+escHtml(dbId) : ''}">
+                    <td data-label="App ID">
+                        <div class="app-id-cell">
+                            <span class="app-id">${dbId ? escHtml(dbId) : '<span style="opacity:.4">—</span>'}</span>
+                            ${dbId ? `<button class="btn-copy" onclick="copyId(this,'${escHtml(dbId)}')" title="Copy"><i class="fas fa-copy"></i></button>` : ''}
+                        </div>
+                    </td>
+                    <td data-label="Applicant">${escHtml(app.display_name || app.applicant_name || '—')}</td>
+                    <td data-label="Transaction ID">
+                        <div class="app-id-cell">
+                            <span class="app-id" style="font-size:.7rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block"
+                                  title="${escHtml(app.application_id)}">${escHtml(app.application_id)}</span>
+                            <button class="btn-copy" onclick="copyId(this,'${escHtml(app.application_id)}')" title="Copy GUID"><i class="fas fa-copy"></i></button>
+                        </div>
+                    </td>
+                    <td data-label="Submitted Date">${escHtml(app.submission_date)}</td>
+                    <td data-label="Status">${buildStatusBadge(app.status, badgeId)}</td>
+                    <td data-label="Actions">${buildActionCell(app)}</td>
+                </tr>`;
+            }).join('');
 
             if (countEl) countEl.textContent = activeFilter === 'all'
-                ? `${filtered.length} applications`
+                ? `${filtered.length} application${filtered.length !== 1 ? 's' : ''}`
                 : `${filtered.length} of ${allApplications.length}`;
         }
 
@@ -400,6 +478,54 @@
             document.querySelectorAll('[data-stat]').forEach(el => {
                 const key = el.getAttribute('data-stat');
                 if (stats[key] !== undefined) el.textContent = stats[key];
+            });
+        }
+
+        // --- Charts ---
+        const CHART_COLORS = {
+            'In Progress': '#7C3AED',
+            'Pending':     '#D97706',
+            'Submitted':   '#2563EB',
+            'Approved':    '#059669',
+            'Rejected':    '#DC2626',
+        };
+
+        function renderCharts(stats) {
+            const labels  = ['In Progress','Pending','Submitted','Approved','Rejected'];
+            const statKeys = ['in_progress','pending','submitted','approved','rejected'];
+            const values  = statKeys.map(k => stats[k] || 0);
+            const colors  = labels.map(l => CHART_COLORS[l]);
+
+            const donutCtx = document.getElementById('statusDonutChart');
+            const barCtx   = document.getElementById('statusBarChart');
+            if (!donutCtx || !barCtx) return;
+
+            if (_donutChart) _donutChart.destroy();
+            if (_barChart)   _barChart.destroy();
+
+            _donutChart = new Chart(donutCtx, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter' }, padding: 12, boxWidth: 12 } },
+                        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}` } }
+                    }
+                }
+            });
+
+            _barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Applications', data: values, backgroundColor: colors, borderRadius: 6, borderSkipped: false }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,.06)' } },
+                        x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+                    }
+                }
             });
         }
 
@@ -414,19 +540,92 @@
             fetch(`/admin/api/categories/${slug}`)
                 .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
                 .then(data => {
-                    populateStats(data.stats || {});
+                    const stats = data.stats || {};
+                    populateStats(stats);
+                    renderCharts(stats);
                     allApplications = data.applications || [];
                     setFilter('all');
                 })
                 .catch(err => {
                     console.error('Failed to load category data:', err);
                     const tbody = document.getElementById('applications-tbody');
-                    if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="table-empty">
+                    if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="table-empty">
                         <i class="fas fa-exclamation-circle table-empty-icon"></i>
                         <p>Failed to load applications. Please refresh the page.</p></td></tr>`;
                     const countEl = document.getElementById('table-count');
                     if (countEl) countEl.textContent = 'Error';
                 });
+        }
+
+        // --- Action Dialog ---
+        function openActionDialog(dbApplicationId, status) {
+            _pendingAction = { dbApplicationId, status };
+            const isApprove = status === 'Approved';
+            document.getElementById('action-dialog-icon').className = isApprove ? 'fas fa-check-circle' : 'fas fa-times-circle';
+            document.getElementById('action-dialog-title').textContent = isApprove ? 'Approve Application' : 'Reject Application';
+            document.getElementById('action-dialog-desc').textContent =
+                `You are about to mark ${dbApplicationId} as "${status}". Add an optional comment below.`;
+            const confirmBtn = document.getElementById('action-confirm-btn');
+            confirmBtn.textContent = isApprove ? 'Confirm Approve' : 'Confirm Reject';
+            confirmBtn.style.background = isApprove ? '' : 'var(--danger, #e53e3e)';
+            document.getElementById('action-comment').value = '';
+            document.getElementById('action-dialog-backdrop').classList.add('active');
+            document.getElementById('action-dialog').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('action-comment').focus(), 100);
+        }
+
+        function closeActionDialog() {
+            document.getElementById('action-dialog-backdrop').classList.remove('active');
+            document.getElementById('action-dialog').classList.remove('active');
+            document.body.style.overflow = '';
+            _pendingAction = null;
+        }
+
+        function confirmAction() {
+            if (!_pendingAction) return;
+            const { dbApplicationId, status } = _pendingAction;
+            const comment = document.getElementById('action-comment').value.trim();
+            updateApplicationStatus(dbApplicationId, status, comment);
+            closeActionDialog();
+        }
+
+        function updateApplicationStatus(dbApplicationId, status, comments) {
+            fetch(`/admin/api/applications/${dbApplicationId}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, comments: comments || null })
+            })
+            .then(res => res.json().then(d => ({ ok: res.ok, data: d })))
+            .then(({ ok, data }) => {
+                if (!ok) throw new Error(data.error || 'Update failed');
+                // Update badge and action buttons in-place
+                const badge = document.getElementById(`badge-${dbApplicationId}`);
+                if (badge) {
+                    const cls = status.toLowerCase().replace(/\s+/g, '-');
+                    badge.className = `status-badge ${cls}`;
+                    badge.innerHTML = `<span class="status-dot ${cls}"></span>${status}`;
+                }
+                const row = document.getElementById(`row-${dbApplicationId}`);
+                if (row) {
+                    row.className = `row-${status.toLowerCase().replace(/\s+/g, '-')}`;
+                    // Update in-memory data
+                    const app = allApplications.find(a => a.db_application_id === dbApplicationId);
+                    if (app) {
+                        app.status = status;
+                        const actionTd = row.querySelector('td[data-label="Actions"]');
+                        if (actionTd) actionTd.innerHTML = buildActionCell(app);
+                    }
+                }
+                showToast(`${dbApplicationId} marked as ${status}.`, 'success');
+                // Reload stats and charts
+                const slug = document.getElementById('applications-table-section').getAttribute('data-slug');
+                fetch(`/admin/api/categories/${slug}`)
+                    .then(r => r.json())
+                    .then(d => { populateStats(d.stats || {}); renderCharts(d.stats || {}); })
+                    .catch(() => {});
+            })
+            .catch(err => showToast(err.message || 'Failed to update status.', 'error'));
         }
 
         // --- Copy ID ---
@@ -481,6 +680,7 @@
         function viewApplication(btn) {
             const assetId = btn.getAttribute('data-asset-id');
             const traceId = btn.getAttribute('data-trace-id');
+            const originalHtml = btn.innerHTML;
 
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
@@ -508,7 +708,7 @@
                 })
                 .finally(() => {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-alt"></i> View';
+                    btn.innerHTML = originalHtml;
                 });
         }
 
@@ -681,6 +881,7 @@
             loadCategoryData();
             loadAssetConfig();
         });
+
     </script>
 
 </body>

@@ -349,6 +349,11 @@
                         <div class="action-icon"><i class="fas fa-file-alt"></i></div>
                         <div class="action-title">Statements</div>
                     </div>
+
+                    <div class="action-card" onclick="openMyApplicationsModal()">
+                        <div class="action-icon"><i class="fas fa-folder-open"></i></div>
+                        <div class="action-title">My Applications</div>
+                    </div>
                 </div>
             </section>
 
@@ -1390,6 +1395,56 @@
                         style="width: 100%; margin: 0; background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);">
                         <i class="fas fa-check-circle"></i> Got It, Thanks!
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Applications Modal -->
+    <div id="my-applications-modal" class="modal">
+        <div class="modal-content" style="max-width:700px;max-height:85vh;display:flex;flex-direction:column">
+            <div class="modal-header">
+                <div style="display:flex;align-items:center;gap:.75rem">
+                    <i class="fas fa-folder-open" style="font-size:1.3rem;color:var(--primary)"></i>
+                    <h3 class="modal-title">My Applications</h3>
+                </div>
+                <button class="modal-close" onclick="closeModal('my-applications-modal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Filter tabs -->
+            <div style="padding:.75rem 1.5rem 0;border-bottom:1px solid #eee;display:flex;gap:.5rem;flex-wrap:wrap">
+                <button class="filter-tab active" data-myapp-filter="all" onclick="filterMyApplications('all')">All</button>
+                <button class="filter-tab" data-myapp-filter="In Progress" onclick="filterMyApplications('In Progress')">In Progress</button>
+                <button class="filter-tab" data-myapp-filter="Pending" onclick="filterMyApplications('Pending')">Pending</button>
+                <button class="filter-tab" data-myapp-filter="Submitted" onclick="filterMyApplications('Submitted')">Submitted</button>
+                <button class="filter-tab" data-myapp-filter="Approved" onclick="filterMyApplications('Approved')">Approved</button>
+                <button class="filter-tab" data-myapp-filter="Rejected" onclick="filterMyApplications('Rejected')">Rejected</button>
+            </div>
+
+            <div class="modal-body" style="overflow-y:auto;flex:1;padding:1rem 1.5rem">
+                <!-- Loading state -->
+                <div id="my-apps-loading" style="text-align:center;padding:3rem 1rem;display:none">
+                    <i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);opacity:.6"></i>
+                    <p style="margin-top:1rem;color:#666">Loading your applications...</p>
+                </div>
+                <!-- Table -->
+                <table id="my-apps-table" class="applications-table" style="display:none">
+                    <thead>
+                        <tr>
+                            <th>App ID</th>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="my-apps-tbody"></tbody>
+                </table>
+                <!-- Empty state -->
+                <div id="my-apps-empty" style="text-align:center;padding:3rem 1rem;display:none">
+                    <i class="fas fa-folder-open" style="font-size:2.5rem;opacity:.25;display:block;margin-bottom:.75rem"></i>
+                    <p style="color:#666">No applications yet.</p>
                 </div>
             </div>
         </div>

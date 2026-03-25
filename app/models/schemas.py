@@ -106,3 +106,20 @@ class DashboardStats(BaseModel):
     in_progress: int
     completed: int
     total: int
+
+
+class ApplicationRecord(BaseModel):
+    application_id: str
+    service_type: str
+    service_name: str
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+    status: str
+    admin_comments: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
+class ApplicationStatusUpdate(BaseModel):
+    status: str  # 'Under Review' | 'Approved' | 'Rejected'
+    comments: Optional[str] = None

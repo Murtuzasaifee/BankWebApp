@@ -1264,3 +1264,99 @@ function initPromoSlider() {
 }
 
 document.addEventListener('DOMContentLoaded', initPromoSlider);
+
+// ============================================================
+// My Applications Modal
+// ============================================================
+
+let _myAppsData = [];
+let _myAppsFilter = 'all';
+
+function openMyApplicationsModal() {
+    document.getElementById('my-applications-modal').classList.add('active');
+    loadMyApplications();
+}
+
+function loadMyApplications() {
+    const loading = document.getElementById('my-apps-loading');
+    const table = document.getElementById('my-apps-table');
+    const empty = document.getElementById('my-apps-empty');
+
+    loading.style.display = 'block';
+    table.style.display = 'none';
+    empty.style.display = 'none';
+
+    fetch('/my-applications')
+        .then(res => {
+            if (res.status === 401) throw new Error('not-logged-in');
+            if (!res.ok) throw new Error('fetch-error');
+            return res.json();
+        })
+        .then(data => {
+            _myAppsData = data.applications || [];
+            _myAppsFilter = 'all';
+            document.querySelectorAll('[data-myapp-filter]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.myappFilter === 'all');
+            });
+            renderMyApplications();
+        })
+        .catch(err => {
+            loading.style.display = 'none';
+            empty.style.display = 'block';
+            const p = empty.querySelector('p');
+            if (err.message === 'not-logged-in') {
+                p.textContent = 'Please log in to view your applications.';
+            } else {
+                p.textContent = 'Failed to load applications. Please try again.';
+            }
+        })
+        .finally(() => {
+            loading.style.display = 'none';
+        });
+}
+
+function filterMyApplications(filter) {
+    _myAppsFilter = filter;
+    document.querySelectorAll('[data-myapp-filter]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.myappFilter === filter);
+    });
+    renderMyApplications();
+}
+
+function renderMyApplications() {
+    const table = document.getElementById('my-apps-table');
+    const empty = document.getElementById('my-apps-empty');
+    const tbody = document.getElementById('my-apps-tbody');
+
+    const filtered = _myAppsFilter === 'all'
+        ? _myAppsData
+        : _myAppsData.filter(app => app.status === _myAppsFilter);
+
+    if (filtered.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        const p = empty.querySelector('p');
+        p.textContent = _myAppsFilter === 'all'
+            ? 'No applications yet.'
+            : `No ${_myAppsFilter.toLowerCase()} applications.`;
+        return;
+    }
+
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(app => {
+        const cls = (app.status || '').toLowerCase().replace(/\s+/g, '-');
+        const date = (app.created_at || '').slice(0, 10);
+        return `<tr>
+            <td data-label="App ID" style="font-family:'Courier New',monospace;font-weight:600">${escapeHtml(app.application_id)}</td>
+            <td data-label="Service">${escapeHtml(app.service_name)}</td>
+            <td data-label="Status"><span class="status-badge ${cls}"><span class="status-dot ${cls}"></span>${escapeHtml(app.status)}</span></td>
+            <td data-label="Submitted">${date}</td>
+        </tr>`;
+    }).join('');
+}
+
+function escapeHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}

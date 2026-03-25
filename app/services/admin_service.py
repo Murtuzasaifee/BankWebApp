@@ -16,9 +16,9 @@ logger = get_logger()
 
 # Status mapping: API status → display status
 _STATUS_MAP = {
-    "COMPLETED": "Completed",
+    "COMPLETED":  "Submitted",   # AI processing done → ready for admin action
     "IN_PROGRESS": "In Progress",
-    "FAILED": "Pending",       # FAILED → Pending bucket
+    "FAILED":      "Pending",    # FAILED → Pending bucket
 }
 
 
@@ -99,14 +99,50 @@ def fetch_applications_for_asset(agent_client, settings, asset_id: str) -> List[
     return applications
 
 
+def merge_with_db(applications: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    For each application fetched from the API, look up the matching DB record by trace_id.
+    - Syncs DB status based on API status (skips if already Approved/Rejected).
+    - Annotates each application dict with DB fields: db_application_id, display_name, username, db_status.
+    - The final 'status' shown is the DB status (which takes precedence for admin actions).
+    """
+    from app.services.application_service import sync_status_from_api, get_application_by_trace_id
+
+    for app in applications:
+        trace_id = app.get("application_id", "")  # in normalized dict, application_id = platform trace GUID
+        api_status_raw = ""
+        # Reverse-map display status back to raw API status for sync
+        _REVERSE = {"Submitted": "COMPLETED", "In Progress": "IN_PROGRESS", "Pending": "FAILED"}
+        api_status_raw = _REVERSE.get(app.get("status", ""), "FAILED")
+
+        resolved_status = sync_status_from_api(trace_id, api_status_raw)
+        if resolved_status:
+            app["status"] = resolved_status
+
+        db_record = get_application_by_trace_id(trace_id)
+        if db_record:
+            app["db_application_id"] = db_record["application_id"]
+            app["display_name"] = db_record.get("display_name") or db_record.get("username") or ""
+            app["status"] = db_record["status"]  # DB status is authoritative
+        else:
+            app["db_application_id"] = ""
+            app["display_name"] = app.get("applicant_name", "")
+
+    return applications
+
+
 def compute_stats(applications: List[Dict[str, Any]]) -> dict:
     """Calculate dashboard stats from a list of applications."""
-    pending = sum(1 for a in applications if a["status"] == "Pending")
+    pending     = sum(1 for a in applications if a["status"] == "Pending")
     in_progress = sum(1 for a in applications if a["status"] == "In Progress")
-    completed = sum(1 for a in applications if a["status"] == "Completed")
+    submitted   = sum(1 for a in applications if a["status"] == "Submitted")
+    approved    = sum(1 for a in applications if a["status"] == "Approved")
+    rejected    = sum(1 for a in applications if a["status"] == "Rejected")
     return {
-        "pending": pending,
+        "pending":     pending,
         "in_progress": in_progress,
-        "completed": completed,
-        "total": len(applications),
+        "submitted":   submitted,
+        "approved":    approved,
+        "rejected":    rejected,
+        "total":       len(applications),
     }

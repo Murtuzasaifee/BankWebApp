@@ -19,7 +19,7 @@ from app.core.dependencies import get_agent_client, get_session_manager
 from app.core.logger import get_logger
 from app.services.rest_client import RestClient
 from app.services.category_service import get_asset_id
-from app.services.request_log_service import log_request
+from app.services.application_service import create_application
 
 router = APIRouter()
 logger = get_logger()
@@ -136,22 +136,32 @@ def submit_loan(body: LoanRequest, request: Request, response: Response):
         }
 
         trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
-        user_id = session.get("user_id") if session else None
+        user_data = (session.get("user_data") or {}) if session else {}
+        user_id = user_data.get("user_id")
         try:
-            log_request(
-                request_type="loan-application",
-                user_id=user_id,
-                account_type=body.loan_type,
+            _LOAN_NAMES = {
+                "personal-loan": "Personal Loan",
+                "home-loan": "Home Loan",
+                "auto-loan": "Auto Loan",
+            }
+            loan_name = _LOAN_NAMES.get(
+                (body.loan_type or "").lower().replace(" ", "-"),
+                body.loan_type or "Loan Application"
+            )
+            application_id = create_application(
+                service_type="loan",
+                service_name=loan_name,
                 trace_id=trace_id,
-                document_count=body.files_count,
-                ip_address=request.client.host if request.client else None,
-                user_agent=request.headers.get("user-agent"),
+                user_id=user_id,
+                username=session.get("username") if session else None,
+                display_name=user_data.get("display_name"),
                 comments=body.comments,
             )
         except Exception as log_err:
-            logger.warning(f"[Loan Application] Failed to log request: {log_err}")
+            logger.warning(f"[Loan Application] Failed to create application record: {log_err}")
+            application_id = trace_id
         sm.save_session(response, session_id)
-        return {"success": True, "trace_id": trace_id, "message": "Loan application submitted successfully"}
+        return {"success": True, "trace_id": application_id, "message": "Loan application submitted successfully"}
 
     except ValueError as e:
         logger.error(f"[Loan Application] No trace_id: {e}")
@@ -212,23 +222,24 @@ async def submit_stock_account(
             )
 
         trace_id = _invoke_asset_multipart(asset_id, multipart_files, settings, agent_client)
-        user_id = session.get("user_id") if session else None
+        user_data = (session.get("user_data") or {}) if session else {}
+        user_id = user_data.get("user_id")
         try:
-            log_request(
-                request_type="stock-account",
-                user_id=user_id,
-                account_type="Demat Account",
+            application_id = create_application(
+                service_type="stock",
+                service_name="Demat Account",
                 trace_id=trace_id,
-                document_count=len(files),
-                ip_address=request.client.host if request.client else None,
-                user_agent=request.headers.get("user-agent"),
+                user_id=user_id,
+                username=session.get("username") if session else None,
+                display_name=user_data.get("display_name"),
             )
         except Exception as log_err:
-            logger.warning(f"[Stock Account] Failed to log request: {log_err}")
+            logger.warning(f"[Stock Account] Failed to create application record: {log_err}")
+            application_id = trace_id
         sm.save_session(response, session_id)
         return {
             "success": True,
-            "trace_id": trace_id,
+            "trace_id": application_id,
             "message": "Stock trading account application submitted successfully",
         }
 
@@ -279,23 +290,24 @@ def submit_savings_account(body: SavingsAccountRequest, request: Request, respon
         }
 
         trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
-        user_id = session.get("user_id") if session else None
+        user_data = (session.get("user_data") or {}) if session else {}
+        user_id = user_data.get("user_id")
         try:
-            log_request(
-                request_type="savings-account",
-                user_id=user_id,
-                account_type=body.process,
+            application_id = create_application(
+                service_type="savings",
+                service_name="Savings Account",
                 trace_id=trace_id,
-                document_count=0,
-                ip_address=request.client.host if request.client else None,
-                user_agent=request.headers.get("user-agent"),
+                user_id=user_id,
+                username=session.get("username") if session else None,
+                display_name=user_data.get("display_name"),
             )
         except Exception as log_err:
-            logger.warning(f"[Savings Account] Failed to log request: {log_err}")
+            logger.warning(f"[Savings Account] Failed to create application record: {log_err}")
+            application_id = trace_id
         sm.save_session(response, session_id)
         return {
             "success": True,
-            "trace_id": trace_id,
+            "trace_id": application_id,
             "message": "Savings account application submitted successfully",
         }
 

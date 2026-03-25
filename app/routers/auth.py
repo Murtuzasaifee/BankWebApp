@@ -10,6 +10,7 @@ from app.core.dependencies import conversation_store, get_session_manager
 from app.core.logger import get_logger
 from app.core.api_auth import verify_api_key
 from app.services.user_service import get_user_by_credentials, get_user_profile
+from app.services.application_service import get_applications
 
 router = APIRouter()
 logger = get_logger()
@@ -146,3 +147,24 @@ def user_profile(user_id: str, request: Request):
         )
 
     return profile
+
+
+@router.get("/my-applications")
+def my_applications(request: Request, response: Response):
+    """
+    Return the current user's submitted applications.
+    Requires an active user session. Never exposes trace_id.
+    """
+    sm = get_session_manager()
+    session_id, session = sm.get_session(request)
+
+    if not session.get("logged_in"):
+        return JSONResponse(status_code=401, content={"error": "Authentication required"})
+
+    user_data = session.get("user_data") or {}
+    user_id = user_data.get("user_id")
+
+    applications = get_applications(user_id=user_id)
+
+    sm.save_session(response, session_id)
+    return {"applications": applications}
