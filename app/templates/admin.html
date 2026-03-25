@@ -114,7 +114,12 @@
                     </div>
                     <div class="asset-field">
                         <label for="field-platform-password">Platform Password <span class="asset-label-hint">(leave blank to keep current)</span></label>
-                        <input type="password" id="field-platform-password" class="asset-input" placeholder="••••••••">
+                        <div class="password-input-wrapper">
+                            <input type="password" id="field-platform-password" class="asset-input" placeholder="••••••••">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('field-platform-password', this)" title="Toggle password visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -644,7 +649,21 @@
             .finally(() => {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-save"></i> Save Credentials';
-            });
+                });
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
 
         function showToast(message, type) {
