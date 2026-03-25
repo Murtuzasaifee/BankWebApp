@@ -52,7 +52,7 @@ def _normalize_item(item: dict, asset_version_id: str) -> dict:
     raw_status = (item.get("status") or "").upper()
     return {
         "application_id": item.get("transaction_id", ""),
-        "applicant_name": item.get("initiated_by", "Unknown"),
+        "applicant_name": item.get("initiated_by") or "",
         "submission_date": _format_start_time(item.get("start_time", "")),
         "status": _STATUS_MAP.get(raw_status, "Pending"),
         "application_type": f"{item.get('total_documents', 0)} doc(s)",

@@ -169,7 +169,7 @@ body {
    ============================================================ */
 
 .admin-container {
-    max-width: 1280px;
+    max-width: 1440px;
     margin: 68px auto 0;
     padding: 2rem 2.5rem 5.5rem;
     min-height: calc(100vh - 68px - 48px);
@@ -332,7 +332,7 @@ body {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 1.2rem;
     margin-bottom: 1.8rem;
 }
@@ -422,7 +422,7 @@ body {
     background: white;
     border-radius: 16px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid rgba(124, 58, 237, 0.06);
 }
 
@@ -491,7 +491,7 @@ body {
 }
 
 .applications-table thead th {
-    padding: 0.85rem 1.5rem;
+    padding: 0.75rem 1rem;
     text-align: left;
     font-size: 0.7rem;
     font-weight: 700;
@@ -500,13 +500,15 @@ body {
     color: var(--text-muted);
     background: #fafbfc;
     border-bottom: 1px solid rgba(124, 58, 237, 0.07);
+    white-space: nowrap;
 }
 
 .applications-table tbody td {
-    padding: 1rem 1.5rem;
+    padding: 0.8rem 1rem;
     font-size: 0.87rem;
     color: #1E1040;
     border-bottom: 1px solid rgba(124, 58, 237, 0.05);
+    white-space: nowrap;
 }
 
 .applications-table tbody tr:last-child td { border-bottom: none; }
@@ -558,7 +560,7 @@ body {
 .status-dot.rejected      { background: #e53e3e; }
 
 /* ---- APPLICATION ACTION BUTTONS ---- */
-.action-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.action-btns { display: flex; gap: 0.4rem; flex-wrap: nowrap; }
 
 .btn-approve, .btn-reject, .btn-review {
     display: inline-flex;
@@ -603,7 +605,7 @@ body {
 .applications-table tbody tr.row-pending:hover { background: rgba(255, 193, 7, 0.07); }
 .applications-table tbody tr.row-pending td:first-child {
     border-left: 3px solid #e6a800;
-    padding-left: calc(1.5rem - 3px);
+    padding-left: calc(1rem - 3px);
 }
 
 /* ---- BUTTONS ---- */
@@ -1050,8 +1052,12 @@ body {
    RESPONSIVE
    ============================================================ */
 
+@media (max-width: 1200px) {
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 @media (max-width: 1024px) {
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
     .category-grid { grid-template-columns: repeat(2, 1fr); }
     .admin-container { padding: 1.5rem 1.5rem 5.5rem; }
 }
@@ -1165,4 +1171,64 @@ body {
 .chart-wrap {
     position: relative;
     height: 220px;
+}
+
+/* ---- PAGINATION ---- */
+
+.pagination-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid rgba(124, 58, 237, 0.07);
+    background: #fafbfc;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.pagination-info {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.pg-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 0.5rem;
+    border: 1.5px solid rgba(124, 58, 237, 0.18);
+    border-radius: 8px;
+    background: white;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pg-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(124, 58, 237, 0.04);
+}
+
+.pg-btn.active {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+}
+
+.pg-btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
 }

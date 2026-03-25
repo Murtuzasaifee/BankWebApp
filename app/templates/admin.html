@@ -274,6 +274,10 @@
                 </thead>
                 <tbody id="applications-tbody"></tbody>
             </table>
+            <div class="pagination-row" id="pagination-row" style="display:none">
+                <span class="pagination-info" id="pagination-info"></span>
+                <div class="pagination-controls" id="pagination-controls"></div>
+            </div>
         </div>
 
         <!-- Action Dialog (Approve / Reject with comment) -->
@@ -359,6 +363,8 @@
         // --- State ---
         let allApplications = [];
         let activeFilter = 'all';
+        let currentPage = 1;
+        const PAGE_SIZE = 10;
         let _donutChart = null;
         let _barChart = null;
         let _pendingAction = null; // {dbApplicationId, status}
@@ -392,7 +398,7 @@
             if (status === 'Submitted' || status === 'Approved' || status === 'Rejected') {
                 buttons.push(`<button class="btn-view" data-asset-id="${assetId}" data-trace-id="${traceId}" onclick="viewApplication(this)"><i class="fas fa-file-alt"></i> Review</button>`);
             }
-            if (status === 'In Progress' || status === 'Pending') {
+            if (status === 'In Progress') {
                 buttons.push(`<button class="btn-view" data-asset-id="${assetId}" data-trace-id="${traceId}" onclick="viewApplication(this)" style="opacity:.7"><i class="fas fa-eye"></i> View</button>`);
             }
             return buttons.length ? `<div class="action-btns">${buttons.join('')}</div>` : '<span class="action-done">—</span>';
@@ -416,6 +422,7 @@
         // --- Filter ---
         function setFilter(filter) {
             activeFilter = filter;
+            currentPage = 1;
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 tab.classList.toggle('active', tab.dataset.filter === filter);
             });
@@ -441,10 +448,16 @@
                     <i class="fas fa-inbox table-empty-icon"></i>
                     <p>No applications found for ${label}.</p></td></tr>`;
                 if (countEl) countEl.textContent = activeFilter === 'all' ? '0 applications' : `0 of ${allApplications.length}`;
+                renderPagination(0, 0);
                 return;
             }
 
-            tbody.innerHTML = filtered.map(app => {
+            const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const page = filtered.slice(start, start + PAGE_SIZE);
+
+            tbody.innerHTML = page.map(app => {
                 const dbId = app.db_application_id || '';
                 const cls = statusClass(app.status);
                 const badgeId = dbId ? `badge-${escHtml(dbId)}` : '';
@@ -458,7 +471,7 @@
                     <td data-label="Applicant">${escHtml(app.display_name || app.applicant_name || '—')}</td>
                     <td data-label="Transaction ID">
                         <div class="app-id-cell">
-                            <span class="app-id" style="font-size:.7rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block"
+                            <span class="app-id" style="font-size:.7rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block"
                                   title="${escHtml(app.application_id)}">${escHtml(app.application_id)}</span>
                             <button class="btn-copy" onclick="copyId(this,'${escHtml(app.application_id)}')" title="Copy GUID"><i class="fas fa-copy"></i></button>
                         </div>
@@ -472,6 +485,54 @@
             if (countEl) countEl.textContent = activeFilter === 'all'
                 ? `${filtered.length} application${filtered.length !== 1 ? 's' : ''}`
                 : `${filtered.length} of ${allApplications.length}`;
+
+            renderPagination(filtered.length, totalPages);
+        }
+
+        // --- Pagination ---
+        function renderPagination(total, totalPages) {
+            const row = document.getElementById('pagination-row');
+            const info = document.getElementById('pagination-info');
+            const controls = document.getElementById('pagination-controls');
+            if (!row) return;
+
+            if (totalPages <= 1) { row.style.display = 'none'; return; }
+            row.style.display = 'flex';
+
+            const start = (currentPage - 1) * PAGE_SIZE + 1;
+            const end = Math.min(currentPage * PAGE_SIZE, total);
+            if (info) info.textContent = `Showing ${start}–${end} of ${total}`;
+
+            if (!controls) return;
+            const buttons = [];
+            buttons.push(`<button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`);
+
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            if (endPage - startPage < maxVisible - 1) startPage = Math.max(1, endPage - maxVisible + 1);
+
+            if (startPage > 1) {
+                buttons.push(`<button class="pg-btn" onclick="goPage(1)">1</button>`);
+                if (startPage > 2) buttons.push(`<span style="padding:0 4px;color:var(--text-muted)">…</span>`);
+            }
+            for (let i = startPage; i <= endPage; i++) {
+                buttons.push(`<button class="pg-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`);
+            }
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) buttons.push(`<span style="padding:0 4px;color:var(--text-muted)">…</span>`);
+                buttons.push(`<button class="pg-btn" onclick="goPage(${totalPages})">${totalPages}</button>`);
+            }
+
+            buttons.push(`<button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`);
+            controls.innerHTML = buttons.join('');
+        }
+
+        function goPage(page) {
+            currentPage = page;
+            renderFiltered();
+            const tableSection = document.getElementById('applications-table-section');
+            if (tableSection) tableSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function populateStats(stats) {
