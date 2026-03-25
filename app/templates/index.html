@@ -258,124 +258,50 @@
             </div>
         </section>
 
-        <footer class="footer" id="contact">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <div class="footer-logo">{{ app_name }}</div>
-                    <p class="footer-tagline">Your Trusted Banking Partner</p>
-                    <p class="footer-desc">A leading banking institution in the Middle East, delivering exceptional
-                        financial services with integrity and innovation since 1975.</p>
-                    <div class="footer-social">
-                        <a href="javascript:void(0)" class="footer-social-icon" title="Facebook"><i
-                                class="fab fa-facebook-f"></i></a>
-                        <a href="javascript:void(0)" class="footer-social-icon" title="Twitter"><i
-                                class="fab fa-twitter"></i></a>
-                        <a href="javascript:void(0)" class="footer-social-icon" title="Instagram"><i
-                                class="fab fa-instagram"></i></a>
-                        <a href="javascript:void(0)" class="footer-social-icon" title="LinkedIn"><i
-                                class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-
-                <div class="footer-links-col">
-                    <h5 class="footer-col-title">Services</h5>
-                    <ul class="footer-nav">
-                        <li><a href="javascript:void(0)" onclick="openSavingsModal()">Open an Account</a></li>
-                        <li><a href="javascript:void(0)" onclick="showLoginModal()">Personal Loans</a></li>
-                        <li><a href="javascript:void(0)">Multi-Currency Cards</a></li>
-                        <li><a href="javascript:void(0)">SME Financing</a></li>
-                        <li><a href="javascript:void(0)">Digital Banking</a></li>
-                        <li><a href="javascript:void(0)">Wealth Management</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-links-col">
-                    <h5 class="footer-col-title">Quick Links</h5>
-                    <ul class="footer-nav">
-                        <li><a href="javascript:void(0)">E-banking Forms</a></li>
-                        <li><a href="javascript:void(0)">Branches &amp; ATMs</a></li>
-                        <li><a href="javascript:void(0)">Security Tips</a></li>
-                        <li><a href="javascript:void(0)">Fees &amp; Charges</a></li>
-                        <li><a href="javascript:void(0)">Careers</a></li>
-                        <li><a href="javascript:void(0)">Media Centre</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-contact-col">
-                    <h5 class="footer-col-title">Get in Touch</h5>
-                    <ul class="footer-contact-list">
-                        <li>
-                            <div class="footer-contact-icon"><i class="fas fa-phone-alt"></i></div>
-                            <div>
-                                <div class="footer-contact-label">Toll Free</div>
-                                <div class="footer-contact-value">800 124 1234</div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="footer-contact-icon"><i class="fas fa-envelope"></i></div>
-                            <div>
-                                <div class="footer-contact-label">Email</div>
-                                <a class="footer-contact-value" href="mailto:{{ support_email }}">{{ support_email
-                                    }}</a>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="footer-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
-                            <div>
-                                <div class="footer-contact-label">Headquarters</div>
-                                <div class="footer-contact-value">{{ location }}</div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="footer-divider"></div>
-
-            <div class="footer-bottom-row">
-                <p class="footer-copyright">&copy; 2026 {{ app_name }}. All rights reserved.</p>
-                <div class="footer-regulatory">
-                    <span class="footer-reg-badge"><i class="fas fa-university"></i> Licensed by Central Bank</span>
-                    <span class="footer-reg-badge"><i class="fas fa-shield-alt"></i> Deposit Protection Scheme</span>
-                </div>
-            </div>
-        </footer>
     </div>
 
     <div class="post-login-content">
         <div class="dashboard-container">
             <div class="dashboard-header">
                 <div class="dashboard-welcome">
-                    <h1>Welcome back, Mohammed Faisal!</h1>
-                    <p>Good to see you again. Here's what's happening with your accounts today.</p>
-                    <div class="dashboard-time">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span id="current-date"></span>
+                    <div class="dashboard-header-profile">
+                        <div class="profile-avatar-large">MF</div>
+                        <div>
+                            <h1>Welcome back, Mohammed!</h1>
+                            <p>Good to see you again. Here's what's happening today.</p>
+                        </div>
                     </div>
+                </div>
+                <div class="dashboard-time">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="current-date"></span>
                 </div>
             </div>
 
             <section class="accounts-section">
-                <h2
-                    style="font-family: 'Playfair Display', serif; color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1rem;">
-                    Your Accounts
-                </h2>
+                <h2 class="section-heading-premium">Your Accounts</h2>
                 <div class="accounts-grid">
-                    <div class="account-card">
+                    <div class="account-card" onclick="openStatementModal()">
+                        <div class="account-card-shine"></div>
+                        <div class="card-chip"></div>
                         <i class="fas fa-wallet account-card-icon"></i>
                         <div class="account-type">Savings Account</div>
                         <div class="account-balance">{{ currency }} 8,450.00</div>
                         <div class="account-number">Account: GB-SAV-••••9900</div>
                     </div>
 
-                    <div class="account-card" style="background: var(--gradient-card-alt);">
+                    <div class="account-card" onclick="openCardsModal()">
+                        <div class="account-card-shine"></div>
+                        <div class="card-chip"></div>
                         <i class="fas fa-credit-card account-card-icon"></i>
                         <div class="account-type">Debit Card</div>
                         <div class="account-balance">{{ currency }} 2,340.50</div>
                         <div class="account-number">Card: DC-334455</div>
                     </div>
 
-                    <div class="account-card" style="background: var(--gradient-card-accent);">
+                    <div class="account-card" onclick="openCardsModal()">
+                        <div class="account-card-shine"></div>
+                        <div class="card-chip"></div>
                         <i class="fas fa-gem account-card-icon"></i>
                         <div class="account-type">Credit Card</div>
                         <div class="account-balance">{{ currency }} 600.00</div>
@@ -385,10 +311,7 @@
             </section>
 
             <section class="quick-actions">
-                <h2
-                    style="font-family: 'Playfair Display', serif; color: var(--primary-dark); font-size: 1.8rem; margin-bottom: 1rem;">
-                    Quick Actions
-                </h2>
+                <h2 class="section-heading-premium">Quick Actions</h2>
                 <div class="actions-grid">
                     <div class="action-card" onclick="openTransferModal()">
                         <div class="action-icon"><i class="fas fa-exchange-alt"></i></div>
@@ -410,10 +333,7 @@
                         <div class="action-title">Stock Trading</div>
                     </div>
 
-                    <div class="action-card" onclick="openSavingsModal()">
-                        <div class="action-icon"><i class="fas fa-piggy-bank"></i></div>
-                        <div class="action-title">Open Account</div>
-                    </div>
+
 
                     <div class="action-card" onclick="openCardsModal()">
                         <div class="action-icon"><i class="fas fa-credit-card"></i></div>
@@ -438,103 +358,187 @@
                     <a href="#" class="view-all-link">View All <i class="fas fa-arrow-right"></i></a>
                 </div>
 
-                <table class="transactions-table">
-                    <thead>
-                        <tr>
-                            <th>Transaction</th>
-                            <th>Date & Time</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="transaction-details">
-                                    <div class="transaction-icon debit">
-                                        <i class="fas fa-shopping-cart"></i>
+                <div style="overflow-x: auto; border-radius: 12px;">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction</th>
+                                <th>Date & Time</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="transaction-details">
+                                        <div class="transaction-icon debit">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </div>
+                                        <div class="transaction-info">
+                                            <h4>Amazon KSA</h4>
+                                            <p>Debit Card | TXN-3003</p>
+                                        </div>
                                     </div>
-                                    <div class="transaction-info">
-                                        <h4>Amazon KSA</h4>
-                                        <p>Debit Card | TXN-3003</p>
+                                </td>
+                                <td>Jul 14, 2025<br><small style="color: #8C98A4;">18:20</small></td>
+                                <td class="amount-debit">- {{ currency }} 250.00</td>
+                                <td><span class="status-badge failed">Failed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="transaction-details">
+                                        <div class="transaction-icon debit">
+                                            <i class="fas fa-shopping-bag"></i>
+                                        </div>
+                                        <div class="transaction-info">
+                                            <h4>Carrefour</h4>
+                                            <p>Debit Card | TXN-3002</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>Jul 14, 2025<br><small style="color: #6C757D;">18:20</small></td>
-                            <td class="amount-debit">- {{ currency }} 250.00</td>
-                            <td><span class="status-badge" style="background: #FFEBEE; color: #C62828;">Failed</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-details">
-                                    <div class="transaction-icon debit">
-                                        <i class="fas fa-shopping-bag"></i>
+                                </td>
+                                <td>Jul 14, 2025<br><small style="color: #8C98A4;">13:40</small></td>
+                                <td class="amount-debit">- {{ currency }} 200.00</td>
+                                <td><span class="status-badge completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="transaction-details">
+                                        <div class="transaction-icon debit">
+                                            <i class="fas fa-gas-pump"></i>
+                                        </div>
+                                        <div class="transaction-info">
+                                            <h4>Aramco</h4>
+                                            <p>Debit Card | TXN-3001</p>
+                                        </div>
                                     </div>
-                                    <div class="transaction-info">
-                                        <h4>Carrefour</h4>
-                                        <p>Debit Card | TXN-3002</p>
+                                </td>
+                                <td>Jul 14, 2025<br><small style="color: #8C98A4;">09:15</small></td>
+                                <td class="amount-debit">- {{ currency }} 200.00</td>
+                                <td><span class="status-badge completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="transaction-details">
+                                        <div class="transaction-icon debit">
+                                            <i class="fas fa-cutlery"></i>
+                                        </div>
+                                        <div class="transaction-info">
+                                            <h4>Hunger Station</h4>
+                                            <p>Credit Card | TXN-3004</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td>Jul 14, 2025<br><small style="color: #6C757D;">13:40</small></td>
-                            <td class="amount-debit">- {{ currency }} 200.00</td>
-                            <td><span class="status-badge completed">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-details">
-                                    <div class="transaction-icon debit">
-                                        <i class="fas fa-gas-pump"></i>
+                                </td>
+                                <td>Jul 13, 2025<br><small style="color: #8C98A4;">21:10</small></td>
+                                <td class="amount-debit">- {{ currency }} 900.00</td>
+                                <td><span class="status-badge completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="transaction-details">
+                                        <div class="transaction-icon debit">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </div>
+                                        <div class="transaction-info">
+                                            <h4>Noon KSA</h4>
+                                            <p>Credit Card | TXN-3005</p>
+                                        </div>
                                     </div>
-                                    <div class="transaction-info">
-                                        <h4>Aramco</h4>
-                                        <p>Debit Card | TXN-3001</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Jul 14, 2025<br><small style="color: #6C757D;">09:15</small></td>
-                            <td class="amount-debit">- {{ currency }} 200.00</td>
-                            <td><span class="status-badge completed">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-details">
-                                    <div class="transaction-icon debit">
-                                        <i class="fas fa-cutlery"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>Hunger Station</h4>
-                                        <p>Credit Card | TXN-3004</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Jul 13, 2025<br><small style="color: #6C757D;">21:10</small></td>
-                            <td class="amount-debit">- {{ currency }} 900.00</td>
-                            <td><span class="status-badge completed">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="transaction-details">
-                                    <div class="transaction-icon debit">
-                                        <i class="fas fa-shopping-cart"></i>
-                                    </div>
-                                    <div class="transaction-info">
-                                        <h4>Noon KSA</h4>
-                                        <p>Credit Card | TXN-3005</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Jul 13, 2025<br><small style="color: #6C757D;">22:05</small></td>
-                            <td class="amount-debit">- {{ currency }} 800.00</td>
-                            <td><span class="status-badge" style="background: #FFEBEE; color: #C62828;">Failed</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                </td>
+                                <td>Jul 13, 2025<br><small style="color: #8C98A4;">22:05</small></td>
+                                <td class="amount-debit">- {{ currency }} 800.00</td>
+                                <td><span class="status-badge failed">Failed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </div>
     </div>
+
+    <!-- Global Footer -->
+    <footer class="footer" id="contact">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="footer-logo">{{ app_name }}</div>
+                <p class="footer-tagline">Your Trusted Banking Partner</p>
+                <p class="footer-desc">A leading banking institution in the Middle East, delivering exceptional
+                    financial services with integrity and innovation since 1975.</p>
+                <div class="footer-social">
+                    <a href="javascript:void(0)" class="footer-social-icon" title="Facebook"><i
+                            class="fab fa-facebook-f"></i></a>
+                    <a href="javascript:void(0)" class="footer-social-icon" title="Twitter"><i
+                            class="fab fa-twitter"></i></a>
+                    <a href="javascript:void(0)" class="footer-social-icon" title="Instagram"><i
+                            class="fab fa-instagram"></i></a>
+                    <a href="javascript:void(0)" class="footer-social-icon" title="LinkedIn"><i
+                            class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-links-col">
+                <h5 class="footer-col-title">Services</h5>
+                <ul class="footer-nav">
+                    <li><a href="javascript:void(0)" onclick="openSavingsModal()">Open an Account</a></li>
+                    <li><a href="javascript:void(0)" onclick="showLoginModal()">Personal Loans</a></li>
+                    <li><a href="javascript:void(0)">Multi-Currency Cards</a></li>
+                    <li><a href="javascript:void(0)">SME Financing</a></li>
+                    <li><a href="javascript:void(0)">Digital Banking</a></li>
+                    <li><a href="javascript:void(0)">Wealth Management</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h5 class="footer-col-title">Quick Links</h5>
+                <ul class="footer-nav">
+                    <li><a href="javascript:void(0)">E-banking Forms</a></li>
+                    <li><a href="javascript:void(0)">Branches &amp; ATMs</a></li>
+                    <li><a href="javascript:void(0)">Security Tips</a></li>
+                    <li><a href="javascript:void(0)">Fees &amp; Charges</a></li>
+                    <li><a href="javascript:void(0)">Careers</a></li>
+                    <li><a href="javascript:void(0)">Media Centre</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-contact-col">
+                <h5 class="footer-col-title">Get in Touch</h5>
+                <ul class="footer-contact-list">
+                    <li>
+                        <div class="footer-contact-icon"><i class="fas fa-phone-alt"></i></div>
+                        <div>
+                            <div class="footer-contact-label">Toll Free</div>
+                            <div class="footer-contact-value">800 124 1234</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="footer-contact-icon"><i class="fas fa-envelope"></i></div>
+                        <div>
+                            <div class="footer-contact-label">Email</div>
+                            <a class="footer-contact-value" href="mailto:{{ support_email }}">{{ support_email
+                                }}</a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="footer-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <div class="footer-contact-label">Headquarters</div>
+                            <div class="footer-contact-value">{{ location }}</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <div class="footer-bottom-row">
+            <p class="footer-copyright">&copy; 2026 {{ app_name }}. All rights reserved.</p>
+            <div class="footer-regulatory">
+                <span class="footer-reg-badge"><i class="fas fa-university"></i> Licensed by Central Bank</span>
+                <span class="footer-reg-badge"><i class="fas fa-shield-alt"></i> Deposit Protection Scheme</span>
+            </div>
+        </div>
+    </footer>
 
     <div id="login-modal" class="login-modal">
         <div class="login-form">
