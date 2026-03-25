@@ -277,15 +277,15 @@ body.logged-in .post-login-content {
 .btn-secondary {
     background: transparent;
     color: var(--white);
-    border: 2px solid var(--primary);
+    border: 2px solid rgba(255, 255, 255, 0.75);
 }
 
 .btn-secondary:hover {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.12);
     color: var(--white);
     transform: translateY(-3px);
-    box-shadow: 0 10px 30px var(--shadow-primary);
-    border: 2px solid var(--primary);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 2px solid white;
 }
 
 /* Services Section */
@@ -2562,6 +2562,17 @@ a.footer-contact-value:hover {
 
 .hero-slide-blue {
     background: linear-gradient(135deg, #0D47A1 0%, #1976D2 100%) !important;
+}
+
+.hero-slide-blue .btn-primary {
+    background: white;
+    color: #1565C0;
+}
+
+.hero-slide-blue .btn-primary:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0D47A1;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .hero-slide-content {
