@@ -10,10 +10,10 @@ The asset ID comes from categories.py; only the payload and transport differ:
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, File, Form, Request, Response, UploadFile
+from fastapi import APIRouter, File, Request, Response, UploadFile
 from fastapi.responses import JSONResponse
 
-from app.models.schemas import LoanRequest
+from app.models.schemas import LoanRequest, SavingsAccountRequest
 from app.core.config import get_settings
 from app.core.dependencies import get_agent_client, get_session_manager
 from app.core.logger import get_logger
@@ -235,16 +235,10 @@ async def submit_stock_account(
 # ---------------------------------------------------------------------------
 
 @router.post("/submit-savings-account")
-async def submit_savings_account(
-    request: Request,
-    response: Response,
-    account_type: str = Form("Savings Account"),
-    comments: str = Form(""),
-    files: List[UploadFile] = File(...),
-):
+def submit_savings_account(body: SavingsAccountRequest, request: Request, response: Response):
     """
-    Accept PDF uploads as multipart form data, invoke the savings account-opening agent,
-    and return the trace_id as Application ID. Available to all users (no login required).
+    Invoke the savings account-opening agent with a JSON payload and return
+    the trace_id as Application ID. Available to all users (no login required).
     """
     try:
         settings = get_settings()
@@ -252,13 +246,7 @@ async def submit_savings_account(
         sm = get_session_manager()
         session_id, session = sm.get_session(request)
 
-        if not files:
-            return JSONResponse(
-                status_code=400,
-                content={"success": False, "message": "At least one document is required"},
-            )
-
-        logger.info(f"[Savings Account] Type: {account_type}, Files: {len(files)}")
+        logger.info(f"[Savings Account] process={body.process}, country={body.country_code}")
 
         asset_id = _asset_id_for("account-opening", "savings-account")
         if not asset_id:
@@ -267,26 +255,28 @@ async def submit_savings_account(
                 content={"success": False, "message": "Savings account opening asset is not configured"},
             )
 
-        # Read each uploaded PDF and prepare multipart tuples
-        multipart_files = []
-        for f in files:
-            content = await f.read()
-            multipart_files.append(
-                ("SavingsForm", (f.filename, content, f.content_type or "application/pdf"))
-            )
+        payload = {
+            "input_bucket_path": body.input_bucket_path,
+            "country_code": body.country_code,
+            "current_date": body.current_date,
+            "output_bucket_path": body.output_bucket_path,
+            "report_file_type": body.report_file_type,
+            "use_case": body.use_case,
+            "process": body.process,
+            "secondary_language": body.secondary_language,
+        }
 
-        trace_id = _invoke_asset_multipart(asset_id, multipart_files, settings, agent_client)
+        trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
         user_id = session.get("user_id") if session else None
         try:
             log_request(
                 request_type="savings-account",
                 user_id=user_id,
-                account_type=account_type,
+                account_type=body.process,
                 trace_id=trace_id,
-                document_count=len(files),
+                document_count=0,
                 ip_address=request.client.host if request.client else None,
                 user_agent=request.headers.get("user-agent"),
-                comments=comments or None,
             )
         except Exception as log_err:
             logger.warning(f"[Savings Account] Failed to log request: {log_err}")
@@ -294,7 +284,6 @@ async def submit_savings_account(
         return {
             "success": True,
             "trace_id": trace_id,
-            "documents_count": len(files),
             "message": "Savings account application submitted successfully",
         }
 

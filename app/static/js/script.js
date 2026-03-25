@@ -905,7 +905,6 @@ function submitSavingsApplication(event) {
     event.preventDefault();
 
     const accountType = document.getElementById('savings-account-type').value;
-    const comments = document.getElementById('savings-comments').value;
 
     if (!accountType) {
         alert('Please select an account type.');
@@ -927,16 +926,24 @@ function submitSavingsApplication(event) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
-    const formData = new FormData();
-    formData.append('account_type', accountType);
-    formData.append('comments', comments);
-    for (const file of uploadedSavingsRawFiles) {
-        formData.append('files', file, file.name);
-    }
+    const today = new Date();
+    const currentDate = today.toISOString().split('T')[0];
+
+    const payload = {
+        input_bucket_path: "good_banks/p1",
+        country_code: "KSA",
+        current_date: currentDate,
+        output_bucket_path: "good_banks/output",
+        report_file_type: "html",
+        use_case: "onboarding",
+        process: accountType === 'Savings Account' ? 'savings_account' : accountType.toLowerCase().replace(/ /g, '_'),
+        secondary_language: "NA"
+    };
 
     fetch('/submit-savings-account', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
     })
         .then(response => response.json())
         .then(data => {

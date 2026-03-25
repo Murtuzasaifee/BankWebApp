@@ -40,6 +40,17 @@ class LoanRequest(BaseModel):
     comments: Optional[str] = ""
 
 
+class SavingsAccountRequest(BaseModel):
+    input_bucket_path: str
+    country_code: str
+    current_date: str
+    output_bucket_path: str
+    report_file_type: str
+    use_case: str
+    process: str
+    secondary_language: str = "NA"
+
+
 
 class LoanResponse(BaseModel):
     success: bool
