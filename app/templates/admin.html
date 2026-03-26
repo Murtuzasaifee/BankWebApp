@@ -536,9 +536,7 @@
             if (status === 'Submitted' || status === 'Approved' || status === 'Rejected') {
                 buttons.push(`<button class="btn-view" data-asset-id="${assetId}" data-trace-id="${traceId}" onclick="viewApplication(this)"><i class="fas fa-file-alt"></i> Review</button>`);
             }
-            if (status === 'In Progress') {
-                buttons.push(`<button class="btn-view" data-asset-id="${assetId}" data-trace-id="${traceId}" onclick="viewApplication(this)" style="opacity:.7"><i class="fas fa-eye"></i> View</button>`);
-            }
+
             return buttons.length ? `<div class="action-btns">${buttons.join('')}</div>` : '<span class="action-done">—</span>';
         }
 
@@ -558,16 +556,19 @@
         }
 
         // --- Filter ---
-        function setFilter(filter) {
-            activeFilter = filter;
-            currentPage = 1;
+        function _syncFilterTabs(filter) {
             document.querySelectorAll('.filter-tab').forEach(tab => {
                 tab.classList.toggle('active', tab.dataset.filter === filter);
             });
             document.querySelectorAll('.stat-card[data-filter]').forEach(card => {
                 card.classList.toggle('active', card.dataset.filter === filter);
             });
-            // For API-paginated mode, filter is client-side over the current page only
+        }
+
+        function setFilter(filter) {
+            activeFilter = filter;
+            currentPage = 1;  // user changed filter → always reset to page 1
+            _syncFilterTabs(filter);
             renderFiltered();
         }
 
@@ -767,7 +768,9 @@
                     populateStats(stats);
                     renderCharts(stats);
                     allApplications = data.applications || [];
-                    setFilter(activeFilter);
+                    currentPage = page;       // keep the page we just fetched
+                    _syncFilterTabs(activeFilter);
+                    renderFiltered();
                 })
                 .catch(err => {
                     console.error('Failed to load data:', err);

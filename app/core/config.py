@@ -123,27 +123,24 @@ def validate_config(settings: Settings) -> Tuple[bool, Optional[str]]:
 
 def update_platform_credentials(workspace_id: str, username: str, password: str) -> bool:
     """
-    Update platform credentials in the .env file and in the live memory object.
-    This avoids needing a database for these 3 keys and prevents restart requirements.
+    Persist new platform credentials to .env and invalidate the settings cache
+    so the next get_settings() call returns a fresh object with the new values.
     """
-    settings = get_settings()
-    
-    # 1. Update in memory immediately
-    settings.WORKSPACE_ID = workspace_id
-    settings.PLATFORM_USERNAME = username
-    settings.PLATFORM_PASSWORD = password
-    
-    # 2. Persist to .env file
     env_file = ".env"
     try:
         if not os.path.exists(env_file):
             open(env_file, 'a').close()
-            
+
         set_key(env_file, "WORKSPACE_ID", workspace_id)
         set_key(env_file, "PLATFORM_USERNAME", username)
         set_key(env_file, "PLATFORM_PASSWORD", password)
-        return True
     except Exception as e:
         from app.core.logger import get_logger
         get_logger().error(f"Failed to save credentials to .env: {e}")
         return False
+
+    # Invalidate the lru_cache so the next get_settings() re-reads from .env.
+    # reset_agent_client() is called by the caller; when the new AgentPlatformClient
+    # is constructed it will call get_settings() and pick up the fresh values.
+    get_settings.cache_clear()
+    return True

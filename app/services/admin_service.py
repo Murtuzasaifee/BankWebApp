@@ -105,27 +105,32 @@ def fetch_applications_for_asset(
     return applications, pagination
 
 
+_REVERSE_STATUS = {"Submitted": "COMPLETED", "In Progress": "IN_PROGRESS", "Pending": "FAILED"}
+
+
 def merge_with_db(applications: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    For each application fetched from the API, look up the matching DB record by trace_id.
-    - Syncs DB status based on API status (skips if already Approved/Rejected).
-    - Annotates each application dict with DB fields: db_application_id, display_name, username, db_status.
-    - The final 'status' shown is the DB status (which takes precedence for admin actions).
+    Annotate each application with DB fields (db_application_id, display_name, status).
+
+    Uses a single batch SELECT to fetch all DB records at once, then issues
+    individual UPDATEs only for records whose status needs syncing — instead of
+    issuing 2–3 queries per application.
     """
-    from app.services.application_service import sync_status_from_api, get_application_by_trace_id
+    from app.services.application_service import batch_sync_and_fetch
+
+    # Build trace_id → api_status_raw mapping for the entire page in one pass
+    trace_id_to_api_status = {
+        app["application_id"]: _REVERSE_STATUS.get(app.get("status", ""), "FAILED")
+        for app in applications
+        if app.get("application_id")
+    }
+
+    # ONE SELECT for all trace IDs + conditional UPDATEs
+    db_records = batch_sync_and_fetch(trace_id_to_api_status)
 
     for app in applications:
-        trace_id = app.get("application_id", "")  # in normalized dict, application_id = platform trace GUID
-        api_status_raw = ""
-        # Reverse-map display status back to raw API status for sync
-        _REVERSE = {"Submitted": "COMPLETED", "In Progress": "IN_PROGRESS", "Pending": "FAILED"}
-        api_status_raw = _REVERSE.get(app.get("status", ""), "FAILED")
-
-        resolved_status = sync_status_from_api(trace_id, api_status_raw)
-        if resolved_status:
-            app["status"] = resolved_status
-
-        db_record = get_application_by_trace_id(trace_id)
+        trace_id = app.get("application_id", "")
+        db_record = db_records.get(trace_id)
         if db_record:
             app["db_application_id"] = db_record["application_id"]
             app["display_name"] = db_record.get("display_name") or db_record.get("username") or ""

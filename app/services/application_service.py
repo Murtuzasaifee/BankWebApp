@@ -148,6 +148,62 @@ def get_application_by_trace_id(trace_id: str) -> Optional[dict]:
     return row
 
 
+def batch_sync_and_fetch(trace_id_to_api_status: dict) -> dict:
+    """
+    Batch version of sync_status_from_api + get_application_by_trace_id.
+
+    Fetches all records for the given trace IDs in ONE SELECT query, then issues
+    individual UPDATEs only for records whose status needs to change (and that are
+    not already in an admin-set terminal state).
+
+    Args:
+        trace_id_to_api_status: mapping of trace_id → raw API status string (e.g. 'COMPLETED')
+
+    Returns:
+        Dict keyed by trace_id with the full DB record (including resolved status).
+        Trace IDs not found in the DB are absent from the result.
+    """
+    if not trace_id_to_api_status:
+        return {}
+
+    trace_ids = list(trace_id_to_api_status.keys())
+    rows = execute_query(
+        """
+        SELECT application_id, trace_id, user_id, username, display_name,
+               service_type, service_name, status, admin_comments,
+               created_at, updated_at
+        FROM applications
+        WHERE trace_id = ANY(%s)
+        """,
+        (trace_ids,),
+    )
+
+    db_records: dict = {}
+    for row in rows:
+        for col in ("created_at", "updated_at"):
+            if row.get(col) and hasattr(row[col], "isoformat"):
+                row[col] = row[col].isoformat()
+        db_records[row["trace_id"]] = row
+
+    # Sync statuses — one UPDATE per record that actually needs it
+    for trace_id, api_status_raw in trace_id_to_api_status.items():
+        record = db_records.get(trace_id)
+        if record is None:
+            continue
+        current_status = record["status"]
+        if current_status in _ADMIN_STATUSES:
+            continue  # never overwrite admin decisions
+        mapped = _API_STATUS_MAP.get(api_status_raw.upper(), "Pending")
+        if current_status != mapped:
+            execute_command(
+                "UPDATE applications SET status = %s, updated_at = NOW() WHERE trace_id = %s",
+                (mapped, trace_id),
+            )
+            record["status"] = mapped
+
+    return db_records
+
+
 def sync_status_from_api(trace_id: str, api_status_raw: str) -> Optional[str]:
     """
     Sync DB status for an application based on the API-returned status string.
