@@ -5,8 +5,11 @@ Uses pydantic-settings to load configuration from .env file.
 Environment variables override .env values (useful for AWS deployment).
 """
 
+import os
 from functools import lru_cache
 from typing import Optional, Tuple
+
+from dotenv import set_key
 from pydantic_settings import BaseSettings
 
 
@@ -32,9 +35,6 @@ class Settings(BaseSettings):
     LOCATION: str = "Riyadh, KSA"
 
     # Agent Configuration
-    CHATNOW_ASSET_ID: str = ""
-    INTELLICHAT_ASSET_ID: str = ""
-    LOAN_AGENT_ASSET_ID: str = ""
     QUERY_TIMEOUT: int = 60
 
     # Database Configuration (Supabase Postgres)
@@ -68,6 +68,7 @@ class Settings(BaseSettings):
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
+        "extra": "ignore",
     }
     
     def __init__(self, **data):
@@ -100,10 +101,11 @@ def validate_config(settings: Settings) -> Tuple[bool, Optional[str]]:
 
     Returns:
         Tuple of (is_valid, error_message)
-    """
-    if not settings.CHATNOW_ASSET_ID:
-        return False, "CHATNOW_ASSET_ID is required but not set"
 
+    Note: CHATNOW_ASSET_ID and INTELLICHAT_ASSET_ID are NOT validated here.
+    They can be stored in the app_config DB table and loaded at runtime,
+    so their absence from .env is acceptable.
+    """
     if not settings.API_KEY:
         return False, "API_KEY is required but not set"
 
@@ -117,3 +119,28 @@ def validate_config(settings: Settings) -> Tuple[bool, Optional[str]]:
         return False, "SECRET_KEY is required but not set"
 
     return True, None
+
+
+def update_platform_credentials(workspace_id: str, username: str, password: str) -> bool:
+    """
+    Persist new platform credentials to .env and invalidate the settings cache
+    so the next get_settings() call returns a fresh object with the new values.
+    """
+    env_file = ".env"
+    try:
+        if not os.path.exists(env_file):
+            open(env_file, 'a').close()
+
+        set_key(env_file, "WORKSPACE_ID", workspace_id)
+        set_key(env_file, "PLATFORM_USERNAME", username)
+        set_key(env_file, "PLATFORM_PASSWORD", password)
+    except Exception as e:
+        from app.core.logger import get_logger
+        get_logger().error(f"Failed to save credentials to .env: {e}")
+        return False
+
+    # Invalidate the lru_cache so the next get_settings() re-reads from .env.
+    # reset_agent_client() is called by the caller; when the new AgentPlatformClient
+    # is constructed it will call get_settings() and pick up the fresh values.
+    get_settings.cache_clear()
+    return True

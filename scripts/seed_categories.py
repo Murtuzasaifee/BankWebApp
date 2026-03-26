@@ -25,24 +25,9 @@ SEED = [
         "description": "Current, Savings & Demat Accounts",
         "display_order": 1,
         "subcategories": [
-            {
-                "slug": "savings-account",
-                "name": "Savings Account",
-                "asset_id": "02149755-d3a6-4990-952a-8020b9bf8d5a",
-                "display_order": 1,
-            },
-            {
-                "slug": "current-account",
-                "name": "Current Account",
-                "asset_id": "",
-                "display_order": 2,
-            },
-            {
-                "slug": "demat-account",
-                "name": "Demat Account",
-                "asset_id": "d252aeb6-6e5f-4476-bdbb-00c95475eb12",
-                "display_order": 3,
-            },
+            {"slug": "savings-account",  "name": "Savings Account",  "display_order": 1},
+            {"slug": "current-account",  "name": "Current Account",  "display_order": 2},
+            {"slug": "demat-account",    "name": "Demat Account",    "display_order": 3},
         ],
     },
     {
@@ -52,24 +37,9 @@ SEED = [
         "description": "Personal, home & auto loans",
         "display_order": 2,
         "subcategories": [
-            {
-                "slug": "personal-loan",
-                "name": "Personal Loan",
-                "asset_id": "f2b35ae2-32a6-4ffe-9a57-ddcf6a2b88c1",
-                "display_order": 1,
-            },
-            {
-                "slug": "home-loan",
-                "name": "Home Loan",
-                "asset_id": "",
-                "display_order": 2,
-            },
-            {
-                "slug": "auto-loan",
-                "name": "Auto Loan",
-                "asset_id": "",
-                "display_order": 3,
-            },
+            {"slug": "personal-loan", "name": "Personal Loan", "display_order": 1},
+            {"slug": "home-loan",     "name": "Home Loan",     "display_order": 2},
+            {"slug": "auto-loan",     "name": "Auto Loan",     "display_order": 3},
         ],
     },
     {
@@ -79,12 +49,7 @@ SEED = [
         "description": "Credit card applications",
         "display_order": 3,
         "subcategories": [
-            {
-                "slug": "credit-card-application",
-                "name": "Credit Card Application",
-                "asset_id": "",
-                "display_order": 1,
-            },
+            {"slug": "credit-card-application", "name": "Credit Card Application", "display_order": 1},
         ],
     },
 ]
@@ -95,6 +60,20 @@ SEED = [
 # ---------------------------------------------------------------------------
 
 SCHEMA_SQL = """
+CREATE TABLE IF NOT EXISTS request_logs (
+    id              SERIAL PRIMARY KEY,
+    user_id         VARCHAR(20),
+    request_type    VARCHAR(50) NOT NULL,
+    account_type    VARCHAR(50),
+    trace_id        VARCHAR(100),
+    document_count  INT DEFAULT 0,
+    status          VARCHAR(30) DEFAULT 'Submitted',
+    ip_address      VARCHAR(45),
+    user_agent      TEXT,
+    comments        TEXT,
+    created_at      TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS categories (
     id              SERIAL PRIMARY KEY,
     slug            VARCHAR(50) UNIQUE NOT NULL,
@@ -111,7 +90,6 @@ CREATE TABLE IF NOT EXISTS subcategories (
     category_id     INT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     slug            VARCHAR(50) NOT NULL,
     name            VARCHAR(100) NOT NULL,
-    asset_id        VARCHAR(100),
     display_order   INT DEFAULT 0,
     is_active       BOOLEAN DEFAULT TRUE,
     created_at      TIMESTAMP DEFAULT NOW(),
@@ -159,14 +137,13 @@ def seed():
                 for sub in subs:
                     cur.execute(
                         """
-                        INSERT INTO subcategories (category_id, slug, name, asset_id, display_order)
-                        VALUES (%s, %s, %s, %s, %s)
+                        INSERT INTO subcategories (category_id, slug, name, display_order)
+                        VALUES (%s, %s, %s, %s)
                         ON CONFLICT (category_id, slug) DO UPDATE SET
                             name          = EXCLUDED.name,
-                            asset_id      = EXCLUDED.asset_id,
                             display_order = EXCLUDED.display_order
                         """,
-                        (category_id, sub["slug"], sub["name"], sub["asset_id"], sub["display_order"]),
+                        (category_id, sub["slug"], sub["name"], sub["display_order"]),
                     )
                     total_subs += 1
 

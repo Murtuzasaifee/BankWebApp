@@ -778,6 +778,210 @@ function submitStockApplication(event) {
         });
 }
 
+// ---------------------------------------------------------------------------
+// Savings / Current Account Opening
+// ---------------------------------------------------------------------------
+
+let uploadedSavingsFiles = [];     // Metadata for display
+let uploadedSavingsRawFiles = [];  // Actual File objects sent to the backend
+
+function handleSavingsAccountTypeChange() {
+    const accountType = document.getElementById('savings-account-type').value;
+    const comingSoon = document.getElementById('savings-coming-soon');
+    const formFields = document.getElementById('savings-form-fields');
+
+    if (accountType === 'Current Account') {
+        comingSoon.style.display = 'block';
+        formFields.style.display = 'none';
+    } else {
+        comingSoon.style.display = 'none';
+        formFields.style.display = 'block';
+    }
+}
+
+function handleSavingsFileUpload(event) {
+    const files = event.target.files;
+    const maxSize = 20 * 1024 * 1024; // 20MB
+
+    for (let file of files) {
+        if (file.size > maxSize) {
+            alert(`File "${file.name}" is too large. Maximum size is 20MB.`);
+            continue;
+        }
+        if (uploadedSavingsFiles.find(f => f.name === file.name && f.size === file.size)) {
+            alert(`File "${file.name}" is already uploaded.`);
+            continue;
+        }
+        uploadedSavingsFiles.push({ name: file.name, size: file.size, type: file.type });
+        uploadedSavingsRawFiles.push(file);
+    }
+
+    event.target.value = '';
+    displaySavingsUploadedFiles();
+    updateSavingsSubmitButton();
+}
+
+function displaySavingsUploadedFiles() {
+    const container = document.getElementById('savings-uploaded-files-container');
+    const filesList = document.getElementById('savings-uploaded-files-list');
+    const fileCount = document.getElementById('savings-file-count');
+
+    if (!container || !filesList || !fileCount) return;
+
+    if (uploadedSavingsFiles.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'block';
+    fileCount.textContent = uploadedSavingsFiles.length;
+
+    filesList.innerHTML = uploadedSavingsFiles.map((file, index) => {
+        const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+        return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.8rem; background: #F8F9FA; border-radius: 8px; margin-bottom: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                    <i class="${getFileIcon(file.name)}" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; color: var(--text-dark); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">${fileSize}</div>
+                    </div>
+                </div>
+                <button type="button" onclick="removeSavingsFile(${index})" style="background: transparent; border: none; color: #DC3545; cursor: pointer; padding: 0.5rem; font-size: 1.2rem;" title="Remove file">
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function removeSavingsFile(index) {
+    uploadedSavingsFiles.splice(index, 1);
+    uploadedSavingsRawFiles.splice(index, 1);
+    displaySavingsUploadedFiles();
+    updateSavingsSubmitButton();
+}
+
+function updateSavingsSubmitButton() {
+    const submitBtn = document.getElementById('savings-submit-btn');
+    const requirements = document.getElementById('savings-requirements');
+
+    if (!submitBtn || !requirements) return;
+
+    if (uploadedSavingsFiles.length > 0) {
+        submitBtn.style.display = 'block';
+        requirements.style.display = 'none';
+    } else {
+        submitBtn.style.display = 'none';
+        requirements.style.display = 'block';
+    }
+}
+
+function openSavingsModal() {
+    uploadedSavingsFiles = [];
+    uploadedSavingsRawFiles = [];
+
+    const form = document.getElementById('savings-form');
+    if (form) form.reset();
+
+    const comingSoon = document.getElementById('savings-coming-soon');
+    if (comingSoon) comingSoon.style.display = 'none';
+
+    const formFields = document.getElementById('savings-form-fields');
+    if (formFields) formFields.style.display = 'block';
+
+    displaySavingsUploadedFiles();
+    updateSavingsSubmitButton();
+
+    const modal = document.getElementById('savings-modal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeSavingsSuccessModal() {
+    document.getElementById('savings-success-modal').classList.remove('active');
+}
+
+function submitSavingsApplication(event) {
+    event.preventDefault();
+
+    const accountType = document.getElementById('savings-account-type').value;
+
+    if (!accountType) {
+        alert('Please select an account type.');
+        return;
+    }
+
+    if (accountType === 'Current Account') {
+        alert('Current Account opening is coming soon. Please select Savings Account.');
+        return;
+    }
+
+    if (uploadedSavingsRawFiles.length === 0) {
+        alert('Please upload at least one PDF document to proceed.');
+        return;
+    }
+
+    const submitBtn = document.getElementById('savings-submit-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    const today = new Date();
+    const currentDate = today.toISOString().split('T')[0];
+
+    const payload = {
+        input_bucket_path: "good_banks/p1",
+        country_code: "KSA",
+        current_date: currentDate,
+        output_bucket_path: "good_banks/output",
+        report_file_type: "html",
+        use_case: "onboarding",
+        process: accountType === 'Savings Account' ? 'savings_account' : accountType.toLowerCase().replace(/ /g, '_'),
+        secondary_language: "NA"
+    };
+
+    fetch('/submit-savings-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('savings-ref-number').textContent = data.trace_id;
+                document.getElementById('savings-type-display').textContent = accountType;
+                const count = uploadedSavingsRawFiles.length;
+                document.getElementById('savings-docs-count').textContent = count + ' file' + (count > 1 ? 's' : '');
+
+                closeModal('savings-modal');
+
+                setTimeout(() => {
+                    document.getElementById('savings-success-modal').classList.add('active');
+                }, 300);
+
+                setTimeout(() => {
+                    document.getElementById('savings-form').reset();
+                    uploadedSavingsFiles = [];
+                    uploadedSavingsRawFiles = [];
+                    displaySavingsUploadedFiles();
+                    updateSavingsSubmitButton();
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 500);
+            } else {
+                alert('Error: ' + (data.message || 'Failed to submit account application'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting savings account application:', error);
+            alert('An error occurred while submitting your application. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+}
+
 document.getElementById('paybill-form')?.addEventListener('submit', function (e) {
     e.preventDefault();
     alert('Bill payment processed successfully!');
@@ -1009,13 +1213,150 @@ document.getElementById('login-modal').addEventListener('click', function (e) {
 // Smooth scroll for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (!href || href === '#') return;
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
+        try {
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+        } catch (err) {
+            // Ignore invalid selectors
         }
     });
 });
 
 // Initialize
 checkAuthStatus();
+
+// ==================== PROMOTIONAL SLIDER ====================
+
+let currentSlide = 0;
+const totalPromoSlides = 2;
+let promoSliderInterval = null;
+
+function goToSlide(index) {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-slider-dot');
+    if (!slides.length || !dots.length) return;
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = ((index % totalPromoSlides) + totalPromoSlides) % totalPromoSlides;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+}
+
+function moveSlide(direction) {
+    goToSlide(currentSlide + direction);
+    resetPromoInterval();
+}
+
+function resetPromoInterval() {
+    if (promoSliderInterval) clearInterval(promoSliderInterval);
+    promoSliderInterval = setInterval(() => goToSlide(currentSlide + 1), 5000);
+}
+
+function initPromoSlider() {
+    const slider = document.getElementById('heroSlider');
+    if (!slider) return;
+    promoSliderInterval = setInterval(() => goToSlide(currentSlide + 1), 5000);
+}
+
+document.addEventListener('DOMContentLoaded', initPromoSlider);
+
+// ============================================================
+// My Applications Modal
+// ============================================================
+
+let _myAppsData = [];
+let _myAppsFilter = 'all';
+
+function openMyApplicationsModal() {
+    document.getElementById('my-applications-modal').classList.add('active');
+    loadMyApplications();
+}
+
+function loadMyApplications() {
+    const loading = document.getElementById('my-apps-loading');
+    const table = document.getElementById('my-apps-table');
+    const empty = document.getElementById('my-apps-empty');
+
+    loading.style.display = 'block';
+    table.style.display = 'none';
+    empty.style.display = 'none';
+
+    fetch('/my-applications')
+        .then(res => {
+            if (res.status === 401) throw new Error('not-logged-in');
+            if (!res.ok) throw new Error('fetch-error');
+            return res.json();
+        })
+        .then(data => {
+            _myAppsData = data.applications || [];
+            _myAppsFilter = 'all';
+            document.querySelectorAll('[data-myapp-filter]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.myappFilter === 'all');
+            });
+            renderMyApplications();
+        })
+        .catch(err => {
+            loading.style.display = 'none';
+            empty.style.display = 'block';
+            const p = empty.querySelector('p');
+            if (err.message === 'not-logged-in') {
+                p.textContent = 'Please log in to view your applications.';
+            } else {
+                p.textContent = 'Failed to load applications. Please try again.';
+            }
+        })
+        .finally(() => {
+            loading.style.display = 'none';
+        });
+}
+
+function filterMyApplications(filter) {
+    _myAppsFilter = filter;
+    document.querySelectorAll('[data-myapp-filter]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.myappFilter === filter);
+    });
+    renderMyApplications();
+}
+
+function renderMyApplications() {
+    const table = document.getElementById('my-apps-table');
+    const empty = document.getElementById('my-apps-empty');
+    const tbody = document.getElementById('my-apps-tbody');
+
+    const filtered = _myAppsFilter === 'all'
+        ? _myAppsData
+        : _myAppsData.filter(app => app.status === _myAppsFilter);
+
+    if (filtered.length === 0) {
+        table.style.display = 'none';
+        empty.style.display = 'block';
+        const p = empty.querySelector('p');
+        p.textContent = _myAppsFilter === 'all'
+            ? 'No applications yet.'
+            : `No ${_myAppsFilter.toLowerCase()} applications.`;
+        return;
+    }
+
+    table.style.display = 'table';
+    empty.style.display = 'none';
+
+    tbody.innerHTML = filtered.map(app => {
+        const cls = (app.status || '').toLowerCase().replace(/\s+/g, '-');
+        const date = (app.created_at || '').slice(0, 10);
+        return `<tr>
+            <td data-label="App ID" style="font-family:'Courier New',monospace;font-weight:600">${escapeHtml(app.application_id)}</td>
+            <td data-label="Service">${escapeHtml(app.service_name)}</td>
+            <td data-label="Status"><span class="status-badge ${cls}"><span class="status-dot ${cls}"></span>${escapeHtml(app.status)}</span></td>
+            <td data-label="Submitted">${date}</td>
+        </tr>`;
+    }).join('');
+}
+
+function escapeHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}

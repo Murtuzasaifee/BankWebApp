@@ -16,9 +16,9 @@ logger = get_logger()
 
 # Status mapping: API status → display status
 _STATUS_MAP = {
-    "COMPLETED": "Completed",
+    "COMPLETED":  "Submitted",   # AI processing done → ready for admin action
     "IN_PROGRESS": "In Progress",
-    "FAILED": "Pending",       # FAILED → Pending bucket
+    "FAILED":      "Pending",    # FAILED → Pending bucket
 }
 
 
@@ -52,7 +52,7 @@ def _normalize_item(item: dict, asset_version_id: str) -> dict:
     raw_status = (item.get("status") or "").upper()
     return {
         "application_id": item.get("transaction_id", ""),
-        "applicant_name": item.get("initiated_by", "Unknown"),
+        "applicant_name": item.get("initiated_by") or "",
         "submission_date": _format_start_time(item.get("start_time", "")),
         "status": _STATUS_MAP.get(raw_status, "Pending"),
         "application_type": f"{item.get('total_documents', 0)} doc(s)",
@@ -62,51 +62,98 @@ def _normalize_item(item: dict, asset_version_id: str) -> dict:
     }
 
 
-def fetch_applications_for_asset(agent_client, settings, asset_id: str) -> List[Dict[str, Any]]:
+_EMPTY_PAGINATION = {"current_page": 1, "total_pages": 1, "total_items": 0, "items_per_page": 10}
+
+
+def fetch_applications_for_asset(
+    agent_client, settings, asset_id: str, page: int = 1, limit: int = 50
+) -> tuple[List[Dict[str, Any]], dict]:
     """
     Fetch transactions for a specific asset ID.
 
-    Args:
-        agent_client: AgentPlatformClient instance (for auth headers/token refresh)
-        settings: Application settings (for PLATFORM_BASE_URL, WORKSPACE_ID)
-        asset_id: The specific asset version ID to fetch transactions for
-
     Returns:
-        List of normalized application dicts, sorted by submission_date descending.
+        Tuple of (applications, pagination_meta).
+        pagination_meta keys: current_page, total_pages, total_items, items_per_page.
     """
     if not asset_id or not asset_id.strip():
         logger.warning("Empty asset_id provided — returning empty list")
-        return []
+        return [], _EMPTY_PAGINATION
 
     asset_id = asset_id.strip()
     url = f"{settings.PLATFORM_BASE_URL}/assets"
     client = GraphQLClient(url=url, agent_client=agent_client)
 
     try:
-        data = client.execute(get_asset_transactions(asset_id))
-        items = (
-            data.get("data", {})
-            .get("getAssetTransactionDetails", {})
-            .get("items", [])
-        )
+        data = client.execute(get_asset_transactions(asset_id, page=page, limit=limit))
+        tx_data = data.get("data", {}).get("getAssetTransactionDetails", {})
+        items = tx_data.get("items", [])
+        raw_meta = tx_data.get("meta", {})
         applications = [_normalize_item(item, asset_id) for item in items]
-        logger.info(f"Fetched {len(applications)} transactions for asset {asset_id}")
+        logger.info(f"Fetched {len(applications)} transactions (page {page}) for asset {asset_id}")
     except Exception as e:
         logger.error(f"Error fetching asset {asset_id}: {e}")
-        return []
+        return [], _EMPTY_PAGINATION
+
+    pagination = {
+        "current_page": raw_meta.get("currentPage", page),
+        "total_pages":  raw_meta.get("totalPages", 1),
+        "total_items":  raw_meta.get("totalItems", len(applications)),
+        "items_per_page": raw_meta.get("itemsPerPage", limit),
+    }
 
     applications.sort(key=lambda x: x.get("submission_date", ""), reverse=True)
+    return applications, pagination
+
+
+_REVERSE_STATUS = {"Submitted": "COMPLETED", "In Progress": "IN_PROGRESS", "Pending": "FAILED"}
+
+
+def merge_with_db(applications: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Annotate each application with DB fields (db_application_id, display_name, status).
+
+    Uses a single batch SELECT to fetch all DB records at once, then issues
+    individual UPDATEs only for records whose status needs syncing — instead of
+    issuing 2–3 queries per application.
+    """
+    from app.services.application_service import batch_sync_and_fetch
+
+    # Build trace_id → api_status_raw mapping for the entire page in one pass
+    trace_id_to_api_status = {
+        app["application_id"]: _REVERSE_STATUS.get(app.get("status", ""), "FAILED")
+        for app in applications
+        if app.get("application_id")
+    }
+
+    # ONE SELECT for all trace IDs + conditional UPDATEs
+    db_records = batch_sync_and_fetch(trace_id_to_api_status)
+
+    for app in applications:
+        trace_id = app.get("application_id", "")
+        db_record = db_records.get(trace_id)
+        if db_record:
+            app["db_application_id"] = db_record["application_id"]
+            app["display_name"] = db_record.get("display_name") or db_record.get("username") or ""
+            app["status"] = db_record["status"]  # DB status is authoritative
+        else:
+            app["db_application_id"] = ""
+            app["display_name"] = app.get("applicant_name", "")
+
     return applications
 
 
 def compute_stats(applications: List[Dict[str, Any]]) -> dict:
     """Calculate dashboard stats from a list of applications."""
-    pending = sum(1 for a in applications if a["status"] == "Pending")
+    pending     = sum(1 for a in applications if a["status"] == "Pending")
     in_progress = sum(1 for a in applications if a["status"] == "In Progress")
-    completed = sum(1 for a in applications if a["status"] == "Completed")
+    submitted   = sum(1 for a in applications if a["status"] == "Submitted")
+    approved    = sum(1 for a in applications if a["status"] == "Approved")
+    rejected    = sum(1 for a in applications if a["status"] == "Rejected")
     return {
-        "pending": pending,
+        "pending":     pending,
         "in_progress": in_progress,
-        "completed": completed,
-        "total": len(applications),
+        "submitted":   submitted,
+        "approved":    approved,
+        "rejected":    rejected,
+        "total":       len(applications),
     }

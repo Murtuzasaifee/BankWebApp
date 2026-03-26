@@ -40,11 +40,41 @@ class LoanRequest(BaseModel):
     comments: Optional[str] = ""
 
 
+class SavingsAccountRequest(BaseModel):
+    input_bucket_path: str
+    country_code: str
+    current_date: str
+    output_bucket_path: str
+    report_file_type: str
+    use_case: str
+    process: str
+    secondary_language: str = "NA"
+
+
 
 class LoanResponse(BaseModel):
     success: bool
     message: str
     trace_id: Optional[str] = None
+
+
+class SavingsAccountResponse(BaseModel):
+    success: bool
+    message: str
+    trace_id: Optional[str] = None
+    documents_count: int = 0
+
+
+class RequestLogEntry(BaseModel):
+    id: int
+    user_id: Optional[str] = None
+    request_type: str
+    account_type: Optional[str] = None
+    trace_id: Optional[str] = None
+    document_count: int = 0
+    status: str
+    ip_address: Optional[str] = None
+    created_at: str
 
 
 class HealthResponse(BaseModel):
@@ -76,3 +106,20 @@ class DashboardStats(BaseModel):
     in_progress: int
     completed: int
     total: int
+
+
+class ApplicationRecord(BaseModel):
+    application_id: str
+    service_type: str
+    service_name: str
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+    status: str
+    admin_comments: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
+class ApplicationStatusUpdate(BaseModel):
+    status: str  # 'Under Review' | 'Approved' | 'Rejected'
+    comments: Optional[str] = None

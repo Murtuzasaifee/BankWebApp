@@ -26,6 +26,12 @@ def get_agent_client() -> AgentPlatformClient:
     return _agent_client
 
 
+def reset_agent_client():
+    """Reset the agent client singleton so it is recreated on next use."""
+    global _agent_client
+    _agent_client = None
+
+
 def get_session_manager() -> SessionManager:
     """Get or create the shared SessionManager singleton."""
     global _session_manager

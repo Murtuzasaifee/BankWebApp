@@ -13,6 +13,7 @@ from app.models.schemas import ChatRequest
 from app.core.config import get_settings
 from app.core.dependencies import conversation_store, get_agent_client, get_session_manager
 from app.core.logger import get_logger
+from app.services.config_service import get_chatnow_asset_id, get_intellichat_asset_id
 
 router = APIRouter()
 logger = get_logger()
@@ -33,7 +34,7 @@ def get_or_create_conversation(session_id: str, asset_version_id: Optional[str] 
     agent_client = get_agent_client()
 
     if asset_version_id is None:
-        asset_version_id = settings.CHATNOW_ASSET_ID
+        asset_version_id = get_chatnow_asset_id()
 
     # Check if we have an existing conversation for this session
     conversation_key = f"{session_id}_{asset_version_id}"
@@ -42,7 +43,7 @@ def get_or_create_conversation(session_id: str, asset_version_id: Optional[str] 
 
     # Create new conversation
     if not asset_version_id:
-        logger.warning("CHATNOW_ASSET_ID not set. Cannot create conversation.")
+        logger.warning("chatnow_asset_id not set. Cannot create conversation.")
         return None
 
     conversation_id = agent_client.create_conversation(
@@ -86,7 +87,7 @@ def chat(body: ChatRequest, request: Request, response: Response):
 
         # Determine which asset version ID to use based on login status
         is_logged_in = session.get('logged_in', False)
-        asset_version_id = settings.INTELLICHAT_ASSET_ID if is_logged_in else settings.CHATNOW_ASSET_ID
+        asset_version_id = get_intellichat_asset_id() if is_logged_in else get_chatnow_asset_id()
 
         # Get or create conversation with appropriate asset ID
         conversation_id = get_or_create_conversation(sid, asset_version_id)

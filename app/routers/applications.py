@@ -10,19 +10,41 @@ The asset ID comes from categories.py; only the payload and transport differ:
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, File, Form, Request, Response, UploadFile
+from fastapi import APIRouter, File, Request, Response, UploadFile
 from fastapi.responses import JSONResponse
 
-from app.models.schemas import LoanRequest
+from app.models.schemas import LoanRequest, SavingsAccountRequest
 from app.core.config import get_settings
 from app.core.dependencies import get_agent_client, get_session_manager
 from app.core.logger import get_logger
 from app.services.rest_client import RestClient
 from app.services.category_service import get_asset_id
+from app.services.application_service import create_application
 
 router = APIRouter()
 logger = get_logger()
 
+
+# ---------------------------------------------------------------------------
+# Platform API Payload Configurations
+# ---------------------------------------------------------------------------
+PAYLOAD_CONFIG = {
+    "loan": {
+        "input_bucket_path": "loan_due_diligence/p1",
+        "output_bucket_path": "loan_due_diligence/output",
+        "country_iso_code": "UAE",
+        "file_type": "html",
+        "Use_Case": "LOAN_APPLICATION",
+    },
+    "savings_account": {
+        "input_bucket_path": "good_banks/p1",
+        "output_bucket_path": "good_banks/output",
+        "country_code": "KSA",
+        "report_file_type": "html",
+        "use_case": "onboarding",
+        "secondary_language": "NA",
+    }
+}
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -109,17 +131,37 @@ def submit_loan(body: LoanRequest, request: Request, response: Response):
             )
 
         payload = {
-            "input_bucket_path": "loan_due_diligence/p1",
-            "country_iso_code": "UAE",
+            **PAYLOAD_CONFIG["loan"],
             "current_date": datetime.now().strftime("%d/%m/%Y"),
-            "output_bucket_path": "loan_due_diligence/output",
-            "file_type": "html",
-            "Use_Case": "LOAN_APPLICATION",
         }
 
         trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
+        user_data = (session.get("user_data") or {}) if session else {}
+        user_id = user_data.get("user_id")
+        try:
+            _LOAN_NAMES = {
+                "personal-loan": "Personal Loan",
+                "home-loan": "Home Loan",
+                "auto-loan": "Auto Loan",
+            }
+            loan_name = _LOAN_NAMES.get(
+                (body.loan_type or "").lower().replace(" ", "-"),
+                body.loan_type or "Loan Application"
+            )
+            application_id = create_application(
+                service_type="loan",
+                service_name=loan_name,
+                trace_id=trace_id,
+                user_id=user_id,
+                username=session.get("username") if session else None,
+                display_name=user_data.get("display_name"),
+                comments=body.comments,
+            )
+        except Exception as log_err:
+            logger.warning(f"[Loan Application] Failed to create application record: {log_err}")
+            application_id = trace_id
         sm.save_session(response, session_id)
-        return {"success": True, "trace_id": trace_id, "message": "Loan application submitted successfully"}
+        return {"success": True, "trace_id": application_id, "message": "Loan application submitted successfully"}
 
     except ValueError as e:
         logger.error(f"[Loan Application] No trace_id: {e}")
@@ -180,10 +222,24 @@ async def submit_stock_account(
             )
 
         trace_id = _invoke_asset_multipart(asset_id, multipart_files, settings, agent_client)
+        user_data = (session.get("user_data") or {}) if session else {}
+        user_id = user_data.get("user_id")
+        try:
+            application_id = create_application(
+                service_type="stock",
+                service_name="Demat Account",
+                trace_id=trace_id,
+                user_id=user_id,
+                username=session.get("username") if session else None,
+                display_name=user_data.get("display_name"),
+            )
+        except Exception as log_err:
+            logger.warning(f"[Stock Account] Failed to create application record: {log_err}")
+            application_id = trace_id
         sm.save_session(response, session_id)
         return {
             "success": True,
-            "trace_id": trace_id,
+            "trace_id": application_id,
             "message": "Stock trading account application submitted successfully",
         }
 
@@ -199,4 +255,72 @@ async def submit_stock_account(
         return JSONResponse(
             status_code=500,
             content={"success": False, "message": "An error occurred while processing your stock account application"},
+        )
+
+
+# ---------------------------------------------------------------------------
+# Savings / Current Account Opening
+# ---------------------------------------------------------------------------
+
+@router.post("/submit-savings-account")
+def submit_savings_account(body: SavingsAccountRequest, request: Request, response: Response):
+    """
+    Invoke the savings account-opening agent with a JSON payload and return
+    the trace_id as Application ID. Available to all users (no login required).
+    """
+    try:
+        settings = get_settings()
+        agent_client = get_agent_client()
+        sm = get_session_manager()
+        session_id, session = sm.get_session(request)
+
+        logger.info(f"[Savings Account] process={body.process}, country={body.country_code}")
+
+        asset_id = _asset_id_for("account-opening", "savings-account")
+        if not asset_id:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "message": "Savings account opening asset is not configured"},
+            )
+
+        payload = {
+            **PAYLOAD_CONFIG["savings_account"],
+            "current_date": body.current_date,
+            "process": body.process,
+        }
+
+        trace_id = _invoke_asset(asset_id, payload, settings, agent_client)
+        user_data = (session.get("user_data") or {}) if session else {}
+        user_id = user_data.get("user_id")
+        try:
+            application_id = create_application(
+                service_type="savings",
+                service_name="Savings Account",
+                trace_id=trace_id,
+                user_id=user_id,
+                username=session.get("username") if session else None,
+                display_name=user_data.get("display_name"),
+            )
+        except Exception as log_err:
+            logger.warning(f"[Savings Account] Failed to create application record: {log_err}")
+            application_id = trace_id
+        sm.save_session(response, session_id)
+        return {
+            "success": True,
+            "trace_id": application_id,
+            "message": "Savings account application submitted successfully",
+        }
+
+    except ValueError as e:
+        logger.error(f"[Savings Account] No trace_id: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "Account opening agent did not return an application ID"},
+        )
+    except Exception as e:
+        logger.error(f"[Savings Account] Submission failed: {e}")
+        logger.exception("[Savings Account] Exception details")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "An error occurred while processing your account application"},
         )

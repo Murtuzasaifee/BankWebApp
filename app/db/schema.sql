@@ -64,9 +64,37 @@ CREATE TABLE IF NOT EXISTS subcategories (
     category_id     INT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     slug            VARCHAR(50) NOT NULL,
     name            VARCHAR(100) NOT NULL,
-    asset_id        VARCHAR(100),
     display_order   INT DEFAULT 0,
     is_active       BOOLEAN DEFAULT TRUE,
     created_at      TIMESTAMP DEFAULT NOW(),
     UNIQUE(category_id, slug)
+);
+
+-- Note: request_logs has been replaced by the applications table below.
+-- Run scripts/migrate_applications_table.py to migrate existing data.
+-- The old table is renamed to request_logs_archived during migration.
+
+CREATE TABLE IF NOT EXISTS applications (
+    id              SERIAL PRIMARY KEY,
+    application_id  VARCHAR(20) UNIQUE NOT NULL,   -- e.g. LOAN-000001
+    trace_id        VARCHAR(100) NOT NULL,          -- platform GUID, internal only
+    user_id         VARCHAR(20),
+    username        VARCHAR(100),
+    display_name    VARCHAR(100),
+    service_type    VARCHAR(30) NOT NULL,           -- 'loan' | 'savings' | 'stock'
+    service_name    VARCHAR(100) NOT NULL,          -- Human label
+    status          VARCHAR(30) NOT NULL DEFAULT 'Submitted',
+    admin_comments  TEXT,
+    created_at      TIMESTAMP DEFAULT NOW(),
+    updated_at      TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_applications_user_id    ON applications(user_id);
+CREATE INDEX IF NOT EXISTS idx_applications_status     ON applications(status);
+CREATE INDEX IF NOT EXISTS idx_applications_created_at ON applications(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS app_config (
+    key         VARCHAR(100) PRIMARY KEY,
+    value       TEXT,
+    description TEXT,
+    updated_at  TIMESTAMP DEFAULT NOW()
 );

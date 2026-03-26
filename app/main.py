@@ -18,6 +18,7 @@ from app.core.config import get_settings, validate_config
 from app.core.dependencies import get_agent_client
 from app.core.logger import setup_logging, get_logger
 from app.db.connection import init_pool, close_pool
+from app.services.config_service import load_asset_ids
 from app.routers import pages, auth, chat, applications, health, admin
 
 # Initialize settings and logging
@@ -47,10 +48,12 @@ async def lifespan(app: FastAPI):
     # Initialize DB connection pool (no-op if DB_HOST not configured)
     init_pool()
 
+    # Load all asset IDs from app_config into in-memory cache
+    load_asset_ids()
+
     logger.info("=" * 80)
     logger.info(f"{settings.APP_NAME} Chat Server Starting...")
     logger.info("=" * 80)
-    logger.info(f"Asset Version ID: {settings.CHATNOW_ASSET_ID}")
     logger.info(f"Agent Name: {settings.get_agent_name()}")
     logger.info(f"Conversation Name: {settings.get_conversation_name()}")
     logger.info(f"Query Timeout: {settings.QUERY_TIMEOUT}s")
@@ -89,6 +92,7 @@ app.add_middleware(
 
 # Static files
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/data", StaticFiles(directory="data"), name="data")
 
 # Routers
 app.include_router(pages.router)
