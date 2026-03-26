@@ -47,7 +47,7 @@
         <div class="admin-header">
             {% if view_mode == 'dashboard' %}
             <h1>Dashboard</h1>
-            <p>Select a category to view applications</p>
+            <p>Select a service to view and manage applications</p>
             {% elif view_mode == 'settings' %}
             <div class="breadcrumbs">
                 <a href="/admin">Dashboard</a>
@@ -56,36 +56,165 @@
             </div>
             <h1>Asset Configuration</h1>
             <p>Manage ChatNow, IntelliChat, and subcategory asset IDs</p>
+            {% elif view_mode == 'subcategory' %}
+            <div class="breadcrumbs">
+                <a href="/admin">Dashboard</a>
+                <i class="fas fa-chevron-right"></i>
+                <span>{{ subcategory.category_name }}</span>
+                <i class="fas fa-chevron-right"></i>
+                <span>{{ subcategory.name }}</span>
+            </div>
+            <div class="admin-header-row">
+                <div>
+                    <h1>{{ subcategory.name }}</h1>
+                    <p>{{ subcategory.category_name }}</p>
+                </div>
+                <a href="/admin" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
             {% else %}
             <div class="breadcrumbs">
                 <a href="/admin">Dashboard</a>
                 <i class="fas fa-chevron-right"></i>
                 <span>{{ category.name }}</span>
             </div>
-            <h1>{{ category.name }}</h1>
-            <p>{{ category.description }}</p>
+            <div class="admin-header-row">
+                <div>
+                    <h1>{{ category.name }}</h1>
+                    <p>{{ category.description }}</p>
+                </div>
+                <a href="/admin" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
             {% endif %}
         </div>
 
         {% if view_mode == 'dashboard' %}
 
-        <!-- Category Cards Grid -->
-        <div class="category-grid">
-            {% for cat in categories %}
-            <a href="/admin/category/{{ cat.slug }}" class="category-card">
-                <div class="category-icon cat-icon-{{ loop.index0 % 4 }}">
+        <!-- Subcategory Cards Grouped by Category -->
+        {% for cat in categories %}
+        {% if cat.subcategories %}
+        <div class="category-section">
+            <div class="category-section-header">
+                <div class="category-section-icon cat-icon-{{ loop.index0 % 4 }}">
                     <i class="fas {{ cat.icon }}"></i>
                 </div>
-                <div class="category-info">
+                <div class="category-section-info">
                     <h3>{{ cat.name }}</h3>
                     <p>{{ cat.description }}</p>
                 </div>
-                <div class="category-footer">
-                    <span>Manage Applications</span>
-                    <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="subcategory-grid">
+                {% for sub in cat.subcategories %}
+                <a href="/admin/subcategory/{{ sub.slug }}" class="subcategory-card">
+                    <div class="subcategory-card-body">
+                        <div class="subcategory-icon cat-icon-{{ loop.index0 % 4 }}">
+                            <i class="fas {{ cat.icon }}"></i>
+                        </div>
+                        <div class="subcategory-info">
+                            <h4>{{ sub.name }}</h4>
+                            <span>{{ cat.name }}</span>
+                        </div>
+                    </div>
+                    <div class="subcategory-arrow"><i class="fas fa-chevron-right"></i></div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        {% elif view_mode == 'subcategory' %}
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card" data-filter="in-progress" onclick="setFilter('in-progress')">
+                <div class="stat-icon in-progress"><i class="fas fa-spinner"></i></div>
+                <div class="stat-info"><h3 data-stat="in_progress">—</h3><p>In Progress</p></div>
+            </div>
+            <div class="stat-card" data-filter="pending" onclick="setFilter('pending')">
+                <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                <div class="stat-info"><h3 data-stat="pending">—</h3><p>Pending</p></div>
+            </div>
+            <div class="stat-card" data-filter="submitted" onclick="setFilter('submitted')">
+                <div class="stat-icon" style="background:rgba(59,130,246,.12);color:#2563eb"><i class="fas fa-paper-plane"></i></div>
+                <div class="stat-info"><h3 data-stat="submitted">—</h3><p>Submitted</p></div>
+            </div>
+            <div class="stat-card" data-filter="approved" onclick="setFilter('approved')">
+                <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info"><h3 data-stat="approved">—</h3><p>Approved</p></div>
+            </div>
+            <div class="stat-card" data-filter="rejected" onclick="setFilter('rejected')">
+                <div class="stat-icon" style="background:rgba(229,62,62,.12);color:#e53e3e"><i class="fas fa-times-circle"></i></div>
+                <div class="stat-info"><h3 data-stat="rejected">—</h3><p>Rejected</p></div>
+            </div>
+            <div class="stat-card" data-filter="all" onclick="setFilter('all')">
+                <div class="stat-icon total"><i class="fas fa-layer-group"></i></div>
+                <div class="stat-info"><h3 data-stat="total">—</h3><p>Total</p></div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <h3 class="chart-title"><i class="fas fa-chart-donut"></i> Status Distribution</h3>
+                <div class="chart-wrap"><canvas id="statusDonutChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3 class="chart-title"><i class="fas fa-chart-bar"></i> Applications by Status</h3>
+                <div class="chart-wrap"><canvas id="statusBarChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Applications Table (API-paginated) -->
+        <div class="table-section" id="applications-table-section"
+             data-slug="{{ subcategory.slug }}" data-paginated="true">
+            <div class="table-header">
+                <h2>Applications — {{ subcategory.name }}</h2>
+                <span id="table-count">Loading...</span>
+            </div>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">All</button>
+                <button class="filter-tab" data-filter="in-progress" onclick="setFilter('in-progress')">In Progress</button>
+                <button class="filter-tab" data-filter="pending" onclick="setFilter('pending')">Pending</button>
+                <button class="filter-tab" data-filter="submitted" onclick="setFilter('submitted')">Submitted</button>
+                <button class="filter-tab" data-filter="approved" onclick="setFilter('approved')">Approved</button>
+                <button class="filter-tab" data-filter="rejected" onclick="setFilter('rejected')">Rejected</button>
+            </div>
+            <table class="applications-table">
+                <thead>
+                    <tr>
+                        <th>App ID</th><th>Applicant</th><th>Transaction ID</th>
+                        <th>Submitted Date</th><th>Status</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="applications-tbody"></tbody>
+            </table>
+            <div class="pagination-row" id="pagination-row" style="display:none">
+                <span class="pagination-info" id="pagination-info"></span>
+                <div class="pagination-controls" id="pagination-controls"></div>
+            </div>
+        </div>
+
+        <!-- Action Dialog -->
+        <div class="doc-modal-backdrop" id="action-dialog-backdrop" onclick="closeActionDialog()"></div>
+        <div class="doc-modal" id="action-dialog" role="dialog" aria-modal="true" style="max-width:480px;height:auto;max-height:90vh">
+            <div class="doc-modal-header">
+                <div class="doc-modal-title-group">
+                    <i class="fas fa-edit" id="action-dialog-icon"></i>
+                    <span id="action-dialog-title">Confirm Action</span>
                 </div>
-            </a>
-            {% endfor %}
+                <div class="doc-modal-actions">
+                    <button class="doc-modal-close doc-modal-action-btn" onclick="closeActionDialog()"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="doc-modal-body" style="padding:1.5rem;overflow-y:auto">
+                <p id="action-dialog-desc" style="margin-bottom:1rem;color:var(--text-secondary,#666)"></p>
+                <label for="action-comment" style="display:block;font-weight:500;margin-bottom:.5rem">Comment <span style="font-weight:400;color:#999">(optional)</span></label>
+                <textarea id="action-comment" rows="3" class="asset-input" style="width:100%;resize:vertical" placeholder="Add a note..."></textarea>
+                <div style="display:flex;gap:.75rem;margin-top:1.25rem;justify-content:flex-end">
+                    <button class="btn-reload-config" onclick="closeActionDialog()">Cancel</button>
+                    <button id="action-confirm-btn" class="btn-save-config" onclick="confirmAction()">Confirm</button>
+                </div>
+            </div>
         </div>
 
         {% elif view_mode == 'settings' %}
@@ -365,9 +494,18 @@
         let activeFilter = 'all';
         let currentPage = 1;
         const PAGE_SIZE = 10;
+        let _apiPagination = null;   // set when IS_PAGINATED = true
         let _donutChart = null;
         let _barChart = null;
         let _pendingAction = null; // {dbApplicationId, status}
+
+        // Detect paginated (subcategory) vs full (category) mode at runtime
+        const _tableSection = document.getElementById('applications-table-section');
+        const IS_PAGINATED = _tableSection ? _tableSection.getAttribute('data-paginated') === 'true' : false;
+        const _DATA_SLUG   = _tableSection ? _tableSection.getAttribute('data-slug') : '';
+        const DATA_URL     = IS_PAGINATED
+            ? `/admin/api/subcategory/${_DATA_SLUG}`
+            : `/admin/api/categories/${_DATA_SLUG}`;
 
         // --- Helpers ---
         function statusClass(status) {
@@ -429,11 +567,13 @@
             document.querySelectorAll('.stat-card[data-filter]').forEach(card => {
                 card.classList.toggle('active', card.dataset.filter === filter);
             });
+            // For API-paginated mode, filter is client-side over the current page only
             renderFiltered();
         }
 
         // --- Rendering ---
         function renderFiltered() {
+            // In paginated mode allApplications is already the current API page (no client slicing)
             const filtered = activeFilter === 'all'
                 ? allApplications
                 : allApplications.filter(app => statusClass(app.status) === activeFilter);
@@ -447,17 +587,29 @@
                 tbody.innerHTML = `<tr><td colspan="6" class="table-empty">
                     <i class="fas fa-inbox table-empty-icon"></i>
                     <p>No applications found for ${label}.</p></td></tr>`;
-                if (countEl) countEl.textContent = activeFilter === 'all' ? '0 applications' : `0 of ${allApplications.length}`;
+                const totalCount = IS_PAGINATED && _apiPagination ? _apiPagination.total_items : allApplications.length;
+                if (countEl) countEl.textContent = activeFilter === 'all' ? '0 applications' : `0 of ${totalCount}`;
                 renderPagination(0, 0);
                 return;
             }
 
-            const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-            if (currentPage > totalPages) currentPage = totalPages;
-            const start = (currentPage - 1) * PAGE_SIZE;
-            const page = filtered.slice(start, start + PAGE_SIZE);
+            let displayItems = filtered;
+            let paginTotal, paginPages;
 
-            tbody.innerHTML = page.map(app => {
+            if (IS_PAGINATED && _apiPagination) {
+                // API-level pagination: show current page as-is, use API meta for controls
+                paginTotal = _apiPagination.total_items;
+                paginPages = _apiPagination.total_pages;
+            } else {
+                // Client-side pagination
+                paginTotal = filtered.length;
+                paginPages = Math.ceil(filtered.length / PAGE_SIZE);
+                if (currentPage > paginPages) currentPage = paginPages;
+                const start = (currentPage - 1) * PAGE_SIZE;
+                displayItems = filtered.slice(start, start + PAGE_SIZE);
+            }
+
+            tbody.innerHTML = displayItems.map(app => {
                 const dbId = app.db_application_id || '';
                 const cls = statusClass(app.status);
                 const badgeId = dbId ? `badge-${escHtml(dbId)}` : '';
@@ -482,11 +634,12 @@
                 </tr>`;
             }).join('');
 
+            const totalCount = IS_PAGINATED && _apiPagination ? _apiPagination.total_items : filtered.length;
             if (countEl) countEl.textContent = activeFilter === 'all'
-                ? `${filtered.length} application${filtered.length !== 1 ? 's' : ''}`
-                : `${filtered.length} of ${allApplications.length}`;
+                ? `${totalCount} application${totalCount !== 1 ? 's' : ''}`
+                : `${filtered.length} of ${totalCount}`;
 
-            renderPagination(filtered.length, totalPages);
+            renderPagination(paginTotal, paginPages);
         }
 
         // --- Pagination ---
@@ -530,9 +683,14 @@
 
         function goPage(page) {
             currentPage = page;
-            renderFiltered();
-            const tableSection = document.getElementById('applications-table-section');
-            if (tableSection) tableSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (IS_PAGINATED) {
+                // Re-fetch from API for the new page
+                loadCategoryData(page);
+            } else {
+                renderFiltered();
+                const tableSection = document.getElementById('applications-table-section');
+                if (tableSection) tableSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         function populateStats(stats) {
@@ -591,24 +749,28 @@
         }
 
         // --- Data Loading ---
-        function loadCategoryData() {
-            const tableSection = document.getElementById('applications-table-section');
-            if (!tableSection) return;
+        function loadCategoryData(page) {
+            if (!_tableSection) return;
+            page = page || 1;
 
-            const slug = tableSection.getAttribute('data-slug');
+            const url = IS_PAGINATED ? `${DATA_URL}?page=${page}&limit=${PAGE_SIZE}` : DATA_URL;
             showSkeleton();
 
-            fetch(`/admin/api/categories/${slug}`)
+            fetch(url)
                 .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
                 .then(data => {
                     const stats = data.stats || {};
+                    if (IS_PAGINATED && data.pagination) {
+                        _apiPagination = data.pagination;
+                        stats.total = data.pagination.total_items;
+                    }
                     populateStats(stats);
                     renderCharts(stats);
                     allApplications = data.applications || [];
-                    setFilter('all');
+                    setFilter(activeFilter);
                 })
                 .catch(err => {
-                    console.error('Failed to load category data:', err);
+                    console.error('Failed to load data:', err);
                     const tbody = document.getElementById('applications-tbody');
                     if (tbody) tbody.innerHTML = `<tr><td colspan="6" class="table-empty">
                         <i class="fas fa-exclamation-circle table-empty-icon"></i>
@@ -660,7 +822,12 @@
             .then(res => res.json().then(d => ({ ok: res.ok, data: d })))
             .then(({ ok, data }) => {
                 if (!ok) throw new Error(data.error || 'Update failed');
-                // Update badge and action buttons in-place
+
+                // Find old status before updating in-memory
+                const app = allApplications.find(a => a.db_application_id === dbApplicationId);
+                const oldStatus = app ? app.status : null;
+
+                // Update badge in-place
                 const badge = document.getElementById(`badge-${dbApplicationId}`);
                 if (badge) {
                     const cls = status.toLowerCase().replace(/\s+/g, '-');
@@ -670,8 +837,6 @@
                 const row = document.getElementById(`row-${dbApplicationId}`);
                 if (row) {
                     row.className = `row-${status.toLowerCase().replace(/\s+/g, '-')}`;
-                    // Update in-memory data
-                    const app = allApplications.find(a => a.db_application_id === dbApplicationId);
                     if (app) {
                         app.status = status;
                         const actionTd = row.querySelector('td[data-label="Actions"]');
@@ -679,14 +844,23 @@
                     }
                 }
                 showToast(`${dbApplicationId} marked as ${status}.`, 'success');
-                // Reload stats and charts
-                const slug = document.getElementById('applications-table-section').getAttribute('data-slug');
-                fetch(`/admin/api/categories/${slug}`)
-                    .then(r => r.json())
-                    .then(d => { populateStats(d.stats || {}); renderCharts(d.stats || {}); })
-                    .catch(() => {});
+
+                // Update stats locally (no extra API round-trip)
+                _updateStatsLocally(oldStatus, status);
             })
             .catch(err => showToast(err.message || 'Failed to update status.', 'error'));
+        }
+
+        function _updateStatsLocally(oldStatus, newStatus) {
+            const toKey = s => (s || '').toLowerCase().replace(/\s+/g, '_');
+            const snap = {};
+            document.querySelectorAll('[data-stat]').forEach(el => {
+                snap[el.getAttribute('data-stat')] = parseInt(el.textContent) || 0;
+            });
+            if (oldStatus && snap[toKey(oldStatus)] !== undefined) snap[toKey(oldStatus)]--;
+            if (newStatus && snap[toKey(newStatus)] !== undefined) snap[toKey(newStatus)]++;
+            populateStats(snap);
+            renderCharts(snap);
         }
 
         // --- Copy ID ---

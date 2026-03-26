@@ -59,6 +59,25 @@ def get_subcategories(category_id: int) -> list[dict]:
     return rows
 
 
+def get_subcategory_by_slug(sub_slug: str) -> Optional[dict]:
+    """Return a subcategory by slug with its parent category fields, or None if not found."""
+    from app.services.config_service import get_subcategory_asset_id
+
+    rows = execute_query(
+        "SELECT s.id, s.slug, s.name, s.display_order, "
+        "c.id AS category_id, c.slug AS category_slug, c.name AS category_name, c.icon AS category_icon "
+        "FROM subcategories s "
+        "JOIN categories c ON s.category_id = c.id "
+        "WHERE s.slug = %s AND s.is_active = TRUE",
+        (sub_slug,),
+    )
+    if not rows:
+        return None
+    row = rows[0]
+    row["asset_id"] = get_subcategory_asset_id(sub_slug) or ""
+    return row
+
+
 def get_asset_id(category_slug: str, subcategory_slug: str) -> Optional[str]:
     """
     Return the asset_id for a given subcategory slug.

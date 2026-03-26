@@ -7,7 +7,7 @@ Each function returns a ready-to-POST request body dict: {"query": "..."}.
 from datetime import datetime, timezone, timedelta
 
 
-def get_asset_transactions(asset_version_id: str, days: int = 30) -> dict:
+def get_asset_transactions(asset_version_id: str, days: int = 30, page: int = 1, limit: int = 50) -> dict:
     """Build the getAssetTransactionDetails query body."""
     now = datetime.now(timezone.utc)
     start = now - timedelta(days=days)
@@ -20,7 +20,7 @@ def get_asset_transactions(asset_version_id: str, days: int = 30) -> dict:
           start_date: "%s",
           end_date: "%s"
         }
-        pagination: { page: 1, limit: 50 }
+        pagination: { page: %d, limit: %d }
         transactionFilters: {
           commonFilters: { status: [], created_by: [] },
           getCurrentUserTransactions: true,
@@ -58,6 +58,8 @@ def get_asset_transactions(asset_version_id: str, days: int = 30) -> dict:
         asset_version_id,
         start.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
         now.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+        page,
+        limit,
     )
 
     return {"query": query}

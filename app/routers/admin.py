@@ -18,7 +18,7 @@ from fastapi.templating import Jinja2Templates
 from app.core.config import get_settings, update_platform_credentials
 from app.core.dependencies import get_session_manager, get_agent_client, reset_agent_client
 from app.core.logger import get_logger
-from app.services.category_service import get_all_categories, get_category_by_slug
+from app.services.category_service import get_all_categories, get_category_by_slug, get_subcategory_by_slug
 from app.services.admin_service import fetch_applications_for_asset, compute_stats, merge_with_db
 from app.services.application_service import update_application_status
 from app.services.rest_client import RestClient
@@ -55,6 +55,7 @@ def _fetch_live_data_for_category(category: dict):
     """
     Fetch and merge applications for all subcategories of a category.
     Each application is annotated with subcategory_name.
+    Uses limit=50 to retrieve all items (category view is not paginated at API level).
     """
     agent_client = get_agent_client()
     all_applications = []
@@ -62,7 +63,7 @@ def _fetch_live_data_for_category(category: dict):
         asset_id = sub.get("asset_id") or ""
         if not asset_id.strip():
             continue
-        apps = fetch_applications_for_asset(agent_client, settings, asset_id)
+        apps, _ = fetch_applications_for_asset(agent_client, settings, asset_id, page=1, limit=50)
         for app in apps:
             app["subcategory_name"] = sub["name"]
         all_applications.extend(apps)
@@ -204,6 +205,60 @@ def admin_category_detail(request: Request, slug: str):
     )
     sm.save_session(tmpl, session_id)
     return tmpl
+
+
+@router.get("/subcategory/{sub_slug}", response_class=HTMLResponse)
+def admin_subcategory_detail(request: Request, sub_slug: str):
+    """Serve the subcategory detail view with API-level pagination. Requires admin session."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return redirect
+
+    subcategory = get_subcategory_by_slug(sub_slug)
+    if not subcategory:
+        return RedirectResponse(url="/admin", status_code=302)
+
+    tmpl = templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "app_name": settings.APP_NAME,
+            "theme_css": f"css/style_{settings.APP_THEME}.css",
+            "username": session.get("admin_username", "Admin"),
+            "view_mode": "subcategory",
+            "subcategory": subcategory,
+        }
+    )
+    sm.save_session(tmpl, session_id)
+    return tmpl
+
+
+@router.get("/api/subcategory/{sub_slug}")
+def get_subcategory_data_api(request: Request, sub_slug: str, page: int = 1, limit: int = 10):
+    """Return paginated applications and stats for a specific subcategory. Requires admin session."""
+    session, session_id, sm, redirect = _require_admin(request)
+    if redirect:
+        return JSONResponse(status_code=401, content={"error": "Admin authentication required"})
+
+    subcategory = get_subcategory_by_slug(sub_slug)
+    if not subcategory:
+        return JSONResponse(status_code=404, content={"error": "Subcategory not found"})
+
+    asset_id = subcategory.get("asset_id", "")
+    agent_client = get_agent_client()
+    applications, pagination = fetch_applications_for_asset(agent_client, settings, asset_id, page=page, limit=limit)
+    applications = merge_with_db(applications)
+    stats = compute_stats(applications)
+    stats["total"] = pagination.get("total_items", stats["total"])
+
+    resp = JSONResponse({
+        "subcategory": subcategory,
+        "stats": stats,
+        "applications": applications,
+        "pagination": pagination,
+    })
+    sm.save_session(resp, session_id)
+    return resp
 
 
 @router.get("/api/categories")

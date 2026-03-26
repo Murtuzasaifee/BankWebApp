@@ -62,41 +62,47 @@ def _normalize_item(item: dict, asset_version_id: str) -> dict:
     }
 
 
-def fetch_applications_for_asset(agent_client, settings, asset_id: str) -> List[Dict[str, Any]]:
+_EMPTY_PAGINATION = {"current_page": 1, "total_pages": 1, "total_items": 0, "items_per_page": 10}
+
+
+def fetch_applications_for_asset(
+    agent_client, settings, asset_id: str, page: int = 1, limit: int = 50
+) -> tuple[List[Dict[str, Any]], dict]:
     """
     Fetch transactions for a specific asset ID.
 
-    Args:
-        agent_client: AgentPlatformClient instance (for auth headers/token refresh)
-        settings: Application settings (for PLATFORM_BASE_URL, WORKSPACE_ID)
-        asset_id: The specific asset version ID to fetch transactions for
-
     Returns:
-        List of normalized application dicts, sorted by submission_date descending.
+        Tuple of (applications, pagination_meta).
+        pagination_meta keys: current_page, total_pages, total_items, items_per_page.
     """
     if not asset_id or not asset_id.strip():
         logger.warning("Empty asset_id provided — returning empty list")
-        return []
+        return [], _EMPTY_PAGINATION
 
     asset_id = asset_id.strip()
     url = f"{settings.PLATFORM_BASE_URL}/assets"
     client = GraphQLClient(url=url, agent_client=agent_client)
 
     try:
-        data = client.execute(get_asset_transactions(asset_id))
-        items = (
-            data.get("data", {})
-            .get("getAssetTransactionDetails", {})
-            .get("items", [])
-        )
+        data = client.execute(get_asset_transactions(asset_id, page=page, limit=limit))
+        tx_data = data.get("data", {}).get("getAssetTransactionDetails", {})
+        items = tx_data.get("items", [])
+        raw_meta = tx_data.get("meta", {})
         applications = [_normalize_item(item, asset_id) for item in items]
-        logger.info(f"Fetched {len(applications)} transactions for asset {asset_id}")
+        logger.info(f"Fetched {len(applications)} transactions (page {page}) for asset {asset_id}")
     except Exception as e:
         logger.error(f"Error fetching asset {asset_id}: {e}")
-        return []
+        return [], _EMPTY_PAGINATION
+
+    pagination = {
+        "current_page": raw_meta.get("currentPage", page),
+        "total_pages":  raw_meta.get("totalPages", 1),
+        "total_items":  raw_meta.get("totalItems", len(applications)),
+        "items_per_page": raw_meta.get("itemsPerPage", limit),
+    }
 
     applications.sort(key=lambda x: x.get("submission_date", ""), reverse=True)
-    return applications
+    return applications, pagination
 
 
 def merge_with_db(applications: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
